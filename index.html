@@ -10,7 +10,7 @@
   <meta name="description" content="みんなで一音ずつ言葉を紡ぎ、五・七・五を完成させる言葉遊びゲーム。お題の花を詠み込もう！" />
 
   <title>［非公式］兄妹の花で詠み人知らず</title>
-  <script>
+   <script>
   window.YOMIBITO_CLOUD_CONFIG = {
     databaseUrl: "https://brother-and-sister-s-flowers-default-rtdb.firebaseio.com/"
   };
@@ -156,8 +156,11 @@
         <button id="btn-open-rules" class="px-3 py-1.5 text-xs sm:text-sm font-medium rounded-lg border border-zinc-300 bg-zinc-100 hover:bg-zinc-200 text-zinc-700 transition flex items-center gap-1.5 shadow-sm">
           ルール
         </button>
-        <button id="btn-back-lobby" class="hidden px-3 py-1.5 text-xs sm:text-sm font-medium rounded-lg border border-zinc-400 bg-zinc-200 hover:bg-zinc-300 text-zinc-800 transition shadow-sm">
-          タイトルへ戻る
+        <button id="btn-header-back-waiting" class="hidden px-2.5 sm:px-3 py-1 sm:py-1.5 text-xs sm:text-sm font-bold rounded-lg btn-usumomo shadow-sm transition flex items-center gap-1 whitespace-nowrap" title="現在の句会を抜けて待機室に戻る">
+          待機室
+        </button>
+        <button id="btn-back-lobby" class="hidden px-2.5 sm:px-3 py-1 sm:py-1.5 text-xs sm:text-sm font-medium rounded-lg border border-zinc-400 bg-zinc-200 hover:bg-zinc-300 text-zinc-800 transition shadow-sm whitespace-nowrap">
+          タイトル
         </button>
       </div>
     </div>
@@ -241,18 +244,29 @@
             </span>
           </div>
 
-          <!-- Player Count Option Selection (選択肢形式 - Solo Mode Only) -->
-          <div id="lobby-player-count-section" class="space-y-2.5">
+          <!-- Player Count Option Selection (AI Count Controls - Solo Mode Only) -->
+          <div id="lobby-player-count-section" class="space-y-3">
             <label id="lobby-count-label" class="text-sm font-bold text-zinc-700 block">参加AI人数の選択</label>
-            <div id="player-count-options" class="grid grid-cols-4 sm:grid-cols-8 gap-2">
-              <button type="button" data-select-count="3" class="count-option-btn py-2 px-2.5 text-xs sm:text-sm font-bold rounded-xl border transition">2人</button>
-              <button type="button" data-select-count="4" class="count-option-btn py-2 px-2.5 text-xs sm:text-sm font-bold rounded-xl border transition">3人</button>
-              <button type="button" data-select-count="5" class="count-option-btn py-2 px-2.5 text-xs sm:text-sm font-bold rounded-xl border transition">4人</button>
-              <button type="button" data-select-count="6" class="count-option-btn py-2 px-2.5 text-xs sm:text-sm font-bold rounded-xl border transition">5人</button>
-              <button type="button" data-select-count="7" class="count-option-btn py-2 px-2.5 text-xs sm:text-sm font-bold rounded-xl border transition">6人</button>
-              <button type="button" data-select-count="8" class="count-option-btn py-2 px-2.5 text-xs sm:text-sm font-bold rounded-xl border transition">7人</button>
-              <button type="button" data-select-count="9" class="count-option-btn py-2 px-2.5 text-xs sm:text-sm font-bold rounded-xl border transition">8人</button>
-              <button type="button" data-select-count="10" class="count-option-btn py-2 px-2.5 text-xs sm:text-sm font-bold rounded-xl border transition">9人</button>
+            <div class="flex items-center gap-2 bg-zinc-200/80 px-3.5 py-2 rounded-xl border border-zinc-300 w-fit">
+              <span class="text-xs sm:text-sm font-bold text-zinc-700">🤖 AIスパイ：<strong id="solo-ai-count-label" class="text-zinc-900">3人</strong></span>
+              <button
+                type="button"
+                id="btn-solo-ai-minus"
+                class="w-7 h-7 rounded-lg border border-zinc-300 bg-white hover:bg-zinc-100 text-zinc-800 font-bold text-sm flex items-center justify-center shadow-sm transition"
+                title="AIスパイを1人減らす"
+              >－</button>
+              <button
+                type="button"
+                id="btn-solo-ai-plus"
+                class="w-7 h-7 rounded-lg btn-usumomo font-bold text-sm flex items-center justify-center shadow-sm transition"
+                title="AIスパイを1人増やす"
+              >＋</button>
+            </div>
+            <div class="flex items-center pt-1">
+              <label class="flex items-center gap-2 cursor-pointer select-none">
+                <input type="checkbox" id="chk-solo-shuffle-order" class="rounded accent-pink-400 focus:ring-pink-300 w-4 h-4" />
+                <span class="text-xs font-bold text-zinc-700">開始時に手番順をシャッフルする</span>
+              </label>
             </div>
           </div>
         </div>
@@ -260,26 +274,28 @@
         <!-- Right Column: Theme Flower Selection + Free Mode Setting (Aligned with Waiting Room) -->
         <div id="lobby-flower-card" class="lg:col-span-5 bg-[#f3f4f6] rounded-2xl p-6 tanzaku-shadow border border-zinc-300 flex flex-col justify-between space-y-5 transition-all duration-300">
           <div class="space-y-4">
-            <div class="flex items-center justify-between border-b border-zinc-300 pb-3">
-              <h3 class="text-lg font-bold serif-jp text-zinc-800 flex items-center gap-2">
+            <div class="border-b border-zinc-300 pb-3 space-y-2">
+              <h3 class="text-lg font-bold serif-jp text-zinc-800 text-center">
                 お題設定
               </h3>
-              <button type="button" id="btn-random-flower" class="text-xs font-semibold px-2.5 py-1 rounded-lg btn-usumomo transition shadow-sm">
-                ランダム
-              </button>
-            </div>
-
-            <!-- Free Mode Setting -->
-            <div class="flex items-center bg-zinc-200/80 px-3.5 py-2.5 rounded-xl border border-zinc-300">
-              <label class="flex items-center gap-2 cursor-pointer select-none">
-                <input type="checkbox" id="chk-free-mode" class="rounded accent-pink-400 focus:ring-pink-300 w-4 h-4" />
-                <span class="text-xs font-bold text-zinc-800">自由記述モードにする</span>
-              </label>
+              <div class="flex justify-center">
+                <button type="button" id="btn-random-flower" class="text-sm font-bold px-6 py-2.5 rounded-xl btn-usumomo transition shadow-sm active:scale-95" title="お題の花をランダムに選び直す">
+                  ランダム
+                </button>
+              </div>
             </div>
 
             <!-- Flower Cards Grid -->
             <div id="lobby-flower-grid" class="grid grid-cols-1 gap-2.5 max-h-[340px] overflow-y-auto pr-1 scroll-smooth">
               <!-- Populated dynamically via JS -->
+            </div>
+
+            <!-- Free Mode Setting (Moved to bottom of お題設定) -->
+            <div class="flex items-center bg-zinc-200/80 px-3.5 py-2.5 rounded-xl border border-zinc-300">
+              <label class="flex items-center gap-2 cursor-pointer select-none">
+                <input type="checkbox" id="chk-free-mode" class="rounded accent-pink-400 focus:ring-pink-300 w-4 h-4" />
+                <span class="text-xs font-bold text-zinc-800">自由記述モードにする</span>
+              </label>
             </div>
           </div>
 
@@ -385,6 +401,32 @@
       <!-- Waiting Room Stacked Sections -->
       <div class="max-w-4xl mx-auto space-y-5">
 
+        <!-- Top Start Button for Host (Above 在籍者一覧) -->
+        <div id="waiting-top-start-wrap" class="hidden">
+          <button
+            type="button"
+            id="btn-open-start-confirm-top"
+            class="w-full py-3.5 px-6 rounded-xl btn-usumomo font-bold serif-jp text-lg shadow-md hover:shadow-lg transition flex items-center justify-center gap-2"
+          >
+            開始する
+          </button>
+        </div>
+
+        <!-- In-game spectator prompt banner if room is already active -->
+        <div id="waiting-game-active-banner" class="hidden p-4 rounded-xl bg-pink-50 border border-pink-300 flex items-center justify-between gap-3 shadow-sm">
+          <div class="text-xs sm:text-sm text-pink-950 font-bold flex items-center gap-2">
+            <span>⚔️</span>
+            <span>現在この部屋では句会が進行中です。見学することができます。</span>
+          </div>
+          <button
+            type="button"
+            id="btn-spectate-game-banner"
+            class="px-5 py-2 rounded-xl btn-usumomo font-bold serif-jp text-xs sm:text-sm shadow-sm hover:shadow transition shrink-0"
+          >
+            見学する
+          </button>
+        </div>
+
         <!-- 1. Collapsible Enrollee List Card (在籍者一覧) -->
         <div class="bg-[#f3f4f6] rounded-2xl tanzaku-shadow border border-zinc-300 overflow-hidden">
           <button
@@ -462,21 +504,22 @@
           </button>
 
           <div id="waiting-host-settings-collapsible-body" class="px-5 pb-5 pt-2 border-t border-zinc-300 space-y-4">
-            <div class="flex items-center justify-end">
-              <button type="button" id="btn-waiting-random-flower" class="text-xs font-semibold px-2.5 py-1 rounded-lg btn-usumomo transition shadow-sm">
+            <div class="flex justify-center my-2">
+              <button type="button" id="btn-waiting-random-flower" class="text-sm font-bold px-6 py-2.5 rounded-xl btn-usumomo transition shadow-sm active:scale-95" title="お題の花をランダムに選び直す">
                 ランダム
               </button>
             </div>
 
+            <div id="waiting-flower-grid" class="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-56 overflow-y-auto pr-1 scroll-smooth">
+              <!-- Populated dynamically via JS -->
+            </div>
+
+            <!-- Free Mode Setting (Moved to bottom of お題設定) -->
             <div class="flex items-center bg-zinc-200/80 px-3.5 py-2.5 rounded-xl border border-zinc-300">
               <label class="flex items-center gap-2 cursor-pointer select-none">
                 <input type="checkbox" id="chk-waiting-free-mode" class="rounded accent-pink-400 focus:ring-pink-300 w-4 h-4" />
                 <span class="text-xs font-bold text-zinc-800">自由記述モードにする</span>
               </label>
-            </div>
-
-            <div id="waiting-flower-grid" class="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-56 overflow-y-auto pr-1 scroll-smooth">
-              <!-- Populated dynamically via JS -->
             </div>
           </div>
         </div>
@@ -506,7 +549,6 @@
         <div class="bg-[#f3f4f6] rounded-2xl p-5 tanzaku-shadow border border-zinc-300 flex flex-col justify-between space-y-4">
           <div class="border-b border-zinc-300 pb-3 flex items-center justify-between">
             <h3 class="text-base font-bold serif-jp text-zinc-800">待機室チャット</h3>
-            <span id="chat-sender-badge" class="text-xs text-zinc-600 font-medium">発言者: 007</span>
           </div>
 
           <div id="waiting-chat-log" class="space-y-2.5 pr-1 max-h-64 overflow-y-auto">
@@ -558,79 +600,42 @@
 
 
     <!-- ==================== VIEW 2: ACTIVE GAMEPLAY ==================== -->
-    <section id="view-game" class="hidden space-y-6">
+        <section id="view-game" class="hidden space-y-5">
 
-      <!-- Top Banner: ONLY Flower Name + Solid Color Icon (+ Spectator Announcement Banner) -->
-      <div class="bg-[#f3f4f6] rounded-2xl p-4 sm:p-5 tanzaku-shadow border-2 border-zinc-300 flex flex-wrap items-center justify-between gap-3">
-        <div class="flex items-center gap-3.5">
-          <div id="game-theme-icon" class="w-10 h-10 rounded-full shrink-0 shadow-sm border border-zinc-300"></div>
-          <div class="flex items-center gap-2.5">
-            <span class="text-xs font-bold px-2.5 py-1 rounded bg-zinc-700 text-zinc-100">お題</span>
-            <h2 id="game-theme-name" class="text-xl sm:text-2xl font-bold serif-jp text-zinc-900">チューリップ</h2>
-          </div>
-        </div>
-        <div class="flex items-center gap-2">
-          <span id="game-spectator-banner" class="hidden px-3 py-1 rounded-full bg-zinc-200 border border-zinc-300 text-xs font-bold text-zinc-800 serif-jp"></span>
-          <button type="button" id="btn-spectator-back-waiting" class="hidden px-3 py-1.5 rounded-xl border border-zinc-300 bg-white hover:bg-zinc-200 text-xs font-bold text-zinc-800 shadow-sm transition">
-            待機室に戻る
-          </button>
-        </div>
-      </div>
-
-      <!-- AI Vocabulary Level Slider (1 to 5) & Options (Host-Only) -->
-      <div id="game-ai-vocab-card" class="bg-[#f3f4f6] rounded-2xl px-4 py-3.5 sm:px-5 tanzaku-shadow border border-zinc-300">
-        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
-          <div class="flex items-center gap-2.5 flex-wrap">
-            <span class="text-xs sm:text-sm font-bold serif-jp text-zinc-800">AIの語彙レベル</span>
-            <span id="ai-vocab-level-label" class="text-xs font-bold px-2.5 py-0.5 rounded-full bg-zinc-700 text-white">3</span>
-            <span id="ai-vocab-host-only-note" class="hidden text-[11px] font-medium text-zinc-500">（主催者のみ変更可）</span>
-          </div>
-          <div class="flex items-center gap-3 flex-1 sm:max-w-xs">
-            <span class="text-xs font-bold text-zinc-500">1</span>
-            <input
-              id="slider-ai-vocab-level"
-              type="range"
-              min="1"
-              max="5"
-              step="1"
-              value="3"
-              class="w-full accent-[#e59bb0] cursor-pointer h-2 bg-zinc-300 rounded-lg"
-            />
-            <span class="text-xs font-bold text-zinc-500">5</span>
-          </div>
-        </div>
-        <div class="flex items-center gap-4 flex-wrap pt-2.5 border-t border-zinc-200 mt-2.5 text-xs font-bold text-zinc-700">
-          <label id="wrap-ai-kagen" class="hidden flex items-center gap-1.5 cursor-pointer select-none">
-            <input type="checkbox" id="chk-ai-kagen" class="accent-[#e59bb0] rounded w-4 h-4 cursor-pointer" />
-            <span>寡言（入力上限1〜3文字）</span>
-          </label>
-          <label id="wrap-ai-no-flower" class="flex items-center gap-1.5 cursor-pointer select-none">
-            <input type="checkbox" id="chk-ai-no-flower" class="accent-[#e59bb0] rounded w-4 h-4 cursor-pointer" />
-            <span>AIの花使用不可</span>
-          </label>
-        </div>
-      </div>
-
-      <!-- Main Game Grid: Left (5-7-5 Board + Current Poem Preview) / Right (Input Controller + Turn Order Below) -->
-      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+      <!-- Main Game Grid: Left (5-7-5 Board + お題 + Live Preview) / Right (Input Controller + Turn Order + 語彙レベル) -->
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
 
         <!-- Left 7 Cols: 5-7-5 Board (Tap to expand/collapse folded lines) & Live Poem Preview -->
-        <div class="lg:col-span-7 space-y-5">
+        <div class="lg:col-span-7 space-y-4">
 
-          <div class="bg-[#f3f4f6] rounded-2xl p-5 sm:p-6 tanzaku-shadow border border-zinc-300 space-y-4">
-            <div class="flex items-center justify-end">
-              <span id="current-line-indicator" class="text-xs font-bold px-3 py-1 rounded-full bg-zinc-700 text-white serif-jp">
-                現在：初句（1音目）
-              </span>
+          <div class="bg-[#f3f4f6] rounded-2xl p-4 sm:p-5 tanzaku-shadow border border-zinc-300 space-y-3.5">
+
+            <!-- Compact Header: お題：〇〇 on the Left, 現在：✕句（△音目） on the Right -->
+            <div class="flex items-center justify-between gap-2 flex-wrap pb-2.5 border-b border-zinc-200">
+              <div class="flex items-center gap-2 min-w-0">
+                <div id="game-theme-icon" class="w-6 h-6 rounded-full shrink-0 shadow-sm border border-zinc-300"></div>
+                <span class="text-sm sm:text-base font-bold serif-jp text-zinc-900 truncate">
+                  お題：<span id="game-theme-name">チューリップ</span>
+                </span>
+              </div>
+              <div class="flex items-center gap-2 shrink-0">
+                <span id="game-spectator-banner" class="hidden px-2.5 py-0.5 rounded-full bg-zinc-200 border border-zinc-300 text-xs font-bold text-zinc-800 serif-jp"></span>
+                <button type="button" id="btn-spectator-back-waiting" class="hidden px-2.5 py-0.5 rounded-lg border border-zinc-300 bg-white hover:bg-zinc-200 text-xs font-bold text-zinc-800 shadow-sm transition">
+                  待機室
+                </button>
+                <span id="current-line-indicator" class="text-xs font-bold px-3 py-1 rounded-full bg-zinc-700 text-white serif-jp">
+                  現在：初句（1音目）
+                </span>
+              </div>
             </div>
 
             <!-- Three Lines: Active line is expanded; non-active lines can be tapped to toggle open/close -->
-            <div class="space-y-3">
+            <div class="space-y-2.5">
               <!-- Line 0: 初句 (5 moras + overflow) -->
-              <div id="line-container-0" class="p-4 rounded-xl border-2 border-[#e59bb0] bg-pink-50/40 transition">
-                <div class="flex items-center justify-between mb-2.5">
-                  <span class="text-sm font-bold serif-jp text-zinc-800 flex items-center gap-1.5">
-                    <span class="w-5 h-5 rounded bg-zinc-700 text-white inline-flex items-center justify-center text-xs">一</span>
+              <div id="line-container-0" class="p-3 sm:p-3.5 rounded-xl border-2 border-[#e59bb0] bg-pink-50/40 transition">
+                <div class="flex items-center justify-between mb-2">
+                  <span class="text-xs sm:text-sm font-bold serif-jp text-zinc-800 flex items-center gap-1.5">
+                    <span class="w-4 h-4 rounded bg-zinc-700 text-white inline-flex items-center justify-center text-[10px]">一</span>
                     初句（上五・5音）
                   </span>
                   <div class="flex items-center gap-2">
@@ -640,18 +645,18 @@
                     </button>
                   </div>
                 </div>
-                <div id="line-cells-0" class="flex flex-wrap items-center gap-2"></div>
+                <div id="line-cells-0" class="flex flex-wrap items-center gap-1.5 sm:gap-2"></div>
               </div>
-              <button type="button" data-expand-line="0" id="line-folded-0" class="hidden w-full px-4 py-3 rounded-xl border border-zinc-300 bg-zinc-200/80 hover:bg-zinc-300/70 text-xs text-zinc-700 font-bold flex items-center justify-between transition text-left cursor-pointer">
+              <button type="button" data-expand-line="0" id="line-folded-0" class="hidden w-full px-3.5 py-2 rounded-xl border border-zinc-300 bg-zinc-200/80 hover:bg-zinc-300/70 text-xs text-zinc-700 font-bold flex items-center justify-between transition text-left cursor-pointer">
                 <span>一　初句（上五）</span>
                 <span class="text-zinc-500 font-medium">▼ タップで表示</span>
               </button>
 
               <!-- Line 1: 二句 (7 moras + overflow) -->
-              <div id="line-container-1" class="hidden p-4 rounded-xl border-2 border-[#e59bb0] bg-pink-50/40 transition">
-                <div class="flex items-center justify-between mb-2.5">
-                  <span class="text-sm font-bold serif-jp text-zinc-800 flex items-center gap-1.5">
-                    <span class="w-5 h-5 rounded bg-zinc-700 text-white inline-flex items-center justify-center text-xs">二</span>
+              <div id="line-container-1" class="hidden p-3 sm:p-3.5 rounded-xl border-2 border-[#e59bb0] bg-pink-50/40 transition">
+                <div class="flex items-center justify-between mb-2">
+                  <span class="text-xs sm:text-sm font-bold serif-jp text-zinc-800 flex items-center gap-1.5">
+                    <span class="w-4 h-4 rounded bg-zinc-700 text-white inline-flex items-center justify-center text-[10px]">二</span>
                     二句（中七・7音）
                   </span>
                   <div class="flex items-center gap-2">
@@ -661,18 +666,18 @@
                     </button>
                   </div>
                 </div>
-                <div id="line-cells-1" class="flex flex-wrap items-center gap-2"></div>
+                <div id="line-cells-1" class="flex flex-wrap items-center gap-1.5 sm:gap-2"></div>
               </div>
-              <button type="button" data-expand-line="1" id="line-folded-1" class="w-full px-4 py-3 rounded-xl border border-zinc-300 bg-zinc-200/80 hover:bg-zinc-300/70 text-xs text-zinc-700 font-bold flex items-center justify-between transition text-left cursor-pointer">
+              <button type="button" data-expand-line="1" id="line-folded-1" class="w-full px-3.5 py-2 rounded-xl border border-zinc-300 bg-zinc-200/80 hover:bg-zinc-300/70 text-xs text-zinc-700 font-bold flex items-center justify-between transition text-left cursor-pointer">
                 <span>二　二句（中七）</span>
                 <span class="text-zinc-500 font-medium">▼ タップで表示</span>
               </button>
 
               <!-- Line 2: 結句 (5 moras + overflow) -->
-              <div id="line-container-2" class="hidden p-4 rounded-xl border-2 border-[#e59bb0] bg-pink-50/40 transition">
-                <div class="flex items-center justify-between mb-2.5">
-                  <span class="text-sm font-bold serif-jp text-zinc-800 flex items-center gap-1.5">
-                    <span class="w-5 h-5 rounded bg-zinc-700 text-white inline-flex items-center justify-center text-xs">三</span>
+              <div id="line-container-2" class="hidden p-3 sm:p-3.5 rounded-xl border-2 border-[#e59bb0] bg-pink-50/40 transition">
+                <div class="flex items-center justify-between mb-2">
+                  <span class="text-xs sm:text-sm font-bold serif-jp text-zinc-800 flex items-center gap-1.5">
+                    <span class="w-4 h-4 rounded bg-zinc-700 text-white inline-flex items-center justify-center text-[10px]">三</span>
                     結句（下五・5音）
                   </span>
                   <div class="flex items-center gap-2">
@@ -682,16 +687,16 @@
                     </button>
                   </div>
                 </div>
-                <div id="line-cells-2" class="flex flex-wrap items-center gap-2"></div>
+                <div id="line-cells-2" class="flex flex-wrap items-center gap-1.5 sm:gap-2"></div>
               </div>
-              <button type="button" data-expand-line="2" id="line-folded-2" class="w-full px-4 py-3 rounded-xl border border-zinc-300 bg-zinc-200/80 hover:bg-zinc-300/70 text-xs text-zinc-700 font-bold flex items-center justify-between transition text-left cursor-pointer">
+              <button type="button" data-expand-line="2" id="line-folded-2" class="w-full px-3.5 py-2 rounded-xl border border-zinc-300 bg-zinc-200/80 hover:bg-zinc-300/70 text-xs text-zinc-700 font-bold flex items-center justify-between transition text-left cursor-pointer">
                 <span>三　結句（下五）</span>
                 <span class="text-zinc-500 font-medium">▼ タップで表示</span>
               </button>
             </div>
 
             <!-- Live Poem Preview ("現在の句の並び") -->
-            <div class="pt-3 border-t border-zinc-300">
+            <div class="pt-2.5 border-t border-zinc-300">
               <div class="text-sm serif-jp text-zinc-700">
                 <span class="text-xs font-sans text-zinc-500 block mb-0.5">現在の句の並び：</span>
                 <span id="live-poem-preview" class="font-bold text-base sm:text-lg text-zinc-900 break-words">（まだ入力されていません）</span>
@@ -701,25 +706,25 @@
 
         </div>
 
-        <!-- Right 5 Cols: Active Player Input Panel + Turn Order Bar Below Input -->
-        <div class="lg:col-span-5 space-y-5 min-w-0">
-          <div class="bg-[#f3f4f6] rounded-2xl p-4 sm:p-6 tanzaku-shadow border border-zinc-300 space-y-5 overflow-hidden">
+        <!-- Right 5 Cols: Active Player Input Panel + Turn Order Bar + AI 語彙レベル -->
+        <div class="lg:col-span-5 space-y-4 min-w-0">
+          <div class="bg-[#f3f4f6] rounded-2xl p-3.5 sm:p-4.5 pt-3.5 pb-3.5 tanzaku-shadow border border-zinc-300 space-y-3 overflow-hidden">
 
             <!-- Current Turn Player Header -->
-            <div class="flex items-center justify-between border-b border-zinc-300 pb-3">
+            <div class="flex items-center justify-between border-b border-zinc-300 pb-2.5">
               <div class="flex items-center gap-2.5 min-w-0">
-                <div id="active-player-avatar" class="w-10 h-10 rounded-full bg-zinc-700 text-white font-bold flex items-center justify-center text-sm shadow-sm shrink-0">
+                <div id="active-player-avatar" class="w-9 h-9 rounded-full bg-zinc-700 text-white font-bold flex items-center justify-center text-sm shadow-sm shrink-0">
                   1
                 </div>
                 <div class="min-w-0">
                   <span class="text-[11px] font-semibold text-zinc-500 block">現在の手番</span>
-                  <h3 id="active-player-name" class="text-lg font-bold serif-jp text-zinc-900 truncate">007</h3>
+                  <h3 id="active-player-name" class="text-base sm:text-lg font-bold serif-jp text-zinc-900 truncate">007</h3>
                 </div>
               </div>
             </div>
 
             <!-- Notice shown when it is NOT the user's turn -->
-            <div id="not-my-turn-notice" class="hidden py-6 px-4 rounded-xl bg-zinc-200/70 border border-zinc-300 text-center text-xs sm:text-sm font-bold text-zinc-600 serif-jp">
+            <div id="not-my-turn-notice" class="hidden py-4 px-3.5 rounded-xl bg-zinc-200/70 border border-zinc-300 text-center text-xs sm:text-sm font-bold text-zinc-600 serif-jp">
               手番が回るまでお待ちください…
             </div>
 
@@ -749,7 +754,7 @@
               <p id="mora-validation-msg" class="text-xs text-red-600 font-semibold min-h-[1rem]"></p>
             </div>
 
-            <!-- 2. Free Input Mode (1 turn = 1 mora slot, buttons stacked vertically on right to avoid squishing textarea on mobile) -->
+            <!-- 2. Free Input Mode (1 turn = 1 mora slot) -->
             <div id="panel-free-mode" class="hidden space-y-2.5 p-3.5 rounded-xl bg-zinc-200/80 border-2 border-zinc-300">
               <div class="flex items-center justify-between">
                 <span class="text-xs font-bold text-zinc-800">自由記述モード</span>
@@ -783,10 +788,10 @@
               </div>
             </div>
 
-            <!-- 3. One-Click Flower Name & Alias Bulk Input Section (Hidden completely for everyone once used) -->
-            <div id="flower-input-section" class="pt-4 border-t border-zinc-300 space-y-3">
+            <!-- 3. One-Click Flower Name & Alias Bulk Input Section -->
+            <div id="flower-input-section" class="pt-3 border-t border-zinc-300 space-y-2.5">
               <div class="flex items-center justify-between">
-                <h4 class="text-sm font-bold serif-jp text-zinc-800">
+                <h4 class="text-xs sm:text-sm font-bold serif-jp text-zinc-800">
                   花の名前を一括入力（一句にひとつ）
                 </h4>
               </div>
@@ -798,14 +803,48 @@
 
           </div>
 
-          <!-- Player Turn Order Bar (Located BELOW Input Section) -->
-          <div class="bg-[#f3f4f6] rounded-2xl p-4 tanzaku-shadow border border-zinc-300">
-            <div class="flex items-center justify-between mb-2.5">
+          <!-- Player Turn Order Bar -->
+          <div class="bg-[#f3f4f6] rounded-2xl p-3.5 tanzaku-shadow border border-zinc-300">
+            <div class="flex items-center justify-between mb-2">
               <span class="text-xs font-bold text-zinc-500 uppercase tracking-wider">手番順</span>
               <span id="turn-counter-label" class="text-xs font-semibold text-zinc-600">1手目</span>
             </div>
-            <div id="game-player-bar" class="flex items-center gap-2 overflow-x-auto pb-1.5">
+            <div id="game-player-bar" class="flex items-center gap-2 overflow-x-auto pb-1">
               <!-- Populated via JS -->
+            </div>
+          </div>
+
+          <!-- AI Vocabulary Level Slider (Moved below input/turn order, slider underneath '現在の語彙レベル' label) -->
+          <div id="game-ai-vocab-card" class="bg-[#f3f4f6] rounded-2xl p-4 sm:p-4.5 tanzaku-shadow border border-zinc-300 space-y-2.5">
+            <div class="flex items-center justify-between gap-2 flex-wrap">
+              <div class="flex items-center gap-2">
+                <span class="text-xs sm:text-sm font-bold serif-jp text-zinc-800">AIの語彙レベル：</span>
+                <span id="ai-vocab-level-label" class="text-xs font-bold px-2.5 py-0.5 rounded-full bg-zinc-700 text-white">3</span>
+              </div>
+              <span id="ai-vocab-host-only-note" class="hidden text-[11px] font-medium text-zinc-500">（主催者のみ変更可）</span>
+            </div>
+            <div class="flex items-center gap-3 w-full pt-1">
+              <span class="text-xs font-bold text-zinc-500">1</span>
+              <input
+                id="slider-ai-vocab-level"
+                type="range"
+                min="1"
+                max="5"
+                step="1"
+                value="3"
+                class="w-full accent-[#e59bb0] cursor-pointer h-2 bg-zinc-300 rounded-lg"
+              />
+              <span class="text-xs font-bold text-zinc-500">5</span>
+            </div>
+            <div class="flex items-center gap-4 flex-wrap pt-2 border-t border-zinc-200 text-xs font-bold text-zinc-700">
+              <label id="wrap-ai-kagen" class="hidden flex items-center gap-1.5 cursor-pointer select-none">
+                <input type="checkbox" id="chk-ai-kagen" checked class="accent-[#e59bb0] rounded w-4 h-4 cursor-pointer" />
+                <span>真面目モード</span>
+              </label>
+              <label id="wrap-ai-no-flower" class="flex items-center gap-1.5 cursor-pointer select-none">
+                <input type="checkbox" id="chk-ai-no-flower" class="accent-[#e59bb0] rounded w-4 h-4 cursor-pointer" />
+                <span>AIの花使用不可</span>
+              </label>
             </div>
           </div>
 
@@ -813,7 +852,7 @@
 
       </div>
 
-      <!-- Bottom of Screen: "スキップ" (Host Only, with confirmation) and "ここで結ぶ" Buttons -->
+      <!-- Bottom of Screen: "スキップ" and "ここで結ぶ" Buttons -->
       <div class="bg-[#f3f4f6] rounded-2xl p-4 tanzaku-shadow border border-zinc-300 flex flex-wrap items-center justify-center gap-3 sm:gap-4">
         <button
           type="button"
@@ -833,8 +872,7 @@
 
     </section>
 
-
-    <!-- ==================== VIEW 3: RESULT / VERTICAL TANZAKU & X SHARE ==================== -->
+  <!-- ==================== VIEW 3: RESULT / VERTICAL TANZAKU & X SHARE ==================== -->
     <section id="view-result" class="hidden space-y-6">
       <div class="bg-[#f3f4f6] rounded-2xl p-6 sm:p-8 tanzaku-shadow border border-zinc-300">
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
@@ -929,7 +967,7 @@
     <div class="bg-[#f3f4f6] rounded-2xl max-w-md w-full tanzaku-shadow border border-zinc-300 p-6 space-y-5">
       <h3 class="text-lg font-bold serif-jp text-zinc-900">確認</h3>
       <p class="text-sm text-zinc-700 text-center font-medium leading-relaxed">
-        現在の部屋IDに、合言葉のIDを反映してよろしいですか？
+        現在の部屋IDに、合言葉のIDを<strong>反映</strong>してよろしいですか？
       </p>
       <div class="flex items-center justify-end gap-3 pt-2 border-t border-zinc-300">
         <button type="button" id="btn-cancel-replace-room-id" class="px-5 py-2 rounded-xl border border-zinc-300 bg-white hover:bg-zinc-200 text-zinc-700 font-bold text-sm">
@@ -942,12 +980,45 @@
     </div>
   </div>
 
+  <!-- ==================== MODAL: BACK TO WAITING ROOM CONFIRMATION ==================== -->
+  <div id="modal-back-waiting-confirm" class="fixed inset-0 z-50 hidden bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-[#f3f4f6] rounded-2xl max-w-md w-full tanzaku-shadow border border-zinc-300 p-6 space-y-5">
+      <h3 class="text-lg font-bold serif-jp text-zinc-900">確認</h3>
+      <p class="text-sm text-zinc-700 text-center font-medium leading-relaxed">
+        句会を抜けて<strong>待機室に戻り</strong>ます。よろしいですか？（手番はスキップされます）
+      </p>
+      <div class="flex items-center justify-end gap-3 pt-2 border-t border-zinc-300">
+        <button type="button" id="btn-cancel-back-waiting" class="px-5 py-2 rounded-xl border border-zinc-300 bg-white hover:bg-zinc-200 text-zinc-700 font-bold text-sm">
+          いいえ
+        </button>
+        <button type="button" id="btn-confirm-back-waiting" class="px-6 py-2 rounded-xl btn-usumomo font-bold text-sm shadow-sm">
+          はい
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== MODAL: AFK / DISCONNECTED AUTO-LEAVE POPUP ==================== -->
+  <div id="modal-afk-disconnected-notice" class="fixed inset-0 z-50 hidden bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-[#f3f4f6] rounded-2xl max-w-md w-full tanzaku-shadow border border-zinc-300 p-6 space-y-5">
+      <h3 class="text-lg font-bold serif-jp text-zinc-900">お知らせ</h3>
+      <p class="text-sm text-zinc-800 text-center font-bold leading-relaxed">
+        接続が失われたため、部屋から<strong>自動的に退室</strong>しました。
+      </p>
+      <div class="flex items-center justify-center pt-2 border-t border-zinc-300">
+        <button type="button" id="btn-close-afk-notice" class="px-8 py-2.5 rounded-xl btn-usumomo font-bold text-sm shadow-sm">
+          OK
+        </button>
+      </div>
+    </div>
+  </div>
+
   <!-- ==================== MODAL: RETURN TO TITLE CONFIRMATION ("確認 タイトルへ戻ってよろしいですか？") ==================== -->
   <div id="modal-return-title-confirm" class="fixed inset-0 z-50 hidden bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
     <div class="bg-[#f3f4f6] rounded-2xl max-w-md w-full tanzaku-shadow border border-zinc-300 p-6 space-y-5">
       <h3 class="text-lg font-bold serif-jp text-zinc-900">確認</h3>
       <p id="return-title-confirm-text" class="text-sm text-zinc-700 text-center font-medium leading-relaxed">
-        タイトルへ戻ると、自動的に退室します。よろしいですか？
+        タイトルへ戻ると、<strong>自動的に退室</strong>します。よろしいですか？
       </p>
       <div class="flex items-center justify-end gap-3 pt-2 border-t border-zinc-300">
         <button type="button" id="btn-cancel-return-title" class="px-5 py-2 rounded-xl border border-zinc-300 bg-white hover:bg-zinc-200 text-zinc-700 font-bold text-sm">
@@ -974,7 +1045,7 @@
         <span class="text-xs font-bold text-zinc-600 block">現在の在籍者</span>
         <ol id="start-confirm-player-list" class="list-decimal pl-5 space-y-1 text-sm font-bold text-zinc-800"></ol>
       </div>
-      <p class="text-sm text-zinc-700 text-center font-medium">このメンバーで始めてよろしいですか？</p>
+      <p class="text-sm text-zinc-700 text-center font-medium">このメンバーで<strong>開始</strong>してよろしいですか？</p>
       <div class="flex flex-wrap items-center justify-end gap-2.5 pt-2 border-t border-zinc-300">
         <button type="button" id="btn-cancel-start" class="px-4 py-2 rounded-xl border border-zinc-300 bg-white hover:bg-zinc-200 text-zinc-700 font-bold text-sm">
           いいえ
@@ -994,7 +1065,7 @@
     <div class="bg-[#f3f4f6] rounded-2xl max-w-md w-full tanzaku-shadow border border-zinc-300 p-6 space-y-5">
       <h3 class="text-lg font-bold serif-jp text-zinc-900">確認</h3>
       <p id="skip-confirm-message" class="text-sm text-zinc-700 text-center font-medium leading-relaxed">
-        現在の手番をスキップして次の人へ回します。よろしいですか？
+        現在の手番を<strong>スキップ</strong>して次の人へ回します。よろしいですか？
       </p>
       <div class="flex items-center justify-end gap-3 pt-2 border-t border-zinc-300">
         <button type="button" id="btn-cancel-skip" class="px-5 py-2 rounded-xl border border-zinc-300 bg-white hover:bg-zinc-200 text-zinc-700 font-bold text-sm">
@@ -1044,7 +1115,7 @@
     <div class="bg-[#f3f4f6] rounded-2xl max-w-md w-full tanzaku-shadow border border-zinc-300 p-6 space-y-5">
       <h3 class="text-lg font-bold serif-jp text-zinc-900">お知らせ</h3>
       <p class="text-sm text-zinc-800 text-center font-bold leading-relaxed">
-        無人の部屋は24時間後に自動で閉鎖されます
+        無人の部屋は24時間後に<strong>自動で閉鎖</strong>されます
       </p>
       <div class="flex items-center justify-center pt-2 border-t border-zinc-300">
         <button type="button" id="btn-close-unmanned-notice" class="px-8 py-2.5 rounded-xl btn-usumomo font-bold text-sm shadow-sm">
@@ -1075,8 +1146,9 @@
     <div class="bg-[#f3f4f6] rounded-2xl max-w-xl w-full max-h-[85vh] overflow-y-auto tanzaku-shadow border border-zinc-300 p-6 space-y-5">
       <div class="flex items-center justify-between border-b border-zinc-300 pb-3">
         <div class="flex items-center gap-2.5">
-          <h3 class="text-xl font-bold serif-jp text-zinc-900">入室記録（直近10部屋）</h3>
-          <span id="room-history-count" class="text-xs font-bold px-2.5 py-0.5 rounded-full bg-zinc-200 text-zinc-800 border border-zinc-300">0部屋</span>
+          <h3 class="text-lg sm:text-xl font-bold serif-jp text-zinc-900 flex items-center gap-1.5 flex-wrap">
+            入室記録 <span class="text-xs sm:text-sm font-normal text-zinc-600">（直近10部屋）</span>
+          </h3>
         </div>
         <button type="button" id="btn-close-room-history" class="w-8 h-8 rounded-lg bg-zinc-200 hover:bg-zinc-300 text-zinc-700 font-bold flex items-center justify-center">✕</button>
       </div>
@@ -1101,9 +1173,11 @@
   <div id="modal-history" class="fixed inset-0 z-50 hidden bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
     <div class="bg-[#f3f4f6] rounded-2xl max-w-3xl w-full max-h-[85vh] overflow-y-auto tanzaku-shadow border border-zinc-300 p-6 space-y-5">
       <div class="flex items-center justify-between border-b border-zinc-300 pb-3">
-        <div class="flex items-center gap-2.5">
-          <h3 class="text-xl font-bold serif-jp text-zinc-900">履歴（直近10句）</h3>
-          <span id="history-poems-count" class="text-xs font-bold px-2.5 py-0.5 rounded-full bg-zinc-200 text-zinc-800 border border-zinc-300">0句</span>
+        <div class="flex items-center gap-2.5 flex-wrap">
+          <h3 class="text-lg sm:text-xl font-bold serif-jp text-zinc-900 flex items-center gap-1.5">
+            履歴 <span class="text-xs sm:text-sm font-normal text-zinc-600">（直近10句）</span>
+          </h3>
+          <span id="history-poems-count" class="text-xs font-bold px-2 py-0.5 rounded-full bg-zinc-200 text-zinc-800 border border-zinc-300">0句</span>
         </div>
         <button type="button" id="btn-close-history" class="w-8 h-8 rounded-lg bg-zinc-200 hover:bg-zinc-300 text-zinc-700 font-bold flex items-center justify-center">✕</button>
       </div>
@@ -1176,7 +1250,7 @@
 
       <!-- Step 1: Ask initiator -->
       <div id="finish-step-initiator" class="space-y-4">
-        <p class="text-sm font-bold text-zinc-800 text-center">これで完成でよろしいですか？</p>
+        <p class="text-sm font-bold text-zinc-800 text-center">これで<strong>完成</strong>でよろしいですか？</p>
         <div class="flex items-center justify-center gap-4">
           <button type="button" id="btn-finish-init-no" class="px-6 py-2.5 rounded-xl border border-zinc-300 bg-white hover:bg-zinc-200 text-zinc-700 font-bold text-sm">
             いいえ
@@ -1190,7 +1264,7 @@
       <!-- Step 2: Ask all participants & host, majority vote to finish (no skip on rejection) -->
       <div id="finish-step-participants" class="hidden space-y-4">
         <p id="finish-step-participants-desc" class="text-sm font-bold text-zinc-800 text-center">
-          これで完成でよろしいですか？　過半数の賛成で完成となります。
+          これで<strong>完成</strong>でよろしいですか？　<strong>過半数の賛成</strong>で完成となります。
         </p>
 
         <div id="finish-participants-vote-list" class="space-y-2 max-h-60 overflow-y-auto pr-1">
@@ -3103,7 +3177,139 @@
       }
     }
 
+    // Comprehensive stem and context bridge mappings to prevent broken phrases (非文)
+    const STEM_COMPLETIONS = [
+      { prefix: '通りすが', options: ['りながら歩き', 'りにふと見上げ', 'りの人に尋ね', 'り道で見つけて', 'り'] },
+      { prefix: '幻影を追', options: ['う旅路の果てに', 'いかけて走り抜け', 'って行って息を切らし', 'えども追いつかず', 'うように見つめて'] },
+      { prefix: '影を追', options: ['う旅の果てに', 'いかけて走り', 'って行って', 'えども追いつかず'] },
+      { prefix: 'を追', options: ['う旅路の果てに', 'いかけて走り', 'って行って', 'えども追いつかず'] },
+      { prefix: '追', options: ['う途中で立ち止まり', 'いかけて走り抜け', 'って行って空を仰ぎ', 'えども追いつかず'] },
+      { prefix: 'にぶつか', options: ['りそうになって立ち止まり', 'って謝りながら', 'った拍子に笑い合い', 'る瞬間に身をかわし'] },
+      { prefix: 'ぶつか', options: ['りそうになって立ち止まり', 'って謝りながら', 'った拍子に笑い合い', 'る瞬間に身をかわし'] },
+      { prefix: 'でカフェ', options: ['のテラスでひと息つき', 'で珈琲を味わい', 'で一服して休み'] },
+      { prefix: 'カフェ', options: ['のテラスでひと息つき', 'で珈琲を味わい', 'で一服して休み'] },
+      { prefix: '見知らぬ', options: ['人の足音に驚き', '街をさまよい歩き', '影が近づいてきて'] },
+      { prefix: '立ち止ま', options: ['って空を見上げ', 'り振り返り', 'って息を整えて'] },
+      { prefix: '振り返', options: ['ってみたら誰もいなくて', 'り微笑んで手を振り', 'ると昔の景色が広がり'] },
+      { prefix: '走り', options: ['抜けてゆき風になり', 'ながら息を切らして', '寄って行って手を振る'] },
+      { prefix: '歩き', options: ['ながら話をして笑い', '疲れて木陰で休み', '出して前を向き進む'] },
+      { prefix: '待ち', options: ['合わせをして時計を見て', 'ち疲れてベンチに座り', '焦がれて空を仰ぎ'] },
+      { prefix: '探し', options: ['ていて見つかりほっとし', '求めて街を歩き回り', 'ながら遠くを見つめて'] },
+      { prefix: '落ち', options: ['てしまって拾い上げ', '着いて深呼吸をし', '葉を踏みしめ歩き'] },
+      { prefix: '消え', options: ['てしまってどこかへ去り', '去って静かになり', 'かけた灯火を見つめて'] },
+      { prefix: '揺れ', options: ['ながら進んでゆき揺蕩い', 'る光に目を奪われ', '動く影を見つめて'] },
+      { prefix: '咲い', options: ['ていて綺麗で感動し', 'た花を眺め微笑み', 'る姿に励まされて'] },
+      { prefix: '散り', options: ['ゆく花びらに手を伸ばし', '急ぐ風の中で立ち止まり', '敷かれた道を歩み'] },
+      { prefix: '降り', options: ['しきる雨に雨宿りして', '始めて傘をそっと開き', '積もる雪にそっと触れて'] },
+      { prefix: '笑い', options: ['合って楽しくなり微笑み', '声を響かせて走り抜け', 'ながら手を振り別れて'] },
+      { prefix: '眠り', options: ['につく前の静けさに', 'こけて夢を見て目覚め', 'から覚めて伸びをして'] },
+      { prefix: '開け', options: ['てみたら驚いて声が出て', '放たれた窓から風が入り', 'た瞬間に光が満ちて'] },
+      { prefix: '飛び', options: ['起きて時計を確認し', '立って空へ向かい進み', '跳ねて喜びを伝え'] },
+      { prefix: '隠れ', options: ['て息を潜めて見守り', '家のような店に入り', 'た月を探して夜空を見上げ'] },
+      { prefix: '気付', options: ['いて立ち止まり見つめ', 'かずに通り過ぎてしまい', 'いた時には懐かしくて'] },
+      { prefix: '気づ', options: ['いて立ち止まり見つめ', 'かずに通り過ぎてしまい', 'いた時には懐かしくて'] },
+      { prefix: '思', options: ['い出に浸りながら歩き', 'い切って声をかけてみて', 'い返して微笑んで'] },
+      { prefix: '願', options: ['いを込めて手を合わせ', 'っても届かぬ空を見上げ', 'うように星を見つめて'] },
+      { prefix: '願っ', options: ['て夜空を見上げて祈り', 'てそっと手を合わせて'] },
+      { prefix: '届', options: ['かぬ想いを胸に秘めて', 'いた手紙を読み返して', 'きそうな空を見上げて'] },
+      { prefix: '忘', options: ['れられない景色を胸に', 'れてしまっていた記憶が', 'れ物を取りに戻り'] },
+      { prefix: '出会', options: ['った瞬間に息を呑み', 'えて良かったと心から思い', 'いの不思議に感謝して'] },
+      { prefix: '別れ', options: ['の言葉を飲み込んで', 'た後も振り返り見て', '際に手を振って歩き出す'] },
+      { prefix: 'あふれ', options: ['る想いを言葉にして', '出た涙を拭い去り', 'る光に包まれて進む'] },
+      { prefix: '溢れ', options: ['る想いを言葉にして', '出た涙を拭い去り', 'る光に包まれて進む'] },
+      { prefix: 'こぼれ', options: ['落ちる光の粒を見つめ', 'た笑みに救われて微笑み', 'る日差しを浴びて歩き'] },
+      { prefix: '零れ', options: ['落ちる光の粒を見つめ', 'た笑みに救われて微笑み', 'る日差しを浴びて歩き'] },
+      { prefix: '入', options: ['って丸くなって寝て', 'り口で立ち止まり見上げ', 'れ替わりに人が来て'] },
+      { prefix: '見', options: ['ていたら面白くて笑い', 'つめて静かに微笑み', '上げて広い空を仰ぎ'] },
+      { prefix: '食', options: ['べて美味しくて笑顔になり', 'べ終わって満足して歩き', '欲がそそられて立ち寄り'] },
+      { prefix: '飲', options: ['んでひと息ついて落ち着き', 'み干して立ち上がり前を向き', 'みながら語り合い笑い'] },
+      { prefix: '走', options: ['って行って駅に向かい急ぎ', 'り抜けて風になり進み', 'り出して坂を駆け上がり'] },
+      { prefix: '歩', options: ['きながら話をして笑い', 'いて行って木陰で休み', 'みを進めて街を抜け'] },
+      { prefix: '待', options: ['ち合わせをして時計を見て', 'ち続けて夕暮れになり', 'ち遠しくて胸が高鳴り'] }
+    ];
+
     function chooseContextualFreeTextForBot(excludedInputs = null) {
+      if (state.aiKagen) {
+        // 真面目モード: 厳密にひらがな1音のみを出力
+        return { text: chooseContextualMoraForBot() };
+      }
+
+      const lv = Number(state.aiVocabLevel) || 3;
+      const currentLineCells = state.lines[state.currentLine];
+      let prevText = '';
+      if (currentLineCells.length > 0) {
+        prevText = currentLineCells[currentLineCells.length - 1].text;
+      } else if (state.currentLine > 0) {
+        for (let l = state.currentLine - 1; l >= 0; l--) {
+          if (state.lines[l] && state.lines[l].length > 0) {
+            prevText = state.lines[l][state.lines[l].length - 1].text;
+            break;
+          }
+        }
+      }
+      const prevTrimmed = prevText ? prevText.trim() : '';
+      const currentPoemText = getCurrentPoemText();
+
+      // Collect all words and kanji used in the poem so far to strictly prevent duplicate expressions
+      const pastCells = state.lines.flatMap(l => l.map(c => (c.text || '').trim())).filter(Boolean);
+      const pastKanji = new Set((currentPoemText.match(/[一-龯]/g) || []));
+
+      // 1. Check stem completion fixes first to guarantee grammatical chaining from incomplete word fragments
+      for (const item of STEM_COMPLETIONS) {
+        if (prevTrimmed.endsWith(item.prefix)) {
+          // Filter options that avoid repeating already used kanji/words
+          const safeOptions = item.options.filter(opt => {
+            const optKanji = opt.match(/[一-龯]/g) || [];
+            return !optKanji.some(k => pastKanji.has(k)) && !pastCells.some(c => opt.includes(c) || c.includes(opt));
+          });
+          const candidatePool = safeOptions.length > 0 ? safeOptions : item.options;
+          const picked = candidatePool[Math.floor(Math.random() * candidatePool.length)];
+          return { text: picked };
+        }
+      }
+
+      // 2. Generate smooth connected phrase by vocabulary level, attempting up to 10 candidates to avoid duplicate motifs
+      let bestCandidate = '';
+      let bestScore = -999;
+
+      for (let attempt = 0; attempt < 8; attempt++) {
+        let candidate = generateConnectedPhraseByLevel(prevTrimmed, lv, currentPoemText);
+
+        // Avoid leading dangling particle if not connected to a noun
+        if (/^[で|に|を|が|と|へ]/.test(candidate)) {
+          const nounEndings = ['カフェ', '店', '部屋', '街', '道', '駅', '空', '森', '海', '庭', '家', '公園', '夜', '朝', '風', '月', '星', '猫', '犬', '友達', '人', '時計', '光', '影', '道'];
+          const endsInNoun = nounEndings.some(ne => prevTrimmed.endsWith(ne));
+          if (!endsInNoun) {
+            candidate = candidate.replace(/^[で|に|を|が|と|へ]/, '');
+          }
+        }
+
+        // Mechanical truncation 1 or 2 characters before boundary (元の文末1〜2文字切り詰め処理を維持)
+        candidate = truncateOneOrTwoCharsBeforeBoundary(candidate);
+
+        // Deduplication scoring
+        let score = 10;
+        const candKanji = candidate.match(/[一-龯]/g) || [];
+        candKanji.forEach(k => {
+          if (pastKanji.has(k)) score -= 15; // penalize repeating same kanji
+        });
+        pastCells.forEach(cell => {
+          if (cell && (candidate.includes(cell) || cell.includes(candidate))) {
+            score -= 20; // penalize repeating similar expressions
+          }
+        });
+
+        if (score > bestScore) {
+          bestScore = score;
+          bestCandidate = candidate;
+        }
+        if (score >= 10) break; // Perfect diverse candidate found
+      }
+
+      return { text: bestCandidate || truncateOneOrTwoCharsBeforeBoundary('そっと微笑んで歩き出す') };
+    }
+
+    function _unused_old_chooseContextualFreeTextForBot(excludedInputs = null) {
       const lv = Number(state.aiVocabLevel) || 3;
 
       // 1. Look up immediately preceding text (prevText) from current line or preceding line(s)
@@ -3173,6 +3379,12 @@
     const state = {
       clientId: 'client-' + Math.random().toString(36).slice(2, 10),
       lobbyMode: 'solo', // Default is 'solo' (ひとりで遊ぶ)
+      hasReturnedFromResult: false,
+      soloAiCount: 3,
+      soloShuffleOrder: false,
+      isKeywordManuallyEdited: false,
+      lastUserInteractionTime: Date.now(),
+      isJoiningOrCreating: false,
       isHost: true,
       myPlayerId: 'host-0',
       hostPlayerId: 'host-0',
@@ -3190,7 +3402,7 @@
       shuffleOrder: false,
       freeMode: false,
       aiVocabLevel: 3,
-      aiKagen: false,
+      aiKagen: true,
       aiNoFlower: false,
       aiNoFlowerLockedOff: false,
       carnationRedMode: false,
@@ -3263,9 +3475,9 @@
     }
 
     async function renderRoomHistoryModalList() {
-      const countEl = document.getElementById('room-history-count');
       const listEl = document.getElementById('room-history-list');
-      if (!countEl || !listEl) return;
+      if (!listEl) return;
+      const countEl = document.getElementById('room-history-count');
 
       listEl.innerHTML = '<p class="text-xs text-zinc-500 text-center py-6">部屋情報を読み込み中…</p>';
 
@@ -3315,7 +3527,7 @@
         }))));
       } catch (e) {}
 
-      countEl.textContent = `${validRooms.length}部屋`;
+      if (countEl) countEl.textContent = `${validRooms.length}部屋`;
 
       if (validRooms.length === 0) {
         listEl.innerHTML = `<p class="text-xs text-zinc-500 text-center py-8">有効な入室記録はありません。</p>`;
@@ -3366,12 +3578,48 @@
     // =========================================================================
     const PRESENCE_HEARTBEAT_INTERVAL_MS = 20000;
     const PRESENCE_TIMEOUT_MS = 55000;
+    const AFK_MAX_TIME_MS = 2 * 60 * 60 * 1000; // 2時間放置または2時間切断で退室
+
+    function triggerAfkAutoLeave() {
+      if (state.lobbyMode === 'solo') return;
+      const wasInGame = state.inGame;
+      state.inGame = false;
+      state.isSpectating = false;
+      state.roomPhase = 'waiting';
+      state.waitingSlots = (state.waitingSlots || []).filter(p => !isPlayerMe(p));
+      state.restingPlayers = (state.restingPlayers || []).filter(p => !isPlayerMe(p));
+      state.spectators = (state.spectators || []).filter(s => s.id !== state.myPlayerId && s.name !== state.currentUserName);
+      RoomSyncEngine.pushRoomState();
+      
+      document.getElementById('view-waiting').classList.add('hidden');
+      document.getElementById('view-game').classList.add('hidden');
+      document.getElementById('view-result').classList.add('hidden');
+      document.getElementById('view-lobby').classList.remove('hidden');
+      document.getElementById('btn-back-lobby').classList.add('hidden');
+      updateHeaderUserNameBadge();
+      renderLobbyRoleTabs();
+      
+      const modal = document.getElementById('modal-afk-disconnected-notice');
+      if (modal) modal.classList.remove('hidden');
+    }
 
     function startPresenceHeartbeat() {
+      // Activity listeners for 2-hour AFK detection
+      const markActivity = () => { state.lastUserInteractionTime = Date.now(); };
+      ['mousemove', 'mousedown', 'keydown', 'touchstart', 'scroll', 'visibilitychange'].forEach(evt => {
+        window.addEventListener(evt, markActivity, { passive: true });
+      });
+
       setInterval(() => {
         if (state.lobbyMode === 'solo') return;
         const now = Date.now();
         state.myLastSeen = now;
+
+        // Check if 2 hours of inactivity or disconnect elapsed locally
+        if (now - (state.lastUserInteractionTime || now) > AFK_MAX_TIME_MS) {
+          triggerAfkAutoLeave();
+          return;
+        }
 
         // Update my own lastSeen in waitingSlots and restingPlayers
         (state.waitingSlots || []).forEach(p => {
@@ -3385,7 +3633,62 @@
           }
         });
 
-        // If I am guest, supervise host timeout
+        // Disconnect handling during active game:
+        // If an active human player in game timed out (> 55s), move them to restingPlayers (reason: 'disconnect')
+        // and substitute an AI bot in active game so the round is not stalled!
+        if (state.inGame && state.roomPhase === 'game' && state.activePlayers) {
+          let stateChanged = false;
+          state.activePlayers.forEach((p, activeIdx) => {
+            if (!p.isBot && p.lastSeen && (now - p.lastSeen > PRESENCE_TIMEOUT_MS)) {
+              // Found a disconnected active human player
+              const disconnectedHuman = { ...p, restingReason: 'disconnect', manualRest: false, originalSlotIndex: activeIdx, slotOrderRank: activeIdx };
+              state.restingPlayers = state.restingPlayers || [];
+              if (!state.restingPlayers.some(r => r.id === p.id || r.name === p.name)) {
+                state.restingPlayers.push(disconnectedHuman);
+              }
+              // Replace with bot in active game
+              const usedNames = new Set((state.activePlayers || []).map(a => a.name));
+              const botName = AI_SPY_NAMES.find(n => !usedNames.has(n)) || 'AIスパイ';
+              state.activePlayers[activeIdx] = {
+                id: `ai-sub-${p.id}`,
+                name: botName,
+                isBot: true,
+                isHostPlayer: false,
+                joinedAt: 0,
+                color: p.color
+              };
+              // Also update waitingSlots
+              const wIdx = (state.waitingSlots || []).findIndex(ws => ws.id === p.id || ws.name === p.name);
+              if (wIdx !== -1) {
+                state.waitingSlots.splice(wIdx, 1);
+                recolorActiveWaitingSlots();
+              }
+              // If this disconnected player was the host, promote next human
+              if (p.isHostPlayer || p.id === state.hostPlayerId) {
+                const nextHuman = [
+                  ...(state.waitingSlots || []).filter(h => !h.isBot),
+                  ...(state.restingPlayers || []).filter(h => !h.isBot && h.id !== p.id)
+                ].sort((a, b) => (a.joinedAt || 9999999999999) - (b.joinedAt || 9999999999999))[0];
+                if (nextHuman) {
+                  state.hostPlayerId = nextHuman.id;
+                  state.hostName = nextHuman.name;
+                  if (nextHuman.id === state.myPlayerId) {
+                    state.isHost = true;
+                    showToast('前主催者の切断により、あなたが新しい主催者になりました');
+                  }
+                }
+              }
+              stateChanged = true;
+            }
+          });
+          if (stateChanged) {
+            renderGameView();
+            RoomSyncEngine.pushRoomState('game');
+            scheduleBotIfNeeded();
+          }
+        }
+
+        // Host supervision for guests
         if (!state.isHost) {
           const currentHostSlot = (state.waitingSlots || []).find(p => !p.isBot && (p.isHostPlayer || p.id === state.hostPlayerId))
             || (state.restingPlayers || []).find(p => !p.isBot && (p.isHostPlayer || p.id === state.hostPlayerId));
@@ -3414,7 +3717,26 @@
             }
           }
         } else {
-          // Host pushes periodic presence snapshot
+          // Prune players who have been disconnected for > 2 hours
+          let pruned = false;
+          state.restingPlayers = (state.restingPlayers || []).filter(p => {
+            if (!p.isBot && p.lastSeen && now - p.lastSeen > AFK_MAX_TIME_MS) {
+              pruned = true;
+              return false;
+            }
+            return true;
+          });
+          state.waitingSlots = (state.waitingSlots || []).filter(p => {
+            if (!p.isBot && p.lastSeen && now - p.lastSeen > AFK_MAX_TIME_MS) {
+              pruned = true;
+              return false;
+            }
+            return true;
+          });
+          if (pruned) {
+            recolorActiveWaitingSlots();
+            renderWaitingRoom();
+          }
           RoomSyncEngine.pushRoomState();
         }
       }, PRESENCE_HEARTBEAT_INTERVAL_MS);
@@ -3440,28 +3762,29 @@
       }
 
       if (state.lobbyMode === 'solo') {
-        const trimmedHumans = humans.slice(0, state.playerCount);
-        const nextSlots = [...trimmedHumans];
-        const usedSoloNames = new Set(nextSlots.map(p => p.name));
-        let aiIdx = 0;
-        while (nextSlots.length < state.playerCount) {
-          const slotIndex = nextSlots.length;
-          const nextName = AI_SPY_NAMES.find(n => !usedSoloNames.has(n)) || `AIスパイ${aiIdx + 1}号`;
-          usedSoloNames.add(nextName);
+        const human = humans[0] || {
+          id: state.hostPlayerId || 'host-0',
+          name: state.hostName || '007',
+          isBot: false,
+          isHostPlayer: true,
+          joinedAt: 1,
+          color: PLAYER_COLORS[0]
+        };
+        const aiCount = state.soloAiCount !== undefined ? state.soloAiCount : 3;
+        const nextSlots = [human];
+        for (let i = 0; i < aiCount; i++) {
+          const nextName = AI_SPY_NAMES[i % AI_SPY_NAMES.length];
           nextSlots.push({
-            id: `ai-${aiIdx}`,
+            id: `ai-solo-${i}`,
             name: nextName,
             isBot: true,
             isHostPlayer: false,
             joinedAt: 0,
-            color: PLAYER_COLORS[slotIndex % PLAYER_COLORS.length]
+            color: PLAYER_COLORS[(i + 1) % PLAYER_COLORS.length]
           });
-          aiIdx++;
         }
-        nextSlots.forEach((p, idx) => {
-          p.color = PLAYER_COLORS[idx % PLAYER_COLORS.length];
-        });
         state.waitingSlots = nextSlots;
+        state.playerCount = nextSlots.length;
       } else {
         // Room mode default: all humans + 2 AI spies by default
         const existingBots = state.waitingSlots.filter(p => p.isBot);
@@ -3643,10 +3966,39 @@
       if (fullPreview) fullPreview.textContent = getFullPassphrase(state.roomKeyword, state.roomId);
     }
 
+    function updateSoloAiUI() {
+      const count = state.soloAiCount !== undefined ? state.soloAiCount : 3;
+      const soloAiLabel = document.getElementById('solo-ai-count-label');
+      if (soloAiLabel) soloAiLabel.textContent = `${count}人`;
+      const chkSoloShuffle = document.getElementById('chk-solo-shuffle-order');
+      if (chkSoloShuffle) chkSoloShuffle.checked = !!state.soloShuffleOrder;
+
+      const btnMinus = document.getElementById('btn-solo-ai-minus');
+      const btnPlus = document.getElementById('btn-solo-ai-plus');
+      if (btnMinus) {
+        if (count <= 0) {
+          btnMinus.classList.add('opacity-40', 'cursor-not-allowed');
+        } else {
+          btnMinus.classList.remove('opacity-40', 'cursor-not-allowed');
+        }
+      }
+      if (btnPlus) {
+        if (count >= 16) {
+          btnPlus.classList.add('opacity-40', 'cursor-not-allowed');
+        } else {
+          btnPlus.classList.remove('opacity-40', 'cursor-not-allowed');
+        }
+      }
+    }
+
     function renderLobbyRoleTabs() {
       updateYozakuraTheme();
       const roomHistBtn = document.getElementById('btn-open-room-history');
       if (roomHistBtn) roomHistBtn.classList.remove('hidden');
+      const headerHistBtn = document.getElementById('btn-open-history');
+      if (headerHistBtn) headerHistBtn.classList.remove('hidden');
+      const headerBackWaitBtn = document.getElementById('btn-header-back-waiting');
+      if (headerBackWaitBtn) headerBackWaitBtn.classList.add('hidden');
       const soloTab = document.getElementById('tab-role-solo');
       const hostTab = document.getElementById('tab-role-host');
       const guestTab = document.getElementById('tab-role-guest');
@@ -3682,7 +4034,7 @@
         guestPanel.classList.add('hidden');
         if (passphraseBox) passphraseBox.classList.remove('hidden');
         if (countSection) countSection.classList.add('hidden');
-        if (createBtn) createBtn.textContent = '部屋を立てて待機画面へ進む';
+        if (createBtn) createBtn.textContent = '部屋を立てて待機室へ進む';
         if (settingsIcon) settingsIcon.textContent = '🏠';
         if (settingsTitle) settingsTitle.textContent = '部屋の設定';
       } else {
@@ -3691,6 +4043,7 @@
         guestPanel.classList.remove('hidden');
       }
       renderLobbyCountOptions();
+      updateSoloAiUI();
       updateHostPassphrasePreviewUI();
     }
 
@@ -3915,17 +4268,36 @@
       const aiCount = state.waitingSlots.filter(p => p.isBot).length;
       if (aiCountLabel) aiCountLabel.textContent = `${aiCount}人`;
 
+      const topStartWrap = document.getElementById('waiting-top-start-wrap');
+      const gameActiveBanner = document.getElementById('waiting-game-active-banner');
+
       if (state.isHost) {
         hostControls.classList.remove('hidden');
         shuffleWrap.classList.remove('hidden');
         reorderHint.classList.remove('hidden');
         if (aiCountControls) aiCountControls.classList.remove('hidden');
+        if (topStartWrap) {
+          if (state.hasReturnedFromResult) {
+            topStartWrap.classList.remove('hidden');
+          } else {
+            topStartWrap.classList.add('hidden');
+          }
+        }
         reorderHint.textContent = '※主催者は▲▼ボタンや「休憩」「復帰」ボタン、またはドラッグ＆ドロップで手番順の変更や休憩中への移動ができます。';
       } else {
         hostControls.classList.add('hidden');
         shuffleWrap.classList.add('hidden');
         reorderHint.classList.add('hidden');
         if (aiCountControls) aiCountControls.classList.add('hidden');
+        if (topStartWrap) topStartWrap.classList.add('hidden');
+      }
+
+      if (gameActiveBanner) {
+        if (state.inGame && !isAllAiActiveGame()) {
+          gameActiveBanner.classList.remove('hidden');
+        } else {
+          gameActiveBanner.classList.add('hidden');
+        }
       }
 
       // Bottom primary button logic:
@@ -3995,61 +4367,63 @@
         if (state.isHost) {
           row.setAttribute('draggable', 'true');
         }
-        row.className = `flex items-center justify-between gap-2 p-3 rounded-xl border border-zinc-300 bg-white shadow-sm transition ${
-          state.isHost ? 'cursor-grab active:cursor-grabbing hover:border-zinc-400' : ''
-        }`;
 
         const isThisSlotHost = !p.isBot && (p.isHostPlayer || p.id === state.hostPlayerId);
         const canManageHuman = state.isHost && !p.isBot && !isThisSlotHost && p.id !== state.myPlayerId;
+
+        // Background color: Host is distinct light pink (#fce7f3), Participants are unified clean white (#ffffff), AI is light grey
+        const rowBgClass = isThisSlotHost
+          ? 'bg-[#fce7f3] border-[#e295a8] text-zinc-900'
+          : !p.isBot
+          ? 'bg-white border-zinc-300 text-zinc-900'
+          : 'bg-zinc-100 border-zinc-300 text-zinc-700';
 
         const isBot = !!p.isBot;
         const spyMatch = p.name ? p.name.match(/^AIスパイ（(.+?)）$/) : null;
         let nameHtml = '';
         if (isBot && spyMatch) {
           const innerName = spyMatch[1];
-          // On mobile / narrow screens, prioritize the distinctive inner name (〇〇) with shrink-0 so it is never cut off
           nameHtml = `
-            <span class="font-bold text-sm text-zinc-900 inline-flex items-center min-w-0" title="${escapeHtml(p.name)}">
-              <span class="truncate max-w-[3.6rem] xs:max-w-[4.8rem] sm:max-w-none">AIスパイ</span>
-              <span class="shrink-0 font-bold text-zinc-950">（${escapeHtml(innerName)}）</span>
+            <span class="font-bold text-sm text-zinc-900 inline-flex items-center flex-wrap break-words break-all leading-snug" title="${escapeHtml(p.name)}">
+              <span>AIスパイ</span>
+              <span class="font-bold text-zinc-950">（${escapeHtml(innerName)}）</span>
             </span>
           `;
         } else {
-          nameHtml = `<span class="font-bold text-sm text-zinc-900 truncate" title="${escapeHtml(p.name)}">${escapeHtml(p.name)}</span>`;
+          nameHtml = `<span class="font-bold text-sm text-zinc-900 break-words break-all leading-snug">${escapeHtml(p.name)}</span>`;
         }
 
-        row.innerHTML = `
-          <div class="flex items-center gap-1.5 sm:gap-2 min-w-0">
-            ${state.isHost ? `<span class="text-zinc-400 text-sm select-none hidden sm:inline" title="ドラッグして移動">☰</span>` : ''}
-            ${nameHtml}
-            <span class="text-[11px] font-semibold px-1.5 sm:px-2 py-0.5 rounded-md border shrink-0 ${
-              p.isBot
-                ? 'bg-zinc-100 border-zinc-300 text-zinc-700'
-                : isThisSlotHost
-                ? 'bg-pink-50 border-pink-300 text-pink-900'
-                : 'bg-zinc-200 border-zinc-300 text-zinc-800'
-            }">
-              ${p.isBot ? '<span class="hidden sm:inline">🤖 AIスパイ</span><span class="sm:hidden">🤖 AI</span>' : isThisSlotHost ? '👑 主催者' : '👤 参加者'}
-            </span>
-          </div>
-          <div class="flex items-center gap-1.5 shrink-0">
-            ${
-              state.isHost
-                ? `<div class="flex items-center gap-1">
-                     <button type="button" data-move-up="${idx}" class="move-up-btn w-6 h-6 flex items-center justify-center rounded border border-zinc-300 bg-zinc-50 hover:bg-zinc-200 text-zinc-700 text-xs font-bold transition ${idx === 0 ? 'opacity-30 cursor-not-allowed' : ''}" ${idx === 0 ? 'disabled' : ''} title="手番を上へ" aria-label="${escapeHtml(p.name)}の手番を1つ上へ移動">▲</button>
-                     <button type="button" data-move-down="${idx}" class="move-down-btn w-6 h-6 flex items-center justify-center rounded border border-zinc-300 bg-zinc-50 hover:bg-zinc-200 text-zinc-700 text-xs font-bold transition ${idx === state.waitingSlots.length - 1 ? 'opacity-30 cursor-not-allowed' : ''}" ${idx === state.waitingSlots.length - 1 ? 'disabled' : ''} title="手番を下へ" aria-label="${escapeHtml(p.name)}の手番を1つ下へ移動">▼</button>
-                     ${!p.isBot ? `<button type="button" data-move-rest="${idx}" class="move-rest-btn px-2.5 py-0.5 rounded border border-amber-300 bg-amber-50 hover:bg-amber-100 text-amber-900 text-xs font-bold transition" title="休憩中へ移動" aria-label="${escapeHtml(p.name)}を休憩中へ移動">休憩</button>` : ''}
-                   </div>`
-                : ''
-            }
-            ${
-              canManageHuman
-                ? `<button type="button" data-appoint-id="${escapeHtml(p.id)}" class="appoint-host-btn px-2.5 py-1 rounded-lg border border-zinc-300 bg-zinc-100 hover:bg-zinc-200 text-zinc-800 text-xs font-bold transition">任命</button>
-                   <button type="button" data-kick-id="${escapeHtml(p.id)}" class="kick-player-btn px-2.5 py-1 rounded-lg border border-pink-300 bg-pink-50 hover:bg-pink-100 text-pink-900 text-xs font-bold transition">追放</button>`
-                : ''
-            }
-          </div>
-        `;
+        if (state.isHost) {
+          row.className = `flex flex-col gap-2 p-3 rounded-xl border shadow-sm transition ${rowBgClass} cursor-grab active:cursor-grabbing hover:border-zinc-400`;
+          row.innerHTML = `
+            <div class="flex items-center gap-2 w-full">
+              <span class="text-zinc-400 text-sm select-none" title="ドラッグして移動">☰</span>
+              <div class="flex items-center gap-2 flex-1 min-w-0 flex-wrap">
+                ${nameHtml}
+                ${p.isBot ? `<span class="text-[11px] font-semibold px-2 py-0.5 rounded-md border bg-zinc-200 border-zinc-300 text-zinc-700 shrink-0">🤖 AI</span>` : ''}
+              </div>
+            </div>
+            <div class="flex items-center gap-1 w-full justify-end pt-1.5 border-t border-zinc-200/70 flex-nowrap overflow-x-auto">
+              <button type="button" data-move-up="${idx}" class="move-up-btn w-7 h-7 flex items-center justify-center rounded-lg border border-zinc-300 bg-white hover:bg-zinc-100 text-zinc-700 text-xs font-bold transition shrink-0 active:scale-95 ${idx === 0 ? 'opacity-30 cursor-not-allowed' : ''}" ${idx === 0 ? 'disabled' : ''} title="手番を上へ" aria-label="${escapeHtml(p.name)}の手番を1つ上へ移動">▲</button>
+              <button type="button" data-move-down="${idx}" class="move-down-btn w-7 h-7 flex items-center justify-center rounded-lg border border-zinc-300 bg-white hover:bg-zinc-100 text-zinc-700 text-xs font-bold transition shrink-0 active:scale-95 ${idx === state.waitingSlots.length - 1 ? 'opacity-30 cursor-not-allowed' : ''}" ${idx === state.waitingSlots.length - 1 ? 'disabled' : ''} title="手番を下へ" aria-label="${escapeHtml(p.name)}の手番を1つ下へ移動">▼</button>
+              ${!p.isBot ? `<button type="button" data-move-rest="${idx}" class="move-rest-btn px-2 py-1 h-7 flex items-center justify-center rounded-lg border border-amber-300 bg-amber-50 hover:bg-amber-100 text-amber-900 text-xs font-bold transition shrink-0 active:scale-95 whitespace-nowrap" title="休憩中へ移動" aria-label="${escapeHtml(p.name)}を休憩中へ移動">休憩</button>` : ''}
+              ${
+                canManageHuman
+                  ? `<button type="button" data-appoint-id="${escapeHtml(p.id)}" class="appoint-host-btn px-2 py-1 h-7 flex items-center justify-center rounded-lg border border-zinc-300 bg-white hover:bg-zinc-100 text-zinc-800 text-xs font-bold transition shrink-0 active:scale-95 whitespace-nowrap" title="主催者に任命">任命</button>
+                     <button type="button" data-kick-id="${escapeHtml(p.id)}" class="kick-player-btn px-2 py-1 h-7 flex items-center justify-center rounded-lg border border-pink-300 bg-pink-50 hover:bg-pink-100 text-pink-900 text-xs font-bold transition shrink-0 active:scale-95 whitespace-nowrap" title="追放する">追放</button>`
+                  : ''
+              }
+            </div>
+          `;
+        } else {
+          row.className = `flex items-center justify-between gap-2 p-3 rounded-xl border shadow-sm transition ${rowBgClass}`;
+          row.innerHTML = `
+            <div class="flex items-center gap-2 min-w-0 flex-wrap flex-1">
+              ${nameHtml}
+              ${p.isBot ? `<span class="text-[11px] font-semibold px-2 py-0.5 rounded-md border bg-zinc-200 border-zinc-300 text-zinc-700 shrink-0">🤖 AI</span>` : ''}
+            </div>
+          `;
+        }
 
         if (state.isHost) {
           row.addEventListener('dragstart', (e) => {
@@ -4159,14 +4533,17 @@
             if (state.isHost) {
               rRow.setAttribute('draggable', 'true');
             }
-            rRow.className = `flex items-center justify-between gap-2 p-2.5 rounded-xl border border-zinc-300 bg-white/90 shadow-sm transition ${
-              state.isHost ? 'cursor-grab active:cursor-grabbing hover:border-zinc-400' : ''
-            }`;
 
             const isThisSlotHost = !p.isBot && (p.isHostPlayer || p.id === state.hostPlayerId);
             const canManageHuman = state.isHost && !p.isBot && !isThisSlotHost && p.id !== state.myPlayerId;
             const isManualRest = p.restingReason === 'manual' || !!p.manualRest;
-            const reasonBadge = isManualRest ? '休憩中' : '休憩中（完成画面）';
+            const reasonBadge = isManualRest ? '休憩中' : '休憩中（待機）';
+
+            const rRowBgClass = isThisSlotHost
+              ? 'bg-[#fce7f3] border-[#e295a8] text-zinc-900'
+              : !p.isBot
+              ? 'bg-white border-zinc-300 text-zinc-900'
+              : 'bg-zinc-100 border-zinc-300 text-zinc-700';
 
             const isBot = !!p.isBot;
             const spyMatch = p.name ? p.name.match(/^AIスパイ（(.+?)）$/) : null;
@@ -4174,37 +4551,44 @@
             if (isBot && spyMatch) {
               const innerName = spyMatch[1];
               rNameHtml = `
-                <span class="font-bold text-sm text-zinc-800 inline-flex items-center min-w-0" title="${escapeHtml(p.name)}">
-                  <span class="truncate max-w-[3.6rem] xs:max-w-[4.8rem] sm:max-w-none">AIスパイ</span>
-                  <span class="shrink-0 font-bold text-zinc-950">（${escapeHtml(innerName)}）</span>
+                <span class="font-bold text-sm text-zinc-900 inline-flex items-center flex-wrap break-words break-all leading-snug" title="${escapeHtml(p.name)}">
+                  <span>AIスパイ</span>
+                  <span class="font-bold text-zinc-950">（${escapeHtml(innerName)}）</span>
                 </span>
               `;
             } else {
-              rNameHtml = `<span class="font-bold text-sm text-zinc-800 truncate" title="${escapeHtml(p.name)}">${escapeHtml(p.name)}</span>`;
+              rNameHtml = `<span class="font-bold text-sm text-zinc-900 break-words break-all leading-snug">${escapeHtml(p.name)}</span>`;
             }
 
-            rRow.innerHTML = `
-              <div class="flex items-center gap-1.5 sm:gap-2 min-w-0">
-                ${state.isHost ? `<span class="text-zinc-400 text-sm select-none hidden sm:inline" title="ドラッグして手番順へ戻す">☰</span>` : ''}
-                ${rNameHtml}
-                <span class="text-[11px] font-semibold px-1.5 sm:px-2 py-0.5 rounded-md border bg-zinc-100 border-zinc-300 text-zinc-600 shrink-0">
-                  ☕ <span class="hidden sm:inline">${reasonBadge}</span><span class="sm:hidden">休憩</span>
-                </span>
-              </div>
-              <div class="flex items-center gap-1.5 shrink-0">
-                ${
-                  state.isHost
-                    ? `<button type="button" data-restore-rest="${rIdx}" class="restore-rest-btn px-2.5 py-1 rounded-lg border border-emerald-300 bg-emerald-50 hover:bg-emerald-100 text-emerald-900 text-xs font-bold transition" title="手番順に復帰" aria-label="${escapeHtml(p.name)}を手番順へ復帰">復帰</button>`
-                    : ''
-                }
-                ${
-                  canManageHuman
-                    ? `<button type="button" data-appoint-id="${escapeHtml(p.id)}" class="appoint-host-btn px-2.5 py-1 rounded-lg border border-zinc-300 bg-zinc-100 hover:bg-zinc-200 text-zinc-800 text-xs font-bold transition">任命</button>
-                       <button type="button" data-kick-id="${escapeHtml(p.id)}" class="kick-player-btn px-2.5 py-1 rounded-lg border border-pink-300 bg-pink-50 hover:bg-pink-100 text-pink-900 text-xs font-bold transition">追放</button>`
-                    : ''
-                }
-              </div>
-            `;
+            if (state.isHost) {
+              rRow.className = `flex flex-col gap-2 p-2.5 rounded-xl border shadow-sm transition ${rRowBgClass} cursor-grab active:cursor-grabbing hover:border-zinc-400`;
+              rRow.innerHTML = `
+                <div class="flex items-center gap-2 w-full">
+                  <span class="text-zinc-400 text-sm select-none" title="ドラッグして手番順へ戻す">☰</span>
+                  <div class="flex items-center gap-2 flex-1 min-w-0 flex-wrap">
+                    ${rNameHtml}
+                    <span class="text-[11px] font-semibold px-2 py-0.5 rounded-md border bg-zinc-100 border-zinc-300 text-zinc-600 shrink-0">☕ ${reasonBadge}</span>
+                  </div>
+                </div>
+                <div class="flex items-center gap-1 w-full justify-end pt-1.5 border-t border-zinc-200/70 flex-nowrap overflow-x-auto">
+                  <button type="button" data-restore-rest="${rIdx}" class="restore-rest-btn px-2 py-1 h-7 flex items-center justify-center rounded-lg border border-emerald-300 bg-emerald-50 hover:bg-emerald-100 text-emerald-900 text-xs font-bold transition shrink-0 active:scale-95 whitespace-nowrap" title="手番順に復帰" aria-label="${escapeHtml(p.name)}を手番順へ復帰">復帰</button>
+                  ${
+                    canManageHuman
+                      ? `<button type="button" data-appoint-id="${escapeHtml(p.id)}" class="appoint-host-btn px-2 py-1 h-7 flex items-center justify-center rounded-lg border border-zinc-300 bg-white hover:bg-zinc-100 text-zinc-800 text-xs font-bold transition shrink-0 active:scale-95 whitespace-nowrap" title="主催者に任命">任命</button>
+                         <button type="button" data-kick-id="${escapeHtml(p.id)}" class="kick-player-btn px-2 py-1 h-7 flex items-center justify-center rounded-lg border border-pink-300 bg-pink-50 hover:bg-pink-100 text-pink-900 text-xs font-bold transition shrink-0 active:scale-95 whitespace-nowrap" title="追放する">追放</button>`
+                      : ''
+                  }
+                </div>
+              `;
+            } else {
+              rRow.className = `flex items-center justify-between gap-2 p-2.5 rounded-xl border shadow-sm transition ${rRowBgClass}`;
+              rRow.innerHTML = `
+                <div class="flex items-center gap-2 min-w-0 flex-wrap flex-1">
+                  ${rNameHtml}
+                  <span class="text-[11px] font-semibold px-2 py-0.5 rounded-md border bg-zinc-100 border-zinc-300 text-zinc-600 shrink-0">☕ ${reasonBadge}</span>
+                </div>
+              `;
+            }
 
             if (state.isHost) {
               rRow.addEventListener('dragstart', (e) => {
@@ -4353,7 +4737,7 @@
         });
       });
 
-      document.getElementById('chat-sender-badge').textContent = `発言者: ${state.currentUserName}`;
+      // chat-sender-badge removed
       updateHeaderUserNameBadge();
       renderWaitingPastPoems();
       renderWaitingChat();
@@ -4372,8 +4756,8 @@
       const found = findHumanInRoomById(playerId);
       if (!found || found.player.isHostPlayer || found.player.id === state.hostPlayerId) return;
       state.pendingKickTargetId = playerId;
-      document.getElementById('kick-confirm-message').textContent =
-        `「${found.player.name}」さんを待機室から追放してよろしいですか？`;
+      document.getElementById('kick-confirm-message').innerHTML =
+        `「${escapeHtml(found.player.name)}」さんを待機室から<strong>追放</strong>してよろしいですか？`;
       document.getElementById('modal-kick-confirm').classList.remove('hidden');
     }
 
@@ -4408,8 +4792,8 @@
       const found = findHumanInRoomById(playerId);
       if (!found || found.player.isHostPlayer || found.player.id === state.hostPlayerId) return;
       state.pendingAppointHostTargetId = playerId;
-      document.getElementById('appoint-host-confirm-message').textContent =
-        `${found.player.name}さんを主催者に任命してよろしいですか？`;
+      document.getElementById('appoint-host-confirm-message').innerHTML =
+        `${escapeHtml(found.player.name)}さんを<strong>主催者に任命</strong>してよろしいですか？`;
       document.getElementById('modal-appoint-host-confirm').classList.remove('hidden');
     }
 
@@ -4491,6 +4875,10 @@
       window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
       const roomHistBtn = document.getElementById('btn-open-room-history');
       if (roomHistBtn) roomHistBtn.classList.add('hidden');
+      const headerHistBtn = document.getElementById('btn-open-history');
+      if (headerHistBtn) headerHistBtn.classList.remove('hidden');
+      const headerBackWaitBtn = document.getElementById('btn-header-back-waiting');
+      if (headerBackWaitBtn) headerBackWaitBtn.classList.add('hidden');
       document.getElementById('view-lobby').classList.add('hidden');
       document.getElementById('view-game').classList.add('hidden');
       document.getElementById('view-result').classList.add('hidden');
@@ -4720,24 +5108,47 @@
       }
 
       let chosen = state.waitingSlots.map(p => ({ ...p }));
-      if (excludeAi) {
-        chosen = chosen.filter(p => !p.isBot);
-        if (chosen.length === 0) {
-          chosen = [{
-            id: state.hostPlayerId || 'host-0',
-            name: state.hostName || '007',
+
+      if (state.lobbyMode === 'solo') {
+        // Ensure human player is explicitly resolved
+        const humanIdx = chosen.findIndex(p => !p.isBot && (p.id === state.myPlayerId || p.id === state.hostPlayerId || p.isHostPlayer));
+        let humanPlayer = null;
+        if (humanIdx !== -1) {
+          humanPlayer = chosen.splice(humanIdx, 1)[0];
+        } else {
+          humanPlayer = {
+            id: state.hostPlayerId || state.myPlayerId || 'host-0',
+            name: state.currentUserName || state.hostName || '007',
             isBot: false,
             isHostPlayer: true,
             joinedAt: 1,
             color: PLAYER_COLORS[0]
-          }];
+          };
         }
-      }
 
-      if (state.shuffleOrder) {
-        for (let i = chosen.length - 1; i > 0; i--) {
-          const j = Math.floor(Math.random() * (i + 1));
-          [chosen[i], chosen[j]] = [chosen[j], chosen[i]];
+        if (excludeAi) {
+          chosen = [humanPlayer];
+        } else {
+          if (state.shuffleOrder) {
+            chosen.push(humanPlayer);
+            for (let i = chosen.length - 1; i > 0; i--) {
+              const j = Math.floor(Math.random() * (i + 1));
+              [chosen[i], chosen[j]] = [chosen[j], chosen[i]];
+            }
+          } else {
+            // When shuffle is OFF, human's turn is ALWAYS strictly first (index 0)
+            chosen.unshift(humanPlayer);
+          }
+        }
+      } else {
+        if (excludeAi) {
+          chosen = chosen.filter(p => !p.isBot);
+        }
+        if (state.shuffleOrder) {
+          for (let i = chosen.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [chosen[i], chosen[j]] = [chosen[j], chosen[i]];
+          }
         }
       }
 
@@ -4765,6 +5176,7 @@
       state.finishVoteState = null;
       state.participantVotes = {};
       state.inGame = true;
+      state.hasReturnedFromResult = false;
 
       document.getElementById('input-single-mora').value = '';
       document.getElementById('input-free-text').value = '';
@@ -4801,6 +5213,18 @@
       themeIcon.setAttribute('style', flower.swatchCss);
       document.getElementById('game-theme-name').textContent = flower.name;
       updateAiVocabSliderUI();
+
+      // Header navigation buttons
+      const headerHistBtn = document.getElementById('btn-open-history');
+      if (headerHistBtn) headerHistBtn.classList.add('hidden');
+      const headerBackWaitBtn = document.getElementById('btn-header-back-waiting');
+      if (headerBackWaitBtn) {
+        if (state.lobbyMode !== 'solo') {
+          headerBackWaitBtn.classList.remove('hidden');
+        } else {
+          headerBackWaitBtn.classList.add('hidden');
+        }
+      }
 
       // Spectator banner & controls
       const spectatorBanner = document.getElementById('game-spectator-banner');
@@ -4840,7 +5264,7 @@
           forceFinishBtn.classList.remove('hidden');
           if (!state.flowerUsed) {
             forceFinishBtn.classList.add('opacity-40', 'cursor-not-allowed');
-            forceFinishBtn.title = '花の名前が一括入力されるまで「ここで結ぶ」は選択できません';
+            forceFinishBtn.title = 'お題の花が詠み込まれるまで「ここで結ぶ」は選択できません';
           } else {
             forceFinishBtn.classList.remove('opacity-40', 'cursor-not-allowed');
             forceFinishBtn.title = '';
@@ -5152,7 +5576,7 @@
       state.pendingInputText = textUnit;
       const previewStr = buildHypotheticalPoemPreview([textUnit]);
       document.getElementById('submit-confirm-poem-preview').textContent = previewStr;
-      document.getElementById('submit-confirm-detail').textContent = `「${textUnit}」を送信してよろしいですか？`;
+      document.getElementById('submit-confirm-detail').innerHTML = `「${escapeHtml(textUnit)}」を<strong>送信</strong>してよろしいですか？`;
       document.getElementById('modal-submit-confirm').classList.remove('hidden');
     }
 
@@ -5260,8 +5684,57 @@
       document.getElementById('flower-confirm-poem-preview').textContent = previewStr;
       const countLabel = state.freeMode ? '1音' : `${tokens.length}音`;
       document.getElementById('flower-confirm-message').innerHTML =
-        `<strong>「${escapeHtml(displayWord)}」</strong>（${countLabel}）を入力します。よろしいですか？`;
+        `<strong>「${escapeHtml(displayWord)}」</strong>（${countLabel}）を<strong>入力</strong>します。よろしいですか？`;
       document.getElementById('modal-flower-confirm').classList.remove('hidden');
+    }
+
+        // Helper: prevents AI from consuming the flower if it would prevent human players from ever getting a turn
+    function wouldAiFlowerPreventHumanTurn(alias) {
+      if (!alias || !state.activePlayers || state.activePlayers.length === 0) return false;
+      const humanPlayers = state.activePlayers.filter(p => !p.isBot);
+      if (humanPlayers.length === 0) return false;
+
+      // Check if any human has already taken at least one turn in this poem
+      const anyHumanPlayed = state.lines.some(line =>
+        line.some(cell => {
+          const pl = state.activePlayers.find(p => p.name === cell.playerName);
+          return pl && !pl.isBot;
+        })
+      );
+      if (anyHumanPlayed) return false;
+
+      // Calculate turns until next human
+      const n = state.activePlayers.length;
+      let turnsToHuman = 0;
+      for (let step = 1; step <= n; step++) {
+        const nextP = state.activePlayers[(state.turnIndex + step) % n];
+        if (nextP && !nextP.isBot) {
+          turnsToHuman = step;
+          break;
+        }
+      }
+      if (turnsToHuman === 0) return false;
+
+      // Calculate total remaining slots in the poem
+      let remainingSlotsTotal = 0;
+      for (let l = state.currentLine; l < 3; l++) {
+        const target = state.lineTargets[l];
+        const cur = state.lines[l].length;
+        remainingSlotsTotal += Math.max(0, target - cur);
+      }
+
+      const flowerTokens = getFlowerInputTokens(alias);
+      const slotsConsumed = flowerTokens.length;
+      const remainingSlotsAfterFlower = remainingSlotsTotal - slotsConsumed;
+
+      // If inserting flower immediately finishes the poem, or remaining slots is less than turnsToHuman:
+      if (state.currentLine === 2 && state.lines[2].length + slotsConsumed >= state.lineTargets[2]) {
+        return true;
+      }
+      if (remainingSlotsAfterFlower < turnsToHuman) {
+        return true;
+      }
+      return false;
     }
 
     function executeInsertFlowerAlias(alias) {
@@ -5335,8 +5808,8 @@
 
       const lineNames = ['初句', '二句', '結句'];
       const targetMora = state.lineTargets[curLine];
-      document.getElementById('free-skip-confirm-message').textContent =
-        `${lineNames[curLine]}の音数を1音減らし（目標${targetMora}音 → ${targetMora - 1}音）、手番をスキップします。よろしいですか？`;
+      document.getElementById('free-skip-confirm-message').innerHTML =
+        `${lineNames[curLine]}の音数を1音減らし（目標${targetMora}音 → ${targetMora - 1}音）、手番を<strong>スキップ</strong>します。よろしいですか？`;
       document.getElementById('modal-free-skip-confirm').classList.remove('hidden');
     }
 
@@ -5379,8 +5852,8 @@
         state.botTimer = null;
       }
       const currentPlayer = state.activePlayers[state.turnIndex % state.activePlayers.length];
-      document.getElementById('skip-confirm-message').textContent =
-        `${currentPlayer ? currentPlayer.name : '現在'}の手番をスキップして次の人へ回します。よろしいですか？`;
+      document.getElementById('skip-confirm-message').innerHTML =
+        `${escapeHtml(currentPlayer ? currentPlayer.name : '現在')}の手番を<strong>スキップ</strong>して次の人へ回します。よろしいですか？`;
       document.getElementById('modal-skip-confirm').classList.remove('hidden');
     }
 
@@ -5456,12 +5929,14 @@
         const targetLen = state.lineTargets[lineIdx];
 
         const effectiveAiNoFlower = isAllAiActiveGame() ? false : (state.aiNoFlower && !state.aiNoFlowerLockedOff);
-        const mustInsertFlower = !effectiveAiNoFlower && !state.flowerUsed && lineIdx === 2 && currentLen >= targetLen - 2;
-        const randomInsertFlower = !effectiveAiNoFlower && !state.flowerUsed && currentLen === 0 && Math.random() < 0.25;
+        const candidateAlias = flower.aliases[Math.floor(Math.random() * flower.aliases.length)];
+        const starvationRisk = wouldAiFlowerPreventHumanTurn(candidateAlias);
+
+        const mustInsertFlower = !effectiveAiNoFlower && !state.flowerUsed && !starvationRisk && lineIdx === 2 && currentLen >= targetLen - 2;
+        const randomInsertFlower = !effectiveAiNoFlower && !state.flowerUsed && !starvationRisk && currentLen === 0 && Math.random() < 0.25;
 
         if (mustInsertFlower || randomInsertFlower) {
-          const randomAlias = flower.aliases[Math.floor(Math.random() * flower.aliases.length)];
-          executeInsertFlowerAlias(randomAlias);
+          executeInsertFlowerAlias(candidateAlias);
         } else if (state.freeMode) {
           // 入力したあと送信の前に、その句のなかに過去同じ入力があるかを確認、もしあった場合は書き直す、を繰り返す
           const pastInputsInPoem = new Set(state.lines.flatMap(l => l.map(c => c.text)));
@@ -5554,11 +6029,11 @@
       document.getElementById('finish-step-initiator').classList.add('hidden');
       document.getElementById('finish-step-participants').classList.remove('hidden');
 
-      // Only human players participate in the vote (AI spies do not vote); default choice is "いいえ" (false)
+      // Only human players participate in the vote (AI spies do not vote); default choice is "いいえ" (false), but proposer starts with "はい" (true)
       state.participantVotes = {};
       state.activePlayers.forEach((p, idx) => {
         if (!p.isBot) {
-          state.participantVotes[idx] = false;
+          state.participantVotes[idx] = isPlayerMe(p);
         }
       });
 
@@ -5718,6 +6193,10 @@
 
     function renderResultScreenFromState() {
       updateHeaderUserNameBadge();
+      const headerHistBtn = document.getElementById('btn-open-history');
+      if (headerHistBtn) headerHistBtn.classList.remove('hidden');
+      const headerBackWaitBtn = document.getElementById('btn-header-back-waiting');
+      if (headerBackWaitBtn) headerBackWaitBtn.classList.add('hidden');
       const flower = getSelectedFlower();
       const breakdownEl = document.getElementById('result-breakdown-list');
       breakdownEl.innerHTML = '';
@@ -6271,64 +6750,11 @@
       ctx.stroke();
       ctx.restore();
 
-      ctx.fillStyle = theme.titleText;
-      ctx.font = 'bold 20px "Noto Serif JP", sans-serif';
-      ctx.textAlign = 'left';
-      ctx.textBaseline = 'top';
-      ctx.fillText(`詠み人一覧（手番順・${playersToRender.length}人）`, footerX + 20, footerY + 14);
-
-      const playersCount = playersToRender.length;
-      const colsCount = playersCount <= 4 ? 2 : playersCount <= 6 ? 3 : 4;
-      const rowsCount = Math.ceil(playersCount / colsCount);
-      const gridLeft = footerX + 18;
-      const gridTop = footerY + 46;
-      const gridAvailW = footerW - 108;
-      const gridAvailH = footerH - 56;
-      const cellW = Math.floor((gridAvailW - (colsCount - 1) * 10) / colsCount);
-      const cellH = Math.min(44, Math.floor((gridAvailH - (rowsCount - 1) * 8) / Math.max(1, rowsCount)));
-      const nameFontSize = playersCount <= 6 ? 19 : 16;
-
-      playersToRender.forEach((p, idx) => {
-        const colIdx = idx % colsCount;
-        const rowIdx = Math.floor(idx / colsCount);
-        const px = gridLeft + colIdx * (cellW + 10);
-        const py = gridTop + rowIdx * (cellH + 8);
-
-        ctx.fillStyle = '#faf8f5';
-        ctx.strokeStyle = p.color;
-        ctx.lineWidth = 2;
-        ctx.beginPath();
-        ctx.roundRect(px, py, cellW, cellH, 8);
-        ctx.fill();
-        ctx.stroke();
-
-        ctx.fillStyle = p.color;
-        ctx.beginPath();
-        ctx.roundRect(px, py, 10, cellH, [8, 0, 0, 8]);
-        ctx.fill();
-
-        ctx.fillStyle = '#1c1917';
-        ctx.font = `bold ${nameFontSize}px "Noto Serif JP", sans-serif`;
-        ctx.textAlign = 'left';
-        ctx.textBaseline = 'middle';
-
-        let displayName = p.name || '';
-        // If poet name overflows cell width, abbreviate AIスパイ(〇〇) to AI(〇〇) before truncating
-        if (ctx.measureText(displayName).width > cellW - 22 && displayName.startsWith('AIスパイ（')) {
-          displayName = displayName.replace(/^AIスパイ（/, 'AI（');
-        }
-        while (displayName.length > 3 && ctx.measureText(displayName).width > cellW - 22) {
-          displayName = displayName.slice(0, -2) + '…';
-        }
-        ctx.fillText(displayName, px + 16, py + cellH / 2);
-      });
-
-      // Traditional Stamp Seal (落款) with "非公式" in a slender vertical rectangle (一行書き):
-      // Top to bottom: 非 → 公 → 式
+      // Traditional Stamp Seal (落款) with "非公式" in a slender vertical rectangle on the right
       ctx.save();
       const stampW = 38;
       const stampH = 106;
-      const stampX = footerX + footerW - stampW - 20;
+      const stampX = footerX + footerW - stampW - 18;
       const stampY = footerY + (footerH - stampH) / 2;
       ctx.strokeStyle = theme.stampColor;
       ctx.lineWidth = 2.5;
@@ -6342,6 +6768,466 @@
       ctx.fillText('公', stampX + stampW / 2, stampY + charStepStamp * 1.5);
       ctx.fillText('式', stampX + stampW / 2, stampY + charStepStamp * 2.5);
       ctx.restore();
+
+      // Left Vertical Title: "詠み人一覧" (縦書き・左端に配置、上部スペースを開放)
+      ctx.save();
+      ctx.fillStyle = theme.titleText;
+      ctx.font = 'bold 18px "Noto Serif JP", serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      const titleChars = ['詠', 'み', '人', '一', '覧'];
+      const titleStep = 24;
+      const titleStartY = footerY + (footerH - titleChars.length * titleStep) / 2 + titleStep / 2;
+      const titleX = footerX + 25;
+      titleChars.forEach((ch, idx) => {
+        ctx.fillText(ch, titleX, titleStartY + idx * titleStep);
+      });
+
+      // Divider line after vertical title
+      ctx.strokeStyle = theme.tileBorder || '#cbd5e1';
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.moveTo(footerX + 46, footerY + 16);
+      ctx.lineTo(footerX + 46, footerY + footerH - 16);
+      ctx.stroke();
+      ctx.restore();
+
+      // Available space for participant chips:
+      const gridLeft = footerX + 56;
+      const gridRight = stampX - 16;
+      const gridAvailW = gridRight - gridLeft;
+      const gridTop = footerY + 15;
+      const gridAvailH = footerH - 30;
+
+      // 1. Separate humans and AIs: humans preserve human turn order, AIs preserve AI turn order
+      const humanPlayers = playersToRender.filter(p => !p.isBot);
+      const botPlayers = playersToRender.filter(p => p.isBot);
+      const orderedPlayers = [...humanPlayers, ...botPlayers];
+      const playersCount = orderedPlayers.length;
+      const hasHumans = humanPlayers.length > 0;
+      const hasBots = botPlayers.length > 0;
+
+      // AIアイコン表示の条件判定:
+      // AIの名前表示によって人間の名前表示サイズを可読性に関わるまで小さくしなければならない場合に限る
+      let useAiIconMode = false;
+      if (hasHumans && hasBots) {
+        const simRowsCount = playersCount <= 3 ? 1 : playersCount <= 6 ? 2 : 3;
+        const simItemsPerRow = Math.ceil(playersCount / simRowsCount);
+        const colGap = simItemsPerRow >= 5 ? 8 : (simItemsPerRow >= 3 ? 10 : 12);
+        const simAvailRowW = gridAvailW - (simItemsPerRow - 1) * colGap;
+        const simEqualW = Math.floor(simAvailRowW / simItemsPerRow);
+
+        // 人間の可読性が損なわれる条件:
+        // 1列あたり4人以上、または枠幅が140px未満（17人時などの窮屈な分割）
+        // または、人間側の通り名がフォントサイズ16pxでsimEqualW内に1行で収まらない場合
+        const humanReadabilityCompromised = (simItemsPerRow >= 4 || simEqualW < 140) || humanPlayers.some(p => {
+          const rawName = p.name || '';
+          ctx.font = 'bold 16px "Noto Serif JP", sans-serif';
+          return (ctx.measureText(rawName).width + 28) > simEqualW;
+        });
+        useAiIconMode = humanReadabilityCompromised;
+      }
+
+      if (useAiIconMode) {
+        // =========================================================================
+        // AI ICON MODE (Image 2 & Image 3 layout)
+        // AI icons are packed to the right in up to 3 rows.
+        // Humans occupy the remaining width on the left with tall (h=84px), highly visible boxes.
+        // =========================================================================
+        const botCount = botPlayers.length;
+        const botIconW = 36;
+        const botIconH = 40;
+        const aiColGap = 8;
+        const aiRowGap = 8;
+
+        const aiRows = Math.min(3, botCount);
+        const aiCols = Math.ceil(botCount / 3);
+        const aiBlockW = aiCols * botIconW + (aiCols - 1) * aiColGap;
+        const aiBlockH = aiRows * botIconH + (aiRows - 1) * aiRowGap;
+
+        const aiStartX = gridRight - aiBlockW;
+        const aiStartY = footerY + Math.floor((footerH - aiBlockH) / 2);
+
+        // 1. Draw AI icons grid on the right
+        botPlayers.forEach((p, idx) => {
+          const r = Math.floor(idx / aiCols);
+          const c = idx % aiCols;
+          const x = aiStartX + c * (botIconW + aiColGap);
+          const y = aiStartY + r * (botIconH + aiRowGap);
+
+          ctx.save();
+          ctx.fillStyle = '#faf8f5';
+          ctx.strokeStyle = p.color || '#64748b';
+          ctx.lineWidth = 1.5;
+          ctx.beginPath();
+          ctx.roundRect(x, y, botIconW, botIconH, 6);
+          ctx.fill();
+          ctx.stroke();
+
+          ctx.fillStyle = p.color || '#64748b';
+          ctx.font = 'bold 14px sans-serif';
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.fillText('A', x + botIconW / 2, y + botIconH / 2 - 7);
+          ctx.fillText('I', x + botIconW / 2, y + botIconH / 2 + 7);
+          ctx.restore();
+        });
+
+        // 2. Draw Humans on the left in the remaining space
+        const gapBetweenHumanAndAi = 12;
+        const humanAvailW = (aiStartX - gapBetweenHumanAndAi) - gridLeft;
+        const humanCount = humanPlayers.length;
+
+        if (humanCount <= 3) {
+          // 1 to 3 humans: single row of tall, high-visibility cards (Image 2: 1 human, Image 3: 2 humans)
+          const humanH = 84;
+          const humanY = footerY + Math.floor((footerH - humanH) / 2);
+          const humanGap = 8;
+          const availForCards = humanAvailW - (humanCount - 1) * humanGap;
+
+          let humanWidths = [];
+          if (humanCount === 1) {
+            humanWidths = [availForCards];
+          } else {
+            // Allocate widths based on name lengths
+            ctx.font = 'bold 18px "Noto Serif JP", sans-serif';
+            const hNeeds = humanPlayers.map(p => {
+              const nameW = ctx.measureText(p.name || '').width;
+              return Math.max(105, nameW + 36);
+            });
+            const sumNeeds = hNeeds.reduce((a, b) => a + b, 0);
+
+            // Minimum width for each card so short names like "007" still have a generous chip
+            const minCardW = Math.max(90, Math.floor(availForCards * 0.35));
+            let allocated = 0;
+            hNeeds.forEach((need, idx) => {
+              if (idx === humanCount - 1) {
+                humanWidths.push(Math.max(minCardW, availForCards - allocated));
+              } else {
+                const w = Math.max(minCardW, Math.floor(availForCards * (need / sumNeeds)));
+                humanWidths.push(w);
+                allocated += w;
+              }
+            });
+          }
+
+          let curX = gridLeft;
+          humanPlayers.forEach((p, idx) => {
+            const cellW = humanWidths[idx];
+            const fullName = p.name || '';
+
+            ctx.save();
+            ctx.fillStyle = '#faf8f5';
+            ctx.strokeStyle = p.color || '#64748b';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.roundRect(curX, humanY, cellW, humanH, 8);
+            ctx.fill();
+            ctx.stroke();
+
+            // Left color stripe
+            ctx.fillStyle = p.color || '#64748b';
+            ctx.beginPath();
+            ctx.roundRect(curX, humanY, 10, humanH, [8, 0, 0, 8]);
+            ctx.fill();
+
+            const availTextW = cellW - 24;
+
+            // Check single line fit starting from 28px down to 18px
+            let fitSingle = false;
+            let singleFs = humanCount === 1 ? 30 : 24;
+            for (let fs = singleFs; fs >= 18; fs -= 0.5) {
+              ctx.font = 'bold ' + fs + 'px "Noto Serif JP", sans-serif';
+              if (ctx.measureText(fullName).width <= availTextW) {
+                fitSingle = true;
+                singleFs = fs;
+                break;
+              }
+            }
+
+            if (fitSingle) {
+              // Centered in card for single line (Image 2 & Human 1 in Image 3)
+              ctx.fillStyle = '#1c1917';
+              ctx.font = 'bold ' + singleFs + 'px "Noto Serif JP", sans-serif';
+              ctx.textAlign = 'center';
+              ctx.textBaseline = 'middle';
+              ctx.fillText(fullName, curX + 10 + (cellW - 10) / 2, humanY + humanH / 2);
+            } else {
+              // Multi-line wrapping (2 lines or 3 lines, as in Human 2 in Image 3)
+              const chars = Array.from(fullName);
+              const numLines = chars.length > 12 ? 3 : 2;
+              const chunkLen = Math.ceil(chars.length / numLines);
+
+              const lines = [];
+              for (let li = 0; li < numLines; li++) {
+                const chunk = chars.slice(li * chunkLen, (li + 1) * chunkLen).join('').trim();
+                if (chunk) lines.push(chunk);
+              }
+
+              const fs = numLines === 3 ? 13 : 15;
+              const lh = numLines === 3 ? 18 : 22;
+              ctx.font = 'bold ' + fs + 'px "Noto Serif JP", sans-serif';
+              ctx.fillStyle = '#1c1917';
+              ctx.textAlign = 'left';
+              ctx.textBaseline = 'middle';
+
+              const startY = humanY + humanH / 2 - ((lines.length - 1) * lh) / 2;
+              lines.forEach((lineText, li) => {
+                let textToDraw = lineText;
+                while (textToDraw.length > 1 && ctx.measureText(textToDraw).width > availTextW) {
+                  textToDraw = textToDraw.slice(0, -1);
+                }
+                ctx.fillText(textToDraw, curX + 18, startY + li * lh);
+              });
+            }
+
+            ctx.restore();
+            curX += cellW + humanGap;
+          });
+        } else {
+          // 4 or more humans when AI is present: 2 rows of human chips in humanAvailW
+          const humanH = 58;
+          const humanGapY = 8;
+          const humanGapX = 8;
+          const totalHumanH = humanH * 2 + humanGapY;
+          const humanStartY = footerY + Math.floor((footerH - totalHumanH) / 2);
+
+          const r0Count = Math.ceil(humanCount / 2);
+          const r1Count = humanCount - r0Count;
+          const rowsData = [
+            { players: humanPlayers.slice(0, r0Count), y: humanStartY },
+            { players: humanPlayers.slice(r0Count), y: humanStartY + humanH + humanGapY }
+          ];
+
+          rowsData.forEach(rowData => {
+            const rowCount = rowData.players.length;
+            if (rowCount === 0) return;
+            const cardW = Math.floor((humanAvailW - (rowCount - 1) * humanGapX) / rowCount);
+            let curX = gridLeft;
+
+            rowData.players.forEach(p => {
+              const fullName = p.name || '';
+              ctx.save();
+              ctx.fillStyle = '#faf8f5';
+              ctx.strokeStyle = p.color || '#64748b';
+              ctx.lineWidth = 2;
+              ctx.beginPath();
+              ctx.roundRect(curX, rowData.y, cardW, humanH, 8);
+              ctx.fill();
+              ctx.stroke();
+
+              // Stripe
+              ctx.fillStyle = p.color || '#64748b';
+              ctx.beginPath();
+              ctx.roundRect(curX, rowData.y, 10, humanH, [8, 0, 0, 8]);
+              ctx.fill();
+
+              const availTextW = cardW - 24;
+              let fitSingle = false;
+              let singleFs = 18;
+              for (let fs = 18; fs >= 13; fs -= 0.5) {
+                ctx.font = 'bold ' + fs + 'px "Noto Serif JP", sans-serif';
+                if (ctx.measureText(fullName).width <= availTextW) {
+                  fitSingle = true;
+                  singleFs = fs;
+                  break;
+                }
+              }
+
+              if (fitSingle) {
+                ctx.fillStyle = '#1c1917';
+                ctx.font = 'bold ' + singleFs + 'px "Noto Serif JP", sans-serif';
+                ctx.textAlign = 'left';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(fullName, curX + 18, rowData.y + humanH / 2);
+              } else {
+                const chars = Array.from(fullName);
+                const half = Math.ceil(chars.length / 2);
+                let l1 = chars.slice(0, half).join('').trim();
+                let l2 = chars.slice(half).join('').trim();
+                ctx.font = 'bold 12px "Noto Serif JP", sans-serif';
+                ctx.fillStyle = '#1c1917';
+                ctx.textAlign = 'left';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(l1, curX + 18, rowData.y + humanH / 2 - 8);
+                ctx.fillText(l2, curX + 18, rowData.y + humanH / 2 + 8);
+              }
+
+              ctx.restore();
+              curX += cardW + humanGapX;
+            });
+          });
+        }
+      } else {
+        // =========================================================================
+        // NORMAL FULL NAME CHIP MODE
+        // (Used when 0 AI, or all AI, or few players where AI names do not crowd humans)
+        // Humans are first in human order, AIs are after in AI order.
+        // =========================================================================
+        const rowsCount = playersCount <= 3 ? 1 : playersCount <= 6 ? 2 : 3;
+        const itemsPerRow = Math.ceil(playersCount / rowsCount);
+        const rowGap = rowsCount === 3 ? 8 : 10;
+        const colGap = itemsPerRow >= 5 ? 8 : (itemsPerRow >= 3 ? 10 : 12);
+
+        let rowH, rowStartY;
+        if (rowsCount === 1) {
+          rowH = playersCount === 1 ? 84 : 58;
+          rowStartY = gridTop + Math.floor((gridAvailH - rowH) / 2);
+        } else if (rowsCount === 2) {
+          rowH = 58;
+          const totalH = rowH * 2 + rowGap;
+          rowStartY = gridTop + Math.floor((gridAvailH - totalH) / 2);
+        } else {
+          rowH = 40;
+          const totalH = rowH * 3 + rowGap * 2;
+          rowStartY = gridTop + Math.floor((gridAvailH - totalH) / 2);
+        }
+
+        const baseFontSize = rowsCount === 1 ? (playersCount === 1 ? 30 : 21) : (rowsCount === 2 ? 19 : (itemsPerRow <= 3 ? 16 : (itemsPerRow <= 4 ? 14 : 12.5)));
+        const minSingleFs = rowsCount === 1 ? 16 : (rowsCount === 2 ? 15 : (itemsPerRow <= 3 ? 13 : 11));
+
+        for (let r = 0; r < rowsCount; r++) {
+          const rowPlayers = orderedPlayers.slice(r * itemsPerRow, (r + 1) * itemsPerRow);
+          if (rowPlayers.length === 0) continue;
+          const curRowY = rowStartY + r * (rowH + rowGap);
+          const availRowW = gridAvailW - (rowPlayers.length - 1) * colGap;
+
+          const textData = rowPlayers.map(p => {
+            let name = p.name || '';
+            if (rowPlayers.length >= 3 && p.isBot && name.startsWith('AIスパイ（')) {
+              ctx.font = 'bold ' + baseFontSize + 'px "Noto Serif JP", sans-serif';
+              if (ctx.measureText(name).width + 28 > Math.floor(availRowW / rowPlayers.length)) {
+                name = name.replace(/^AIスパイ（/, 'AI（');
+              }
+            }
+            ctx.font = 'bold ' + baseFontSize + 'px "Noto Serif JP", sans-serif';
+            const tw = ctx.measureText(name).width;
+            return { p, name, tw: tw + 28 };
+          });
+
+          const equalW = Math.floor(availRowW / rowPlayers.length);
+          let cellWidths = [];
+          let rowStartX = gridLeft;
+
+          if (rowPlayers.length === 1) {
+            const singleW = Math.max(220, Math.min(340, textData[0].tw + 60));
+            cellWidths = [Math.min(singleW, availRowW)];
+            rowStartX = playersCount === 1 ? (gridLeft + Math.floor((gridAvailW - cellWidths[0]) / 2)) : gridLeft;
+          } else {
+            const allFitEqual = textData.every(td => td.tw <= equalW);
+            if (allFitEqual) {
+              cellWidths = new Array(rowPlayers.length).fill(equalW);
+              cellWidths[cellWidths.length - 1] += (availRowW - equalW * rowPlayers.length);
+            } else {
+              const minFloor = Math.max(Math.floor(equalW * 0.65), 55);
+              const sumNeeded = textData.reduce((acc, td) => acc + Math.max(minFloor, td.tw), 0);
+              let allocated = 0;
+              textData.forEach((td, idx) => {
+                if (idx === textData.length - 1) {
+                  cellWidths.push(Math.max(minFloor, availRowW - allocated));
+                } else {
+                  const w = Math.max(minFloor, Math.floor(availRowW * Math.max(minFloor, td.tw) / sumNeeded));
+                  cellWidths.push(w);
+                  allocated += w;
+                }
+              });
+            }
+          }
+
+          let curX = rowStartX;
+          rowPlayers.forEach((p, idxInRow) => {
+            const cellW = cellWidths[idxInRow];
+            const fullName = textData[idxInRow].name;
+
+            ctx.save();
+            ctx.fillStyle = '#faf8f5';
+            ctx.strokeStyle = p.color || '#64748b';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.roundRect(curX, curRowY, cellW, rowH, 8);
+            ctx.fill();
+            ctx.stroke();
+
+            // Left color stripe
+            ctx.fillStyle = p.color || '#64748b';
+            ctx.beginPath();
+            ctx.roundRect(curX, curRowY, 10, rowH, [8, 0, 0, 8]);
+            ctx.fill();
+
+            const availTextW = cellW - 26;
+
+            // Check single line fit from baseFontSize down to minSingleFs
+            let fitSingle = false;
+            let singleFs = baseFontSize;
+            for (let fs = baseFontSize; fs >= minSingleFs; fs -= 0.5) {
+              ctx.font = 'bold ' + fs + 'px "Noto Serif JP", sans-serif';
+              if (ctx.measureText(fullName).width <= availTextW) {
+                fitSingle = true;
+                singleFs = fs;
+                break;
+              }
+            }
+
+            if (fitSingle) {
+              ctx.fillStyle = '#1c1917';
+              ctx.font = 'bold ' + singleFs + 'px "Noto Serif JP", sans-serif';
+              ctx.textAlign = playersCount === 1 ? 'center' : 'left';
+              ctx.textBaseline = 'middle';
+              const textX = playersCount === 1 ? curX + 10 + (cellW - 10) / 2 : curX + 18;
+              ctx.fillText(fullName, textX, curRowY + rowH / 2);
+            } else {
+              // Wrap into two lines
+              const chars = Array.from(fullName);
+              let splitIdx = Math.ceil(chars.length / 2);
+              for (let off = 0; off <= 2; off++) {
+                const l = Math.ceil(chars.length / 2) - off;
+                const r = Math.ceil(chars.length / 2) + off;
+                if (l > 1 && l < chars.length - 1 && /[\s・_（(]/.test(chars[l])) { splitIdx = l; break; }
+                if (r > 1 && r < chars.length - 1 && /[\s・_（(]/.test(chars[r])) { splitIdx = r; break; }
+              }
+
+              let line1 = chars.slice(0, splitIdx).join('').trim();
+              let line2 = chars.slice(splitIdx).join('').trim();
+
+              const startTwoLineFs = rowsCount === 1 ? 14 : rowsCount === 2 ? 13.5 : 11.5;
+              const minTwoLineFs = 10;
+              let twoLineFs = minTwoLineFs;
+
+              for (let fs = startTwoLineFs; fs >= minTwoLineFs; fs -= 0.5) {
+                ctx.font = 'bold ' + fs + 'px "Noto Serif JP", sans-serif';
+                if (ctx.measureText(line1).width <= availTextW && ctx.measureText(line2).width <= availTextW) {
+                  twoLineFs = fs;
+                  break;
+                }
+              }
+
+              ctx.font = 'bold ' + twoLineFs + 'px "Noto Serif JP", sans-serif';
+              while (line1.length > 1 && ctx.measureText(line1).width > availTextW) {
+                line1 = line1.slice(0, -1);
+              }
+              if (ctx.measureText(line2).width > availTextW) {
+                while (line2.length > 1 && ctx.measureText(line2 + '…').width > availTextW) {
+                  line2 = line2.slice(0, -1);
+                }
+                line2 = line2 + '…';
+              }
+
+              const lh = rowsCount === 3 ? 13 : 16;
+              const line1Y = curRowY + rowH / 2 - lh * 0.52;
+              const line2Y = curRowY + rowH / 2 + lh * 0.52;
+
+              ctx.fillStyle = '#1c1917';
+              ctx.textAlign = 'left';
+              ctx.textBaseline = 'middle';
+              ctx.fillText(line1, curX + 18, line1Y);
+              ctx.fillText(line2, curX + 18, line2Y);
+            }
+
+            ctx.restore();
+            curX += cellW + colGap;
+          });
+        }
+      }
     }
 
     function getTargetCanvasAndSuffix() {
@@ -6736,6 +7622,143 @@
       renderFlowerGridInto('lobby-flower-grid', false);
       renderRulesModalTable();
 
+      // Solo Mode AI Count +/- and Shuffle Checkbox
+      updateSoloAiUI();
+      
+      const btnSoloMinus = document.getElementById('btn-solo-ai-minus');
+      if (btnSoloMinus) {
+        btnSoloMinus.addEventListener('click', () => {
+          const currentCount = state.soloAiCount !== undefined ? state.soloAiCount : 3;
+          if (currentCount <= 0) {
+            showToast('これ以上AIスパイを減らせません', 'error');
+            return;
+          }
+          state.soloAiCount = Math.max(0, currentCount - 1);
+          updateSoloAiUI();
+          syncWaitingSlotsWithCount();
+        });
+      }
+      const btnSoloPlus = document.getElementById('btn-solo-ai-plus');
+      if (btnSoloPlus) {
+        btnSoloPlus.addEventListener('click', () => {
+          const currentCount = state.soloAiCount !== undefined ? state.soloAiCount : 3;
+          if (currentCount >= 16) {
+            showToast('AIスパイは最大16人までです', 'error');
+            return;
+          }
+          state.soloAiCount = Math.min(16, currentCount + 1);
+          updateSoloAiUI();
+          syncWaitingSlotsWithCount();
+        });
+      }
+      const chkSoloShuffle = document.getElementById('chk-solo-shuffle-order');
+      if (chkSoloShuffle) {
+        chkSoloShuffle.addEventListener('change', (e) => {
+          state.soloShuffleOrder = e.target.checked;
+        });
+      }
+
+      // Waiting room top start button (above 在籍者一覧)
+      const btnStartTop = document.getElementById('btn-open-start-confirm-top');
+      if (btnStartTop) {
+        btnStartTop.addEventListener('click', openStartConfirmModal);
+      }
+
+      // In-game spectator banner button in waiting room
+      const btnSpecBanner = document.getElementById('btn-spectate-game-banner');
+      if (btnSpecBanner) {
+        btnSpecBanner.addEventListener('click', () => {
+          document.getElementById('btn-spectate-game').click();
+        });
+      }
+
+      // Header back to waiting room button and modals
+      const btnHeaderBackWait = document.getElementById('btn-header-back-waiting');
+      if (btnHeaderBackWait) {
+        btnHeaderBackWait.addEventListener('click', () => {
+          document.getElementById('modal-back-waiting-confirm').classList.remove('hidden');
+        });
+      }
+      const btnCancelBackWait = document.getElementById('btn-cancel-back-waiting');
+      if (btnCancelBackWait) {
+        btnCancelBackWait.addEventListener('click', () => {
+          document.getElementById('modal-back-waiting-confirm').classList.add('hidden');
+        });
+      }
+      const btnConfirmBackWait = document.getElementById('btn-confirm-back-waiting');
+      if (btnConfirmBackWait) {
+        btnConfirmBackWait.addEventListener('click', () => {
+          document.getElementById('modal-back-waiting-confirm').classList.add('hidden');
+          // Leave active game like departure, but return to waiting room
+          const leavingName = state.currentUserName || '007';
+          const hadAnyBot = (state.activePlayers || []).some(p => p.isBot);
+          const activeIdx = (state.activePlayers || []).findIndex(p => isPlayerMe(p));
+          
+          if (activeIdx !== -1) {
+            if (hadAnyBot) {
+              const usedNames = new Set((state.activePlayers || []).map(a => a.name));
+              const subAi = AI_SPY_NAMES.find(n => !usedNames.has(n)) || 'AIスパイ';
+              state.activePlayers[activeIdx] = {
+                id: `ai-left-${Date.now()}`,
+                name: subAi,
+                isBot: true,
+                isHostPlayer: false,
+                joinedAt: 0,
+                color: state.activePlayers[activeIdx].color
+              };
+            } else {
+              state.activePlayers.splice(activeIdx, 1);
+              if (state.turnIndex >= state.activePlayers.length && state.activePlayers.length > 0) {
+                state.turnIndex = state.turnIndex % state.activePlayers.length;
+              }
+            }
+          }
+
+          // Move player to restingPlayers in waiting room
+          state.restingPlayers = state.restingPlayers || [];
+          if (!state.restingPlayers.some(p => isPlayerMe(p))) {
+            state.restingPlayers.push({
+              id: state.myPlayerId,
+              name: leavingName,
+              isBot: false,
+              isHostPlayer: false,
+              joinedAt: Date.now(),
+              restingReason: 'manual',
+              manualRest: true,
+              originalSlotIndex: activeIdx >= 0 ? activeIdx : 0,
+              slotOrderRank: activeIdx >= 0 ? activeIdx : 0
+            });
+          }
+
+          // Host succession if host is leaving active game
+          if (state.isHost) {
+            const nextHuman = [
+              ...(state.waitingSlots || []).filter(p => !p.isBot && !isPlayerMe(p)),
+              ...(state.restingPlayers || []).filter(p => !p.isBot && !isPlayerMe(p))
+            ].sort((a, b) => (a.joinedAt || 9999999999999) - (b.joinedAt || 9999999999999))[0];
+            if (nextHuman) {
+              state.hostPlayerId = nextHuman.id;
+              state.hostName = nextHuman.name;
+              state.isHost = false;
+            }
+          }
+
+          document.getElementById('view-game').classList.add('hidden');
+          document.getElementById('view-waiting').classList.remove('hidden');
+          showToast('句会を抜けて待機室に戻りました');
+          renderWaitingRoom();
+          RoomSyncEngine.pushRoomState('game');
+        });
+      }
+
+      // AFK / Disconnect notice modal close button
+      const btnCloseAfk = document.getElementById('btn-close-afk-notice');
+      if (btnCloseAfk) {
+        btnCloseAfk.addEventListener('click', () => {
+          document.getElementById('modal-afk-disconnected-notice').classList.add('hidden');
+        });
+      }
+
       // Mode Tabs: ひとりで遊ぶ (solo, default) / 部屋を立てる (host) / 合言葉で入室 (guest)
       document.getElementById('tab-role-solo').addEventListener('click', () => {
         state.lobbyMode = 'solo';
@@ -6771,6 +7794,7 @@
       // Room Keyword Input (Host) + Regenerate 4-digit Room ID button
       const kwInput = document.getElementById('input-room-keyword');
       kwInput.addEventListener('input', (e) => {
+        state.isKeywordManuallyEdited = true;
         const rawVal = e.target.value.trim();
         // Support entering "合言葉-4桁ID" in the host keyword input as well
         const match = rawVal.match(/^(.+?)[-ー－]([0-9A-Za-z]{4})$/);
@@ -6784,13 +7808,19 @@
         updateHostPassphrasePreviewUI();
       });
       document.getElementById('btn-regenerate-room-id').addEventListener('click', () => {
-        const nextPass = generateUnusedRoomPassphrase();
-        state.roomKeyword = nextPass.keyword;
-        state.roomId = nextPass.roomId;
-        const kwInp = document.getElementById('input-room-keyword');
-        if (kwInp) kwInp.value = state.roomKeyword;
-        updateHostPassphrasePreviewUI();
-        showToast(`合言葉を「${getFullPassphrase(state.roomKeyword, state.roomId)}」に変更しました`);
+        if (state.isKeywordManuallyEdited) {
+          state.roomId = generateFourDigitRoomId();
+          updateHostPassphrasePreviewUI();
+          showToast(`部屋IDを「${state.roomId}」に再生成しました（合言葉は固定）`);
+        } else {
+          const nextPass = generateUnusedRoomPassphrase();
+          state.roomKeyword = nextPass.keyword;
+          state.roomId = nextPass.roomId;
+          const kwInp = document.getElementById('input-room-keyword');
+          if (kwInp) kwInp.value = state.roomKeyword;
+          updateHostPassphrasePreviewUI();
+          showToast(`合言葉を「${getFullPassphrase(state.roomKeyword, state.roomId)}」に変更しました`);
+        }
       });
 
       // Copy full passphrase button in Waiting Room (with reliable textarea fallback)
@@ -6914,24 +7944,51 @@
       });
 
       // Host / Solo Primary CTA Button (#btn-create-room)
-      document.getElementById('btn-create-room').addEventListener('click', async () => {
-        const enteredName = (document.getElementById('input-host-name').value.trim() || '007').slice(0, 20);
-        saveLastUsedUserName(enteredName);
-        state.roomKeyword = (document.getElementById('input-room-keyword').value.trim() || 'はなびら').slice(0, 17);
+      document.getElementById('btn-create-room').addEventListener('click', async (e) => {
+        if (state.isJoiningOrCreating) return;
+        state.isJoiningOrCreating = true;
+        const targetBtn = e.currentTarget;
+        if (targetBtn) targetBtn.disabled = true;
 
-        if (state.lobbyMode === 'solo') {
-          state.isHost = true;
-          state.myPlayerId = 'host-0';
-          state.hostPlayerId = 'host-0';
-          state.hostName = enteredName;
-          state.currentUserName = enteredName;
-          state.waitingSlots = [];
-          state.restingPlayers = [];
-          syncWaitingSlotsWithCount();
-          state.shuffleOrder = false;
-          startGameFromWaitingRoom(false);
-          return;
-        }
+        try {
+          const enteredName = (document.getElementById('input-host-name').value.trim() || '007').slice(0, 20);
+          saveLastUsedUserName(enteredName);
+          state.roomKeyword = (document.getElementById('input-room-keyword').value.trim() || 'はなびら').slice(0, 17);
+
+          if (state.lobbyMode === 'solo') {
+            state.isHost = true;
+            state.myPlayerId = 'host-0';
+            state.hostPlayerId = 'host-0';
+            state.hostName = enteredName;
+            state.currentUserName = enteredName;
+            state.waitingSlots = [];
+            state.restingPlayers = [];
+            // Add human first
+            state.waitingSlots.push({
+              id: 'host-0',
+              name: enteredName,
+              isBot: false,
+              isHostPlayer: true,
+              joinedAt: 1,
+              color: PLAYER_COLORS[0]
+            });
+            const aiCount = state.soloAiCount !== undefined ? state.soloAiCount : 3;
+            for (let i = 0; i < aiCount; i++) {
+              const nextName = AI_SPY_NAMES[i % AI_SPY_NAMES.length];
+              state.waitingSlots.push({
+                id: `ai-solo-${i}`,
+                name: nextName,
+                isBot: true,
+                isHostPlayer: false,
+                joinedAt: 0,
+                color: PLAYER_COLORS[(i + 1) % PLAYER_COLORS.length]
+              });
+            }
+            state.playerCount = state.waitingSlots.length;
+            state.shuffleOrder = !!state.soloShuffleOrder;
+            startGameFromWaitingRoom(false);
+            return;
+          }
 
         // Check if an already-open room with the exact same keyword and ID exists
         const existingSnap = await RoomSyncEngine.fetchRoomSnapshot(state.roomKeyword, state.roomId, true);
@@ -6964,7 +8021,7 @@
           state.shuffleOrder = !!existingSnap.shuffleOrder;
           state.freeMode = !!existingSnap.freeMode;
           state.aiVocabLevel = existingSnap.aiVocabLevel || 3;
-          state.aiKagen = !!existingSnap.aiKagen;
+          state.aiKagen = existingSnap.aiKagen !== undefined ? !!existingSnap.aiKagen : true;
           state.aiNoFlower = !!existingSnap.aiNoFlower;
           state.chatMessages = existingSnap.chatMessages || [];
           state.completedPoems = existingSnap.completedPoems || [];
@@ -7031,6 +8088,7 @@
         state.hostName = enteredName;
         state.currentUserName = enteredName;
         state.emptySince = null;
+        state.hasReturnedFromResult = false;
 
         const newRoomKey = RoomSyncEngine.makeRoomKey(state.roomKeyword, state.roomId);
         if (state.lastCreatedRoomKey !== newRoomKey) {
@@ -7049,10 +8107,21 @@
           addChatMessage('システム', `${state.hostName}さんが部屋を立てました。`, true);
         }
         openWaitingRoom(true);
+        } finally {
+          setTimeout(() => {
+            state.isJoiningOrCreating = false;
+            if (targetBtn) targetBtn.disabled = false;
+          }, 1200);
+        }
       });
 
       // Guest: Join by Keyword + 4-digit Room ID -> Transition to Waiting Room
-      document.getElementById('btn-guest-join').addEventListener('click', async () => {
+      document.getElementById('btn-guest-join').addEventListener('click', async (e) => {
+        if (state.isJoiningOrCreating) return;
+        state.isJoiningOrCreating = true;
+        const gBtn = e.currentTarget;
+        if (gBtn) gBtn.disabled = true;
+        try {
         const rawKw = document.getElementById('guest-keyword-input').value;
         const rawId = document.getElementById('guest-room-id-input').value;
         const parsed = parseEnteredPassphrase(rawKw, rawId);
@@ -7095,7 +8164,7 @@
           state.shuffleOrder = !!remoteSnap.shuffleOrder;
           state.freeMode = !!remoteSnap.freeMode;
           state.aiVocabLevel = remoteSnap.aiVocabLevel || 3;
-          state.aiKagen = !!remoteSnap.aiKagen;
+          state.aiKagen = remoteSnap.aiKagen !== undefined ? !!remoteSnap.aiKagen : true;
           state.aiNoFlower = !!remoteSnap.aiNoFlower;
           state.chatMessages = remoteSnap.chatMessages || [];
           state.completedPoems = remoteSnap.completedPoems || [];
@@ -7182,6 +8251,12 @@
         saveRoomToHistory(state.roomKeyword, state.roomId);
         addChatMessage('システム', `${guestName}さんが入室しました。`, true);
         openWaitingRoom(!state.inGame);
+        } finally {
+          setTimeout(() => {
+            state.isJoiningOrCreating = false;
+            if (gBtn) gBtn.disabled = false;
+          }, 1200);
+        }
       });
 
       // Kick Participant Modal Buttons
@@ -7206,9 +8281,9 @@
       // Waiting Room AI Count +/- Buttons (Host Only, max 17 AI spies limit)
       document.getElementById('btn-waiting-ai-plus').addEventListener('click', () => {
         if (!state.isHost) return;
-        const currentBots = state.waitingSlots.filter(p => p.isBot).length;
-        if (currentBots >= 17) {
-          showToast('AIスパイは最大17人までです', 'error');
+        const currentTotal = state.waitingSlots.length;
+        if (currentTotal >= 17) {
+          showToast('手番順の総人数（AI含む）は最大17人までです', 'error');
           return;
         }
         const usedNames = new Set([
@@ -7397,10 +8472,10 @@
           clearTimeout(state.botTimer);
           state.botTimer = null;
         }
-        document.getElementById('return-title-confirm-text').textContent =
+        document.getElementById('return-title-confirm-text').innerHTML =
           state.lobbyMode === 'solo'
-            ? 'タイトルへ戻ってよろしいですか？'
-            : 'タイトルへ戻ると、自動的に退室します。よろしいですか？';
+            ? '<strong>タイトルに戻り</strong>ます。よろしいですか？'
+            : 'タイトルへ戻ると、<strong>自動的に退室</strong>します。よろしいですか？';
         document.getElementById('modal-return-title-confirm').classList.remove('hidden');
       };
 
@@ -7573,6 +8648,8 @@
         state.isSpectating = false;
         state.roomPhase = 'waiting';
         state.lastCreatedRoomKey = null;
+        state.hasReturnedFromResult = false;
+        state.isKeywordManuallyEdited = false;
         const nextPass = generateUnusedRoomPassphrase();
         state.roomKeyword = nextPass.keyword;
         state.roomId = nextPass.roomId;
@@ -7621,6 +8698,7 @@
         if (state.lobbyMode === 'solo') {
           state.inGame = false;
           state.waitingSlots = [];
+          state.shuffleOrder = !!state.soloShuffleOrder;
           syncWaitingSlotsWithCount();
           startGameFromWaitingRoom(false);
         } else {
@@ -7646,6 +8724,7 @@
             }
           }
           // Keep current roomPhase ('game' if a new round started, or 'result' if others are still on result screen)
+          state.hasReturnedFromResult = true;
           const phaseToKeep = state.inGame ? 'game' : (state.roomPhase || 'result');
           openWaitingRoom(false);
           RoomSyncEngine.pushRoomState(phaseToKeep);
