@@ -15,11 +15,6 @@
 <meta name="twitter:image" content="https://placehold.jp/110/f4b4c4/27272a/1200x630.png?text=%E5%85%84%E5%A6%B9%E3%81%AE%E8%8A%B1">
 <meta name="description" content="兄妹の花で『詠み人知らず』ができる非公式Webサイト。１人から遊べます。">
 <title>［非公式］兄妹の花で詠み人知らず</title>
-     <script>
-  window.YOMIBITO_CLOUD_CONFIG = {
-    databaseUrl: "https://brother-and-sister-s-flowers-default-rtdb.firebaseio.com/"
-  };
-     </script>
 <script src="https://cdn.tailwindcss.com/3.4.17"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
@@ -509,7 +504,7 @@ ID変更
 </div>
 <div class="lg:col-span-5 space-y-4 min-w-0">
 <div class="bg-[#f3f4f6] rounded-2xl p-3.5 sm:p-4.5 pt-3.5 pb-3.5 tanzaku-shadow border border-zinc-300 space-y-3 overflow-hidden">
-<div class="flex items-center justify-between border-b border-zinc-300 pb-2.5">
+<div class="flex items-center justify-between gap-2 border-b border-zinc-300 pb-2.5">
 <div class="flex items-center gap-2.5 min-w-0">
 <div id="active-player-avatar" class="w-9 h-9 rounded-full bg-zinc-700 text-white font-bold flex items-center justify-center text-sm shadow-sm shrink-0">
 1
@@ -519,6 +514,10 @@ ID変更
 <h3 id="active-player-name" class="text-base sm:text-lg font-bold serif-jp text-zinc-900 truncate">007</h3>
 </div>
 </div>
+<label id="wrap-skip-submit-confirm" class="flex items-center gap-1.5 cursor-pointer select-none text-xs font-bold text-zinc-600 shrink-0" title="ONにすると送信ボタン・Enterキー押下時の確認ダイアログを省略します">
+<input type="checkbox" id="chk-skip-submit-confirm" class="accent-[#e59bb0] rounded w-3.5 h-3.5 cursor-pointer">
+<span>送信確認を省略</span>
+</label>
 </div>
 <div id="not-my-turn-notice" class="hidden py-4 px-3.5 rounded-xl bg-zinc-200/70 border border-zinc-300 text-center text-xs sm:text-sm font-bold text-zinc-600 serif-jp">
 手番が回るまでお待ちください…
@@ -536,13 +535,14 @@ ID変更
 <p id="mora-validation-msg" class="text-xs text-red-600 font-semibold min-h-[1rem]"></p>
 </div>
 <div id="panel-free-mode" class="hidden space-y-2.5 p-3.5 rounded-xl bg-zinc-200/80 border-2 border-zinc-300">
-<div class="flex items-center justify-between">
+<div class="flex items-center justify-between flex-wrap gap-1">
 <span class="text-xs font-bold text-zinc-800">自由記述モード</span>
+<span class="text-[11px] font-medium text-zinc-500">※「１音とばす」はこの句の目標音数を1音減らします</span>
 </div>
 <div class="flex items-end gap-2 w-full">
 <textarea id="input-free-text" rows="2" maxlength="20" placeholder="自由に入力" autocomplete="off" class="flex-1 min-w-0 w-full px-3 py-2 text-base font-bold serif-jp rounded-xl border border-zinc-300 focus:border-[#e59bb0] focus:outline-none bg-white text-zinc-900 resize-none break-all leading-relaxed overflow-y-auto"></textarea>
 <div class="flex flex-col gap-1.5 shrink-0">
-<button type="button" id="btn-free-skip-mora" class="px-3 py-1.5 rounded-xl border border-zinc-300 bg-white hover:bg-zinc-100 text-zinc-800 font-bold serif-jp text-xs shadow-sm transition whitespace-nowrap text-center" title="現在入力中の句の音数を1減らして手番をスキップ">
+<button type="button" id="btn-free-skip-mora" class="px-3 py-1.5 rounded-xl border border-zinc-300 bg-white hover:bg-zinc-100 text-zinc-800 font-bold serif-jp text-xs shadow-sm transition whitespace-nowrap text-center" title="この句の目標音数を1音減らし（字足らずにして）、次の手番へ進みます">
 １音とばす
 </button>
 <button type="button" id="btn-submit-free" class="px-3 py-2 rounded-xl btn-usumomo font-bold serif-jp text-sm shadow-sm transition whitespace-nowrap text-center">
@@ -596,7 +596,7 @@ ID変更
 </div>
 </div>
 <div class="bg-[#f3f4f6] rounded-2xl p-4 tanzaku-shadow border border-zinc-300 flex flex-wrap items-center justify-center gap-3 sm:gap-4">
-<button type="button" id="btn-skip-turn" class="flex-1 sm:flex-initial px-6 py-3 rounded-xl border-2 border-zinc-300 bg-white hover:bg-zinc-200 text-zinc-800 font-bold serif-jp text-sm sm:text-base transition shadow-sm">
+<button type="button" id="btn-skip-turn" title="句の目標音数は減らさず、現在の手番をパスして次の人へ回します" class="flex-1 sm:flex-initial px-6 py-3 rounded-xl border-2 border-zinc-300 bg-white hover:bg-zinc-200 text-zinc-800 font-bold serif-jp text-sm sm:text-base transition shadow-sm">
 スキップ
 </button>
 <button type="button" id="btn-force-finish" class="flex-1 sm:flex-initial px-8 py-3 rounded-xl btn-usumomo font-bold serif-jp text-sm sm:text-base transition shadow-sm">
@@ -3236,6 +3236,7 @@ const p = generateUnusedRoomPassphrase();
 return { roomKeyword: p.keyword, roomId: p.roomId };
 })(),
 flowerUsedManually: false,
+skipSubmitConfirm: false,
 myLastSeen: Date.now(),
 playerCount: 4,
 waitingSlots: [],
@@ -5029,6 +5030,13 @@ const standardPanel = document.getElementById('panel-standard-mode');
 const freePanel = document.getElementById('panel-free-mode');
 const flowerSection = document.getElementById('flower-input-section');
 const aliasBtnsContainer = document.getElementById('flower-alias-buttons');
+const wrapSkipConfirm = document.getElementById('wrap-skip-submit-confirm');
+const chkSkipConfirm = document.getElementById('chk-skip-submit-confirm');
+if (chkSkipConfirm) chkSkipConfirm.checked = !!state.skipSubmitConfirm;
+if (wrapSkipConfirm) {
+if (state.isSpectating) wrapSkipConfirm.classList.add('hidden');
+else wrapSkipConfirm.classList.remove('hidden');
+}
 if (!myTurn || state.isSpectating) {
 if (notMyTurnNotice) {
 notMyTurnNotice.textContent = state.isSpectating
@@ -5172,6 +5180,10 @@ return;
 openSubmitConfirmModal(clipped);
 }
 function openSubmitConfirmModal(textUnit) {
+if (state.skipSubmitConfirm) {
+commitSingleSlotTurn(textUnit, state.freeMode);
+return;
+}
 state.pendingInputText = textUnit;
 const previewStr = buildHypotheticalPoemPreview([textUnit]);
 document.getElementById('submit-confirm-poem-preview').textContent = previewStr;
@@ -6560,7 +6572,8 @@ const flower = getSelectedFlower();
 const nonEmptyLines = state.lines.map(line => line.map(c => c.text).join('')).filter(Boolean);
 const poemText = nonEmptyLines.join('');
 const siteUrl = getShareSiteUrl(false);
-const shareText = `題 ${flower.name}\n\n\n${poemText}\n\n\n#兄妹の花で詠み人知らず\n\n${siteUrl}`;
+const blankTwoLines = '\n\uFE0E \uFE0E\n\uFE0E \uFE0E\n';
+const shareText = `題 ${flower.name}${blankTwoLines}${poemText}${blankTwoLines}#兄妹の花で詠み人知らず\n\n${siteUrl}`;
 const item = getTargetCanvasAndSuffix();
 const mainCanvas = item.canvas;
 if (navigator.canShare && navigator.share && mainCanvas) {
@@ -6650,7 +6663,8 @@ const built = buildOffscreenCanvasForPoemEntry(entry);
 const siteUrl = getShareSiteUrl(false);
 const flowerName = built.flower ? built.flower.name : (entry.flowerName || 'チューリップ');
 const poemText = String(entry.poemText || '').replace(/[ 　]/g, '');
-const shareText = `題 ${flowerName}\n\n\n${poemText}\n\n\n#兄妹の花で詠み人知らず\n\n${siteUrl}`;
+const blankTwoLines = '\n\uFE0E \uFE0E\n\uFE0E \uFE0E\n';
+const shareText = `題 ${flowerName}${blankTwoLines}${poemText}${blankTwoLines}#兄妹の花で詠み人知らず\n\n${siteUrl}`;
 if (navigator.canShare && navigator.share) {
 try {
 const blob = await new Promise(resolve => built.canvas.toBlob(resolve, 'image/png'));
@@ -7656,10 +7670,25 @@ if (state.botTimer) {
 clearTimeout(state.botTimer);
 state.botTimer = null;
 }
+if (state.lobbyMode === 'solo') {
 document.getElementById('return-title-confirm-text').innerHTML =
-state.lobbyMode === 'solo'
-? '<strong>タイトルに戻り</strong>ます。よろしいですか？'
-: 'タイトルへ戻ると、<strong>自動的に退室</strong>します。よろしいですか？';
+'<strong>タイトルに戻り</strong>ます。よろしいですか？';
+} else {
+const leavingName = state.currentUserName || '007';
+const isLeavingMatch = (p) => !p.isBot && (
+(state.myPlayerId && p.id === state.myPlayerId) ||
+(state.clientId && p.clientId === state.clientId) ||
+p.name === leavingName
+);
+const otherHumansCount =
+(state.waitingSlots || []).filter(p => !p.isBot && !isLeavingMatch(p)).length +
+(state.restingPlayers || []).filter(p => !p.isBot && !isLeavingMatch(p)).length;
+const unmannedNote = otherHumansCount === 0
+? '<br><span class="inline-block mt-1.5 text-xs text-zinc-600">※無人の部屋は24時間後に<strong>自動で閉鎖</strong>されます。</span>'
+: '';
+document.getElementById('return-title-confirm-text').innerHTML =
+`タイトルへ戻ると、<strong>自動的に退室</strong>します。よろしいですか？${unmannedNote}`;
+}
 document.getElementById('modal-return-title-confirm').classList.remove('hidden');
 };
 const replaceLeavingPlayerWithAiAndSync = () => {
@@ -7833,7 +7862,7 @@ document.getElementById('btn-back-lobby').classList.add('hidden');
 updateHeaderUserNameBadge();
 renderLobbyRoleTabs();
 if (becameUnmanned) {
-document.getElementById('modal-unmanned-room-notice').classList.remove('hidden');
+showToast('無人の部屋は24時間後に自動で閉鎖されます');
 }
 };
 window.addEventListener('pagehide', () => {
@@ -7947,6 +7976,12 @@ document.getElementById('btn-confirm-free-skip').addEventListener('click', execu
 document.getElementById('btn-cancel-free-skip').addEventListener('click', () => {
 document.getElementById('modal-free-skip-confirm').classList.add('hidden');
 });
+const chkSkipSubmitConfirmEl = document.getElementById('chk-skip-submit-confirm');
+if (chkSkipSubmitConfirmEl) {
+chkSkipSubmitConfirmEl.addEventListener('change', (e) => {
+state.skipSubmitConfirm = !!e.target.checked;
+});
+}
 document.getElementById('chk-ai-kagen').addEventListener('change', (e) => {
 if (!state.isHost && state.lobbyMode !== 'solo') return;
 state.aiKagen = e.target.checked;
