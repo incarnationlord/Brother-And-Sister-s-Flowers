@@ -15,11 +15,6 @@
 <meta name="twitter:image" content="https://placehold.jp/110/f4b4c4/27272a/1200x630.png?text=%E5%85%84%E5%A6%B9%E3%81%AE%E8%8A%B1">
 <meta name="description" content="兄妹の花で『詠み人知らず』ができる非公式Webサイト。１人から遊べます。">
 <title>［非公式］兄妹の花で詠み人知らず</title>
-     <script>
-  window.YOMIBITO_CLOUD_CONFIG = {
-    databaseUrl: "https://brother-and-sister-s-flowers-default-rtdb.firebaseio.com/"
-  };
-     </script>
 <script src="https://cdn.tailwindcss.com/3.4.17"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
@@ -1298,6 +1293,408 @@ return `${baseUrl}?room=${encodeURIComponent(state.roomId)}&kw=${encodeURICompon
 return baseUrl;
 }
 const ROOM_STORAGE_PREFIX = 'yomibito_room_v1_';
+const DISCONNECTED_PRUNE_TIMEOUT_MS = 3 * 60 * 1000;
+function extractSlotTimestamp(p) {
+if (!p) return 0;
+if (p.joinedAt && Number(p.joinedAt) > 1000) return Number(p.joinedAt);
+if (p.id && typeof p.id === 'string') {
+const m = p.id.match(/^guest-(\d{10,15})-/);
+if (m) return Number(m[1]);
+}
+return 0;
+}
+function analyzeChatLogPlayerEvents(chatMessages) {
+const stats = {};
+const ensure = (name) => {
+if (!stats[name]) {
+stats[name] = { enterCount: 0, leaveCount: 0, lastEvent: null, lastEnterIdx: -1, lastLeaveIdx: -1, lastActiveIdx: -1 };
+}
+return stats[name];
+};
+if (!Array.isArray(chatMessages)) return stats;
+chatMessages.forEach((msg, idx) => {
+if (!msg) return;
+const text = String(msg.text || '').trim();
+const isSys = !!(msg.isSystem || msg.sender === 'システム');
+if (isSys) {
+let m = text.match(/^(.+)さんが(?:部屋を立てました|入室しました)。$/);
+if (m) {
+const st = ensure(m[1].trim());
+st.enterCount += 1;
+st.lastEvent = 'enter';
+st.lastEnterIdx = idx;
+return;
+}
+m = text.match(/^(.+)さんが(?:退室しました|主催者により退室させられました)。$/);
+if (m) {
+const st = ensure(m[1].trim());
+st.leaveCount += 1;
+st.lastEvent = 'leave';
+st.lastLeaveIdx = idx;
+return;
+}
+m = text.match(/^(.+)さんが(?:見学しています|主催者に)/);
+if (m) {
+const st = ensure(m[1].trim());
+st.lastActiveIdx = idx;
+}
+} else if (msg.sender && msg.sender !== 'システム') {
+const st = ensure(String(msg.sender).trim());
+st.lastActiveIdx = idx;
+}
+});
+return stats;
+}
+function sanitizeRoomSnapshotPlayers(snap, options = {}) {
+if (!snap || typeof snap !== 'object') return { snap, modified: false };
+const now = Date.now();
+const isLiveRoom = !!options.isLiveRoom;
+let modified = false;
+snap.waitingSlots = Array.isArray(snap.waitingSlots) ? snap.waitingSlots : [];
+snap.restingPlayers = Array.isArray(snap.restingPlayers) ? snap.restingPlayers : [];
+snap.activePlayers = Array.isArray(snap.activePlayers) ? snap.activePlayers : [];
+snap.spectators = Array.isArray(snap.spectators) ? snap.spectators : [];
+const chatStats = analyzeChatLogPlayerEvents(snap.chatMessages);
+const allInitialHumans = [
+...snap.waitingSlots.filter(p => p && !p.isBot),
+...snap.restingPlayers.filter(p => p && !p.isBot)
+];
+const allHumanNamesInSlots = new Set(allInitialHumans.map(p => String(p.name || '').trim()).filter(Boolean));
+if (isLiveRoom && state.currentUserName) {
+allHumanNamesInSlots.add(String(state.currentUserName).trim());
+}
+const shouldRemoveHumanSlot = (p, zone) => {
+if (!p || p.isBot) return false;
+const isMe = isLiveRoom && isPlayerMe(p);
+if (isMe) {
+p.lastSeen = now;
+p.clientId = state.clientId;
+if (!p.joinedAt || p.joinedAt <= 1) p.joinedAt = now;
+return false;
+}
+if (isLiveRoom && p.clientId && state.clientId && p.clientId === state.clientId) {
+return true;
+}
+const name = String(p.name || '').trim();
+if (!name) return true;
+const baseName = name.replace(/^偽+/, '');
+const st = chatStats[name];
+const baseSt = chatStats[baseName];
+const joinedTs = extractSlotTimestamp(p);
+const lastSeenTs = (p.lastSeen && Number(p.lastSeen) > 1000) ? Number(p.lastSeen) : 0;
+const hasFreshHeartbeat = lastSeenTs > 0 && (now - lastSeenTs <= PRESENCE_TIMEOUT_MS);
+if (st && st.lastEvent === 'leave' && st.lastActiveIdx < st.lastLeaveIdx) {
+return true;
+}
+if (st && st.enterCount >= 2 && st.leaveCount >= 1 && !hasFreshHeartbeat) {
+return true;
+}
+const fakeVariantNames = new Set();
+Object.keys(chatStats).forEach(k => {
+if (k !== name && k.replace(/^偽+/, '') === baseName && k.startsWith('偽')) fakeVariantNames.add(k);
+});
+allHumanNamesInSlots.forEach(k => {
+if (k !== name && k.replace(/^偽+/, '') === baseName && k.startsWith('偽')) fakeVariantNames.add(k);
+});
+if (name === baseName && fakeVariantNames.size > 0) {
+for (const fName of fakeVariantNames) {
+const fSt = chatStats[fName];
+if (fSt && fSt.lastEvent === 'leave' && !hasFreshHeartbeat && (st ? st.lastActiveIdx : -1) < fSt.lastEnterIdx) {
+return true;
+}
+if (allHumanNamesInSlots.has(fName) && !hasFreshHeartbeat && (st ? st.lastActiveIdx : -1) < (fSt ? fSt.lastEnterIdx : 999999)) {
+return true;
+}
+if (p.id === 'host-0' && (!p.joinedAt || p.joinedAt <= 1) && !lastSeenTs) {
+return true;
+}
+}
+}
+if (name !== baseName) {
+if (baseSt && baseSt.lastEvent === 'leave' && !hasFreshHeartbeat && (st ? st.lastActiveIdx : -1) < baseSt.lastLeaveIdx) {
+return true;
+}
+const baseActiveInSlots = allInitialHumans.some(h => h !== p && String(h.name || '').trim() === baseName && ((h.lastSeen && now - h.lastSeen <= PRESENCE_TIMEOUT_MS) || (isLiveRoom && isPlayerMe(h))));
+if (baseActiveInSlots && !hasFreshHeartbeat) {
+return true;
+}
+}
+if (lastSeenTs === 0) {
+if (!p.joinedAt || p.joinedAt <= 1) {
+if ((snap.updatedAt && now - snap.updatedAt > PRESENCE_TIMEOUT_MS) || allInitialHumans.length > 1 || (Array.isArray(snap.chatMessages) && snap.chatMessages.length > 1)) {
+return true;
+}
+} else if (joinedTs > 0 && (now - joinedTs > PRESENCE_TIMEOUT_MS)) {
+return true;
+} else if (snap.updatedAt && (now - snap.updatedAt > PRESENCE_TIMEOUT_MS)) {
+return true;
+}
+} else if (now - lastSeenTs > (p.clientId ? DISCONNECTED_PRUNE_TIMEOUT_MS : PRESENCE_TIMEOUT_MS)) {
+return true;
+}
+if (zone === 'resting' && (p.restingReason === 'result' || p.restingReason === 'disconnect') && snap.roomPhase === 'waiting' && !hasFreshHeartbeat) {
+return true;
+}
+return false;
+};
+const prevWaitingLen = snap.waitingSlots.length;
+snap.waitingSlots = snap.waitingSlots.filter(p => {
+if (!p) { modified = true; return false; }
+if (p.isBot) return true;
+if (shouldRemoveHumanSlot(p, 'active')) {
+modified = true;
+return false;
+}
+return true;
+});
+if (snap.waitingSlots.length !== prevWaitingLen) modified = true;
+const prevRestingLen = snap.restingPlayers.length;
+snap.restingPlayers = snap.restingPlayers.filter(p => {
+if (!p) { modified = true; return false; }
+if (p.isBot) return false;
+if (shouldRemoveHumanSlot(p, 'resting')) {
+modified = true;
+return false;
+}
+return true;
+});
+if (snap.restingPlayers.length !== prevRestingLen) modified = true;
+const scoreHumanCandidate = (p, zone) => {
+let s = 0;
+if (isLiveRoom && isPlayerMe(p)) s += 1e15;
+if (zone === 'active' && p.restingReason !== 'manual') s += 1e13;
+if (zone === 'resting' && (p.restingReason === 'manual' || p.manualRest)) s += 1e13;
+s += Math.max(Number(p.lastSeen) || 0, extractSlotTimestamp(p));
+return s;
+};
+const bestByKey = new Map();
+const registerCand = (p, zone) => {
+if (!p || p.isBot) return;
+const sc = scoreHumanCandidate(p, zone);
+const keys = [
+p.id ? `id:${p.id}` : null,
+p.name ? `name:${String(p.name).trim()}` : null,
+p.clientId ? `client:${p.clientId}` : null
+].filter(Boolean);
+for (const k of keys) {
+const existing = bestByKey.get(k);
+if (!existing || sc > existing.score) {
+bestByKey.set(k, { ref: p, score: sc });
+}
+}
+};
+snap.waitingSlots.forEach(p => registerCand(p, 'active'));
+snap.restingPlayers.forEach(p => registerCand(p, 'resting'));
+const isCanonicalWinner = (p) => {
+if (!p || p.isBot) return true;
+const keys = [
+p.id ? `id:${p.id}` : null,
+p.name ? `name:${String(p.name).trim()}` : null,
+p.clientId ? `client:${p.clientId}` : null
+].filter(Boolean);
+return keys.every(k => !bestByKey.has(k) || bestByKey.get(k).ref === p);
+};
+const dedupWait = snap.waitingSlots.filter(p => {
+if (p.isBot) return true;
+if (!isCanonicalWinner(p)) { modified = true; return false; }
+return true;
+});
+const seenWaitRef = new Set(dedupWait.filter(p => !p.isBot));
+const dedupRest = snap.restingPlayers.filter(p => {
+if (!isCanonicalWinner(p) || seenWaitRef.has(p)) { modified = true; return false; }
+seenWaitRef.add(p);
+return true;
+});
+snap.waitingSlots = dedupWait;
+snap.restingPlayers = dedupRest;
+const remainingHumans = [
+...snap.waitingSlots.filter(p => !p.isBot),
+...snap.restingPlayers.filter(p => !p.isBot)
+];
+const validHumanIds = new Set(remainingHumans.map(p => p.id).filter(Boolean));
+const validHumanNames = new Set(remainingHumans.map(p => String(p.name || '').trim()).filter(Boolean));
+if (Array.isArray(snap.spectators) && snap.spectators.length > 0) {
+const seenSpec = new Set();
+const nextSpecs = snap.spectators.filter(s => {
+if (!s || !s.name) return false;
+const st = chatStats[String(s.name).trim()];
+if (st && st.lastEvent === 'leave') return false;
+const k = s.id || s.name;
+if (seenSpec.has(k)) return false;
+seenSpec.add(k);
+return true;
+});
+if (nextSpecs.length !== snap.spectators.length) {
+snap.spectators = nextSpecs;
+modified = true;
+}
+}
+if (!snap.inGame) {
+if (snap.roomPhase === 'waiting' && snap.activePlayers.length > 0) {
+snap.activePlayers = [];
+modified = true;
+} else if (snap.activePlayers.length > 0) {
+const seenActNames = new Set();
+const cleanedAct = snap.activePlayers.filter(p => {
+if (!p) return false;
+if (p.isBot) return true;
+if (shouldRemoveHumanSlot(p, 'game')) return false;
+const nm = String(p.name || '').trim();
+if (seenActNames.has(nm)) return false;
+seenActNames.add(nm);
+return true;
+});
+if (cleanedAct.length !== snap.activePlayers.length) {
+snap.activePlayers = cleanedAct;
+modified = true;
+}
+}
+} else {
+if (remainingHumans.length === 0) {
+snap.inGame = false;
+snap.roomPhase = 'waiting';
+snap.activePlayers = [];
+snap.finishVoteState = null;
+modified = true;
+} else if (snap.activePlayers.length > 0) {
+const usedBotNames = new Set(snap.activePlayers.map(a => a && a.name).filter(Boolean));
+const seenInGameHumans = new Set();
+const hadAnyBot = snap.activePlayers.some(p => p && p.isBot);
+const nextActive = [];
+snap.activePlayers.forEach((p, idx) => {
+if (!p) { modified = true; return; }
+if (p.isBot) { nextActive.push(p); return; }
+const nm = String(p.name || '').trim();
+const isGhost = (!validHumanIds.has(p.id) && !validHumanNames.has(nm)) || shouldRemoveHumanSlot(p, 'game');
+const isDup = seenInGameHumans.has(p.id || nm);
+if (isGhost || isDup) {
+modified = true;
+if (!isDup && hadAnyBot) {
+const botName = AI_SPY_NAMES.find(n => !usedBotNames.has(n)) || 'AIスパイ';
+usedBotNames.add(botName);
+nextActive.push({
+id: `ai-sub-${Date.now()}-${idx}`,
+name: botName,
+isBot: true,
+isHostPlayer: false,
+joinedAt: 0,
+color: p.color || PLAYER_COLORS[idx % PLAYER_COLORS.length]
+});
+}
+return;
+}
+seenInGameHumans.add(p.id || nm);
+nextActive.push(p);
+});
+snap.activePlayers = nextActive;
+if (snap.activePlayers.length === 0) {
+snap.inGame = false;
+snap.roomPhase = 'waiting';
+modified = true;
+}
+}
+}
+if (remainingHumans.length === 0) {
+if (!snap.emptySince) {
+snap.emptySince = snap.updatedAt || now;
+modified = true;
+}
+if (snap.waitingSlots.length === 0) {
+for (let i = 0; i < 2; i++) {
+snap.waitingSlots.push({
+id: `ai-auto-${i}-${now}`,
+name: AI_SPY_NAMES[i % AI_SPY_NAMES.length],
+isBot: true,
+isHostPlayer: false,
+joinedAt: 0,
+color: PLAYER_COLORS[i % PLAYER_COLORS.length]
+});
+}
+modified = true;
+}
+} else {
+if (snap.emptySince !== null) {
+snap.emptySince = null;
+modified = true;
+}
+let hostHuman = remainingHumans.find(p => p.id && p.id === snap.hostPlayerId)
+|| remainingHumans.find(p => p.isHostPlayer)
+|| remainingHumans.slice().sort((a, b) => (extractSlotTimestamp(a) || 9999999999999) - (extractSlotTimestamp(b) || 9999999999999))[0];
+if (hostHuman) {
+if (snap.hostPlayerId !== hostHuman.id || snap.hostName !== hostHuman.name) {
+snap.hostPlayerId = hostHuman.id;
+snap.hostName = hostHuman.name;
+modified = true;
+}
+snap.waitingSlots.forEach(p => {
+const shouldBeHost = !p.isBot && p.id === hostHuman.id;
+if (!!p.isHostPlayer !== shouldBeHost) {
+p.isHostPlayer = shouldBeHost;
+modified = true;
+}
+});
+snap.restingPlayers.forEach(p => {
+const shouldBeHost = !p.isBot && p.id === hostHuman.id;
+if (!!p.isHostPlayer !== shouldBeHost) {
+p.isHostPlayer = shouldBeHost;
+modified = true;
+}
+});
+snap.activePlayers.forEach(p => {
+const shouldBeHost = !p.isBot && p.id === hostHuman.id;
+if (!!p.isHostPlayer !== shouldBeHost) {
+p.isHostPlayer = shouldBeHost;
+modified = true;
+}
+});
+}
+}
+snap.waitingSlots.forEach((p, idx) => {
+const expectedColor = PLAYER_COLORS[idx % PLAYER_COLORS.length];
+if (p.color !== expectedColor) {
+p.color = expectedColor;
+}
+});
+snap.playerCount = Math.max(1, snap.waitingSlots.length);
+return { snap, modified };
+}
+function sanitizeCurrentStatePlayers() {
+if (state.lobbyMode === 'solo') return false;
+const pseudoSnap = {
+roomKeyword: state.roomKeyword,
+roomId: state.roomId,
+hostName: state.hostName,
+hostPlayerId: state.hostPlayerId,
+playerCount: state.playerCount,
+waitingSlots: state.waitingSlots || [],
+restingPlayers: state.restingPlayers || [],
+spectators: state.spectators || [],
+emptySince: state.emptySince || null,
+chatMessages: state.chatMessages || [],
+roomPhase: state.roomPhase || 'waiting',
+inGame: !!state.inGame,
+activePlayers: state.activePlayers || [],
+finishVoteState: state.finishVoteState || null,
+updatedAt: Date.now()
+};
+const { modified } = sanitizeRoomSnapshotPlayers(pseudoSnap, { isLiveRoom: true });
+state.waitingSlots = pseudoSnap.waitingSlots;
+state.restingPlayers = pseudoSnap.restingPlayers;
+state.spectators = pseudoSnap.spectators;
+state.activePlayers = pseudoSnap.activePlayers;
+state.hostPlayerId = pseudoSnap.hostPlayerId;
+state.hostName = pseudoSnap.hostName;
+state.playerCount = pseudoSnap.playerCount;
+state.emptySince = pseudoSnap.emptySince;
+state.inGame = pseudoSnap.inGame;
+state.roomPhase = pseudoSnap.roomPhase;
+state.finishVoteState = pseudoSnap.finishVoteState;
+if (state.myPlayerId && state.hostPlayerId === state.myPlayerId && !state.isHost) {
+state.isHost = true;
+updateAiVocabSliderUI();
+}
+return modified;
+}
 const RoomSyncEngine = {
 channel: null,
 currentRoomKey: null,
@@ -1340,6 +1737,21 @@ this.handleIncomingSnapshot(roomKey, parsed, parsed.updatedBy);
 }
 });
 this.pruneStaleLocalRooms();
+setTimeout(async () => {
+try {
+const rawHist = localStorage.getItem(ROOM_HISTORY_STORAGE_KEY);
+if (rawHist) {
+const histList = JSON.parse(rawHist);
+if (Array.isArray(histList)) {
+for (const item of histList) {
+if (item && item.keyword && item.roomId) {
+await this.fetchRoomSnapshot(item.keyword, item.roomId, true);
+}
+}
+}
+}
+} catch (e) {}
+}, 50);
 } catch (e) {}
 },
 pruneStaleLocalRooms() {
@@ -1355,6 +1767,14 @@ const parsed = JSON.parse(localStorage.getItem(k));
 const isGhostRoom = parsed && (!parsed.chatMessages || parsed.chatMessages.length === 0) && (!parsed.completedPoems || parsed.completedPoems.length === 0) && !parsed.inGame;
 if (!parsed || isGhostRoom || (parsed.updatedAt && now - parsed.updatedAt > maxAgeMs)) {
 keysToDelete.push(k);
+} else if (parsed) {
+const { modified } = sanitizeRoomSnapshotPlayers(parsed, { isLiveRoom: false });
+if (parsed.emptySince && (now - parsed.emptySince > maxAgeMs)) {
+keysToDelete.push(k);
+} else if (modified) {
+localStorage.setItem(k, JSON.stringify(parsed));
+this.saveCleanedSnapshotToCloud(parsed);
+}
 }
 } catch (e) {
 keysToDelete.push(k);
@@ -1363,6 +1783,24 @@ keysToDelete.push(k);
 }
 keysToDelete.forEach(k => localStorage.removeItem(k));
 } catch (e) {}
+},
+async saveCleanedSnapshotToCloud(snapshot) {
+if (!snapshot || !snapshot.roomKeyword || !snapshot.roomId) return;
+const roomKey = this.makeRoomKey(snapshot.roomKeyword, snapshot.roomId);
+try {
+localStorage.setItem(ROOM_STORAGE_PREFIX + roomKey, JSON.stringify(snapshot));
+} catch (e) {}
+const cloudCfg = window.YOMIBITO_CLOUD_CONFIG;
+if (cloudCfg && cloudCfg.databaseUrl && /^https?:\/\//.test(cloudCfg.databaseUrl)) {
+try {
+const endpoint = new URL('/rooms/' + encodeURIComponent(roomKey) + '.json', cloudCfg.databaseUrl).href;
+await window.fetch(endpoint, {
+method: 'PUT',
+headers: { 'Content-Type': 'application/json' },
+body: JSON.stringify(snapshot)
+});
+} catch (e) {}
+}
 },
 resolvePendingDiscovery(snapshot) {
 if (!snapshot || !this.pendingDiscoveryResolvers.length) return;
@@ -1453,6 +1891,16 @@ body: JSON.stringify(snapshot)
 async fetchRoomSnapshot(keyword, roomId, exactIdOnly = false) {
 const cleanKw = (keyword || '').trim();
 const cleanId = (roomId || '').trim();
+const finalizeFetched = (snap) => {
+if (!snap) return null;
+const isLobbyOpen = !document.getElementById('view-lobby').classList.contains('hidden');
+const isLive = !isLobbyOpen && state.lobbyMode !== 'solo' && state.roomKeyword === snap.roomKeyword && state.roomId === snap.roomId;
+const { modified } = sanitizeRoomSnapshotPlayers(snap, { isLiveRoom: isLive });
+if (modified) {
+this.saveCleanedSnapshotToCloud(snap);
+}
+return snap;
+};
 const cloudCfg = window.YOMIBITO_CLOUD_CONFIG;
 if (cloudCfg && cloudCfg.databaseUrl && /^https?:\/\//.test(cloudCfg.databaseUrl) && cleanId) {
 try {
@@ -1461,7 +1909,7 @@ const endpoint = new URL('/rooms/' + encodeURIComponent(roomKey) + '.json', clou
 const res = await window.fetch(endpoint);
 if (res.ok) {
 const data = await res.json();
-if (data && data.roomId) return data;
+if (data && data.roomId) return finalizeFetched(data);
 }
 } catch (e) {}
 }
@@ -1469,7 +1917,7 @@ try {
 if (cleanId) {
 const exactKey = ROOM_STORAGE_PREFIX + this.makeRoomKey(cleanKw, cleanId);
 const raw = localStorage.getItem(exactKey);
-if (raw) return JSON.parse(raw);
+if (raw) return finalizeFetched(JSON.parse(raw));
 }
 if (!exactIdOnly) {
 let bestMatch = null;
@@ -1485,7 +1933,7 @@ bestMatch = parsed;
 }
 }
 }
-if (bestMatch) return bestMatch;
+if (bestMatch) return finalizeFetched(bestMatch);
 }
 } catch (e) {}
 if (this.channel) {
@@ -1504,7 +1952,7 @@ if (idx !== -1) this.pendingDiscoveryResolvers.splice(idx, 1);
 resolve(null);
 }, 160);
 });
-if (foundViaChannel) return foundViaChannel;
+if (foundViaChannel) return finalizeFetched(foundViaChannel);
 } catch (e) {}
 }
 return null;
@@ -1536,8 +1984,28 @@ state.roomId = snapshot.roomId || state.roomId;
 state.hostName = snapshot.hostName || state.hostName;
 state.hostPlayerId = snapshot.hostPlayerId || state.hostPlayerId;
 state.playerCount = snapshot.playerCount || state.playerCount;
-state.waitingSlots = snapshot.waitingSlots || state.waitingSlots;
-state.restingPlayers = snapshot.restingPlayers || [];
+const prevLastSeenMap = new Map();
+[...(state.waitingSlots || []), ...(state.restingPlayers || []), ...(state.activePlayers || [])].forEach(p => {
+if (p && !p.isBot && p.lastSeen) {
+if (p.id) prevLastSeenMap.set(`id:${p.id}`, Math.max(prevLastSeenMap.get(`id:${p.id}`) || 0, p.lastSeen));
+if (p.name) prevLastSeenMap.set(`name:${p.name}`, Math.max(prevLastSeenMap.get(`name:${p.name}`) || 0, p.lastSeen));
+}
+});
+const mergeLastSeen = (list) => (list || []).map(p => {
+if (!p || p.isBot) return p;
+const bestPrev = Math.max(
+p.id ? (prevLastSeenMap.get(`id:${p.id}`) || 0) : 0,
+p.name ? (prevLastSeenMap.get(`name:${p.name}`) || 0) : 0
+);
+const merged = { ...p, lastSeen: Math.max(p.lastSeen || 0, bestPrev) || p.lastSeen };
+if (isPlayerMe(merged)) {
+merged.lastSeen = Date.now();
+merged.clientId = state.clientId;
+}
+return merged;
+});
+state.waitingSlots = mergeLastSeen(snapshot.waitingSlots || state.waitingSlots);
+state.restingPlayers = mergeLastSeen(snapshot.restingPlayers || []);
 state.spectators = snapshot.spectators || [];
 state.emptySince = snapshot.emptySince || null;
 state.selectedFlowerId = snapshot.selectedFlowerId || state.selectedFlowerId;
@@ -1570,7 +2038,8 @@ existingPoemKeys.add(k);
 }
 });
 }
-state.activePlayers = snapshot.activePlayers || [];
+state.activePlayers = mergeLastSeen(snapshot.activePlayers || []);
+sanitizeCurrentStatePlayers();
 state.turnIndex = snapshot.turnIndex !== undefined ? snapshot.turnIndex : state.turnIndex;
 state.currentLine = snapshot.currentLine !== undefined ? snapshot.currentLine : state.currentLine;
 state.lines = snapshot.lines || [[], [], []];
@@ -1844,11 +2313,164 @@ const GRAMMATICAL_TAIL_RULES = [
 { match: 'ひだま', nextMoras: ['り', 'に'] },
 { match: 'しずけ', nextMoras: ['さ', 'や'] }
 ];
+const POST_FLOWER_PHRASES_BY_LEVEL = {
+1: {
+3: ['がきた', 'がすき', 'をみる', 'がさく', 'もいい', 'とねる'],
+4: ['がさいた', 'がわらう', 'をみつけ', 'とあそぶ', 'がゆれる', 'のだっこ'],
+5: ['がさいたよ', 'とあそぼう', 'をみつけた', 'がわらった', 'がだいすき'],
+6: ['がきれいにさく', 'といっしょにね', 'をみつけてきた', 'がにこにこする']
+},
+2: {
+3: ['がやば', 'がえぐ', 'はかみ', 'ががち', 'でくさ', 'もえも'],
+4: ['がやばい', 'がえぐい', 'でわろた', 'はえもい', 'がばぐる', 'がつんだ'],
+5: ['がまじやば', 'がえぐすぎ', 'でくさはえ', 'はかみすぎ', 'がわろたよ'],
+6: ['がまじでやばい', 'がえぐすぎてさ', 'はがちでえもい', 'でくさはえるよ']
+},
+3: {
+3: ['がさく', 'がゆれ', 'のいろ', 'のかげ', 'のはな', 'のかぜ', 'にさく', 'にゆれ', 'はさく', 'もさく', 'をみる', 'のつゆ'],
+4: ['がさいた', 'がゆれる', 'がひかる', 'のかおり', 'のひかり', 'のつぼみ', 'にゆれる', 'にであう', 'をみつけ', 'はしろい', 'もゆれる', 'のかぜに'],
+5: ['がさいてる', 'がゆれてる', 'のかおりが', 'のつぼみが', 'にひかりが', 'をみつめて', 'のかぜふく'],
+6: ['がしずかにさく', 'がかぜにゆれて', 'のかおりがする', 'のつぼみがさく', 'にひかりがさす', 'をそっとみつめ']
+},
+4: {
+3: ['のいろ', 'のかげ', 'がまう', 'にまう', 'のつゆ', 'のまい', 'ぞさく'],
+4: ['のかおり', 'のしらべ', 'がゆらぐ', 'のひかり', 'ぞさける', 'にたゆた'],
+5: ['のかおりに', 'がさきほこ', 'のしらべに', 'にたゆたう', 'のひかりに'],
+6: ['があでやかにさ', 'のかぐわしきか', 'のしらべがひび', 'がたおやかにゆ']
+},
+5: {
+3: ['のかげ', 'のやみ', 'がまう', 'のつみ', 'のゆめ', 'にきゆ', 'ぞまう'],
+4: ['のきおく', 'がほろぶ', 'のさだめ', 'にしずむ', 'のりんね', 'のこくう'],
+5: ['のしんえん', 'がほろびゆ', 'のさだめに', 'のりんねに', 'にきえゆく'],
+6: ['がこくうにきえ', 'のいんがめぐる', 'がしんえんへと', 'のりんねをこえ']
+}
+};
+function isTextEndingWithAnyFlower(rawText) {
+if (!rawText) return false;
+const cleanRaw = String(rawText).replace(/[\s\u3000。、！？!?〜～]/g, '').trim();
+if (!cleanRaw) return false;
+const cleanHira = toHiragana(cleanRaw);
+const flowerList = [getSelectedFlower(), ...FLOWERS];
+for (const f of flowerList) {
+if (!f || !Array.isArray(f.aliases)) continue;
+for (const alias of f.aliases) {
+const label = stripReadingParentheses(alias.label);
+const kana = alias.kana;
+if (label && cleanRaw.endsWith(label)) return true;
+if (kana && cleanHira.endsWith(kana)) return true;
+}
+}
+return false;
+}
+function analyzeCurrentLineFlowerState() {
+if (!state || !state.lines) return null;
+const currentLineCells = state.lines[state.currentLine];
+if (!Array.isArray(currentLineCells) || currentLineCells.length === 0) return null;
+const targetLen = state.lineTargets[state.currentLine] || 5;
+let flowerEndCellIdx = -1;
+for (let i = currentLineCells.length - 1; i >= 0; i--) {
+if (currentLineCells[i] && currentLineCells[i].isFlower) {
+flowerEndCellIdx = i;
+break;
+}
+}
+if (flowerEndCellIdx === -1) {
+const flower = getSelectedFlower();
+if (flower && Array.isArray(flower.aliases)) {
+for (let i = currentLineCells.length - 1; i >= 0; i--) {
+const rawUpToI = currentLineCells.slice(0, i + 1).map(c => (c && c.text) ? c.text : '').join('');
+const hiraUpToI = toHiragana(rawUpToI);
+let matched = false;
+for (const alias of flower.aliases) {
+const cleanLabel = stripReadingParentheses(alias.label);
+const kana = alias.kana;
+if ((cleanLabel && rawUpToI.endsWith(cleanLabel)) || (kana && hiraUpToI.endsWith(kana))) {
+matched = true;
+break;
+}
+}
+if (matched) {
+flowerEndCellIdx = i;
+break;
+}
+}
+}
+}
+if (flowerEndCellIdx === -1) return null;
+const remSlotsAtFlowerEnd = targetLen - (flowerEndCellIdx + 1);
+const postFlowerCells = currentLineCells.slice(flowerEndCellIdx + 1);
+const remSlotsNow = targetLen - currentLineCells.length;
+return {
+flowerEndCellIdx,
+remSlotsAtFlowerEnd,
+postFlowerCells,
+remSlotsNow
+};
+}
 function chooseContextualMoraForBot() {
 const currentLineCells = state.lines[state.currentLine];
 const targetLen = state.lineTargets[state.currentLine];
 const remSlots = targetLen - currentLineCells.length;
-const lineSoFarKana = toHiragana(currentLineCells.map(c => c.text).join(''));
+const flowerState = analyzeCurrentLineFlowerState();
+if (flowerState && flowerState.remSlotsNow >= 1) {
+if (flowerState.remSlotsAtFlowerEnd === 1 && flowerState.postFlowerCells.length === 0) {
+return 'や';
+}
+if (flowerState.remSlotsAtFlowerEnd === 2) {
+if (flowerState.postFlowerCells.length === 0 && flowerState.remSlotsNow === 2) {
+return 'か';
+}
+if (flowerState.postFlowerCells.length === 1 && flowerState.remSlotsNow === 1) {
+const prevPostMora = toHiragana(flowerState.postFlowerCells[0].text || '');
+if (prevPostMora === 'か') return 'な';
+if (prevPostMora === 'け') return 'り';
+}
+}
+}
+let effectiveCells = currentLineCells;
+if (flowerState && flowerState.remSlotsAtFlowerEnd >= 3 && flowerState.remSlotsNow >= 1) {
+const postKana = toHiragana(flowerState.postFlowerCells.map(c => c.text).join(''));
+const postMoras = splitIntoMoras(postKana, true);
+const totalPostLen = postMoras.length + flowerState.remSlotsNow;
+const lv = Math.max(1, Math.min(5, Number(state.aiVocabLevel) || 3));
+const lvTable = POST_FLOWER_PHRASES_BY_LEVEL[lv] || POST_FLOWER_PHRASES_BY_LEVEL[3];
+const stdTable = POST_FLOWER_PHRASES_BY_LEVEL[3];
+const exactLenPool = [...(lvTable[totalPostLen] || []), ...(stdTable[totalPostLen] || [])];
+if (postMoras.length === 0) {
+if (exactLenPool.length > 0) {
+const lvList = (lvTable[totalPostLen] && lvTable[totalPostLen].length > 0) ? lvTable[totalPostLen] : exactLenPool;
+const picked = lvList[Math.floor(Math.random() * lvList.length)];
+const pMoras = splitIntoMoras(picked, true);
+if (pMoras[0]) return pMoras[0];
+}
+const startParticles = ['が', 'の', 'に', 'は', 'を', 'と', 'も'];
+return startParticles[Math.floor(Math.random() * startParticles.length)];
+} else {
+const matchingPostPhrases = exactLenPool.filter(p => {
+const pMoras = splitIntoMoras(p, true);
+if (pMoras.length <= postMoras.length) return false;
+for (let i = 0; i < postMoras.length; i++) {
+if (pMoras[i] !== postMoras[i]) return false;
+}
+return true;
+});
+if (matchingPostPhrases.length > 0) {
+const chosen = matchingPostPhrases[Math.floor(Math.random() * matchingPostPhrases.length)];
+const chosenMoras = splitIntoMoras(chosen, true);
+if (chosenMoras[postMoras.length]) return chosenMoras[postMoras.length];
+}
+if (postMoras[0] === 'や') {
+effectiveCells = flowerState.postFlowerCells.slice(1);
+} else if (postMoras[0] === 'か' && postMoras[1] === 'な') {
+effectiveCells = flowerState.postFlowerCells.slice(2);
+} else if (postMoras.length >= 2 && ['の', 'が', 'に', 'を', 'は', 'へ', 'と', 'で', 'も', 'ぞ'].includes(postMoras[0])) {
+effectiveCells = flowerState.postFlowerCells.slice(1);
+} else {
+effectiveCells = flowerState.postFlowerCells;
+}
+}
+}
+const lineSoFarKana = toHiragana(effectiveCells.map(c => c.text).join(''));
 const lineMorasSoFar = splitIntoMoras(lineSoFarKana, true);
 const pools = getVocabPoolsByLevel(state.aiVocabLevel);
 const activeWordBank = [...pools.words, ...STANDARD_DICTIONARY_WORDS];
@@ -1858,6 +2480,7 @@ const pickedPhrase = fullLinePool[Math.floor(Math.random() * fullLinePool.length
 const phraseMoras = splitIntoMoras(pickedPhrase, true);
 return phraseMoras[0] || 'は';
 }
+if (effectiveCells === currentLineCells) {
 const matchingFullPhrases = fullLinePool.filter(p => {
 const pMoras = splitIntoMoras(p, true);
 if (pMoras.length <= lineMorasSoFar.length) return false;
@@ -1870,6 +2493,7 @@ if (matchingFullPhrases.length > 0) {
 const chosenPhrase = matchingFullPhrases[Math.floor(Math.random() * matchingFullPhrases.length)];
 const chosenMoras = splitIntoMoras(chosenPhrase, true);
 return chosenMoras[lineMorasSoFar.length];
+}
 }
 for (let tailLen = Math.min(4, lineMorasSoFar.length); tailLen >= 1; tailLen--) {
 const tailMoras = lineMorasSoFar.slice(-tailLen);
@@ -2277,7 +2901,7 @@ rnd -= weights[i];
 }
 return candidates[candidates.length - 1];
 }
-function generateConnectedPhraseByLevel(prevText, level, currentPoemText = '') {
+function generateConnectedPhraseByLevel(prevText, level, currentPoemText = '', forceNounParticle = false) {
 const lv = Math.max(1, Math.min(5, Number(level) || 3));
 const pool = FREE_VOCAB_BY_LEVEL[lv] || FREE_VOCAB_BY_LEVEL[3];
 const fallback3 = FREE_VOCAB_BY_LEVEL[3];
@@ -2288,6 +2912,8 @@ if (!cleanT) {
 const subList = (pool.subjects && pool.subjects.length > 0) ? pool.subjects : fallback3.subjects;
 return pickCandidateByKanaPriority(subList, currentPoemKanjiRatio);
 }
+const isFlowerWord = forceNounParticle || isTextEndingWithAnyFlower(cleanT);
+if (!isFlowerWord) {
 const lastChar = cleanT.slice(-1);
 if (cleanT.endsWith('て') || cleanT.endsWith('で') || cleanT.endsWith('たら') || cleanT.endsWith('ながら')) {
 const teList = (pool.actions_te && pool.actions_te.length > 0) ? pool.actions_te : fallback3.actions_te;
@@ -2327,11 +2953,20 @@ const noList = [
 ];
 return pickCandidateByKanaPriority(noList, currentPoemKanjiRatio);
 }
-const pOptions = ['が', 'が', 'を', 'に', 'で', 'と'];
+}
+const pOptions = isFlowerWord
+? ['が', 'の', 'を', 'に', 'で', 'と', 'は', 'も']
+: ['が', 'が', 'を', 'に', 'で', 'と'];
 const p = pOptions[Math.floor(Math.random() * pOptions.length)];
-if (p === 'が') {
+if (p === 'が' || p === 'は' || p === 'も') {
 const gaList = (pool.actions_ga && pool.actions_ga.length > 0) ? pool.actions_ga : fallback3.actions_ga;
-return 'が' + pickCandidateByKanaPriority(gaList, currentPoemKanjiRatio);
+return p + pickCandidateByKanaPriority(gaList, currentPoemKanjiRatio);
+} else if (p === 'の') {
+const noList = [
+'香りがふわりと漂い', '花びらが風に揺れて', 'そばでひと息ついて',
+'前で立ち止まり見上げ', '影に隠れて様子をうかがい', '光に包まれて歩き出し'
+];
+return 'の' + pickCandidateByKanaPriority(noList, currentPoemKanjiRatio);
 } else if (p === 'を') {
 const woList = (pool.actions_wo && pool.actions_wo.length > 0) ? pool.actions_wo : fallback3.actions_wo;
 return 'を' + pickCandidateByKanaPriority(woList, currentPoemKanjiRatio);
@@ -2346,6 +2981,7 @@ const toList = (pool.actions_to && pool.actions_to.length > 0) ? pool.actions_to
 return 'と' + pickCandidateByKanaPriority(toList, currentPoemKanjiRatio);
 }
 }
+
 const STEM_COMPLETIONS = [
 { prefix: '通りすが', options: ['りながら歩き', 'りにふと見上げ', 'りの人に尋ね', 'り道で見つけて', 'り'] },
 { prefix: '幻影を追', options: ['う旅路の果てに', 'いかけて走り抜け', 'って行って息を切らし', 'えども追いつかず', 'うように見つめて'] },
@@ -2395,11 +3031,113 @@ const STEM_COMPLETIONS = [
 { prefix: '歩', options: ['きながら話をして笑い', 'いて行って木陰で休み', 'みを進めて街を抜け'] },
 { prefix: '待', options: ['ち合わせをして時計を見て', 'ち続けて夕暮れになり', 'ち遠しくて胸が高鳴り'] }
 ];
+function isTextEndingWithKirejiCut(rawText) {
+if (!rawText) return false;
+const clean = String(rawText).replace(/[\s\u3000。、！？!?〜～]/g, '').trim();
+if (!clean) return false;
+if (clean === 'や' || clean === 'かな') return true;
+const flowerList = [getSelectedFlower(), ...FLOWERS];
+const cleanHira = toHiragana(clean);
+for (const f of flowerList) {
+if (!f || !Array.isArray(f.aliases)) continue;
+for (const alias of f.aliases) {
+const label = stripReadingParentheses(alias.label);
+const kana = alias.kana;
+if (label && (clean.endsWith(label + 'や') || clean.endsWith(label + 'かな'))) return true;
+if (kana && (cleanHira.endsWith(kana + 'や') || cleanHira.endsWith(kana + 'かな'))) return true;
+}
+}
+return false;
+}
+function didPreviousTurnEndWithKirejiCut() {
+if (!state || !state.lines) return false;
+const currentLineCells = state.lines[state.currentLine] || [];
+let targetLine = currentLineCells;
+if (targetLine.length === 0 && state.currentLine > 0) {
+for (let l = state.currentLine - 1; l >= 0; l--) {
+if (state.lines[l] && state.lines[l].length > 0) {
+targetLine = state.lines[l];
+break;
+}
+}
+}
+if (!targetLine || targetLine.length === 0) return false;
+const lastCellText = String(targetLine[targetLine.length - 1].text || '').trim();
+if (lastCellText === 'や' || lastCellText === 'かな') return true;
+const lineJoined = targetLine.map(c => (c && c.text) ? c.text : '').join('');
+return isTextEndingWithKirejiCut(lineJoined);
+}
+function generatePostKirejiFreePhrase(kirejiPrefix, level, currentPoemText = '', excludedInputs = null) {
+const lv = Math.max(1, Math.min(5, Number(level) || 3));
+const pool = FREE_VOCAB_BY_LEVEL[lv] || FREE_VOCAB_BY_LEVEL[3];
+const fallback3 = FREE_VOCAB_BY_LEVEL[3];
+const currentPoemKanjiRatio = calculateKanjiRatio(currentPoemText);
+const subList = (pool.subjects && pool.subjects.length > 0) ? pool.subjects : fallback3.subjects;
+const gaList = (pool.actions_ga && pool.actions_ga.length > 0) ? pool.actions_ga : fallback3.actions_ga;
+const prefixChars = Array.from(kirejiPrefix || '');
+const maxRemChars = Math.max(4, 20 - prefixChars.length);
+const particleSet = new Set(['は', 'が', 'の', 'を', 'に', 'へ', 'と', 'で', 'や', 'も']);
+for (let attempt = 0; attempt < 14; attempt++) {
+const subj = pickCandidateByKanaPriority(subList, currentPoemKanjiRatio);
+const firstSubjChar = Array.from(subj)[0] || '';
+if (!firstSubjChar || particleSet.has(firstSubjChar)) continue;
+const act = pickCandidateByKanaPriority(gaList, currentPoemKanjiRatio);
+const combinedClause = truncateOneOrTwoCharsBeforeBoundary(subj + act);
+const clauseChars = Array.from(combinedClause);
+let candidate = '';
+if (clauseChars.length <= maxRemChars) {
+candidate = kirejiPrefix + combinedClause;
+} else {
+const subjChars = Array.from(subj);
+if (subjChars.length <= maxRemChars) {
+let clipped = clauseChars.slice(0, maxRemChars);
+const lastCh = clipped[clipped.length - 1];
+if (particleSet.has(lastCh) && clipped.length > subjChars.length) {
+clipped = clipped.slice(0, clipped.length - 1);
+}
+candidate = kirejiPrefix + clipped.join('');
+}
+}
+if (candidate && (!excludedInputs || !excludedInputs.has(candidate))) {
+return candidate;
+}
+}
+const fallbackSubj = subList[0] || '風が';
+return Array.from(kirejiPrefix + fallbackSubj).slice(0, 20).join('');
+}
 function chooseContextualFreeTextForBot(excludedInputs = null) {
 if (state.aiKagen) {
 return { text: chooseContextualMoraForBot() };
 }
 const lv = Number(state.aiVocabLevel) || 3;
+const currentPoemText = getCurrentPoemText();
+const flowerState = analyzeCurrentLineFlowerState();
+if (flowerState && flowerState.remSlotsNow >= 1) {
+if (flowerState.remSlotsAtFlowerEnd === 1 && flowerState.postFlowerCells.length === 0) {
+return { text: generatePostKirejiFreePhrase('や', lv, currentPoemText, excludedInputs), isKireji: true };
+}
+if (flowerState.remSlotsAtFlowerEnd === 2) {
+if (flowerState.postFlowerCells.length === 0 && flowerState.remSlotsNow === 2) {
+return { text: generatePostKirejiFreePhrase('かな', lv, currentPoemText, excludedInputs), isKireji: true };
+}
+if (flowerState.postFlowerCells.length === 1 && flowerState.remSlotsNow === 1) {
+const prevPostRaw = String(flowerState.postFlowerCells[0].text || '').trim();
+const prevPostMora = toHiragana(prevPostRaw);
+if (prevPostMora === 'か') {
+return { text: generatePostKirejiFreePhrase('な', lv, currentPoemText, excludedInputs), isKireji: true };
+}
+if (prevPostMora === 'け') {
+return { text: generatePostKirejiFreePhrase('り', lv, currentPoemText, excludedInputs), isKireji: true };
+}
+if (prevPostRaw === 'かな' || prevPostRaw === 'や') {
+return { text: generatePostKirejiFreePhrase('', lv, currentPoemText, excludedInputs) };
+}
+}
+}
+}
+if (didPreviousTurnEndWithKirejiCut()) {
+return { text: generatePostKirejiFreePhrase('', lv, currentPoemText, excludedInputs) };
+}
 const currentLineCells = state.lines[state.currentLine];
 let prevText = '';
 if (currentLineCells.length > 0) {
@@ -2413,9 +3151,10 @@ break;
 }
 }
 const prevTrimmed = prevText ? prevText.trim() : '';
-const currentPoemText = getCurrentPoemText();
+const isImmediatelyAfterFlower = !!(flowerState && flowerState.remSlotsAtFlowerEnd >= 3 && flowerState.postFlowerCells.length === 0) || isTextEndingWithAnyFlower(prevTrimmed);
 const pastCells = state.lines.flatMap(l => l.map(c => (c.text || '').trim())).filter(Boolean);
 const pastKanji = new Set((currentPoemText.match(/[一-龯]/g) || []));
+if (!isImmediatelyAfterFlower) {
 for (const item of STEM_COMPLETIONS) {
 if (prevTrimmed.endsWith(item.prefix)) {
 const safeOptions = item.options.filter(opt => {
@@ -2427,11 +3166,12 @@ const picked = candidatePool[Math.floor(Math.random() * candidatePool.length)];
 return { text: picked };
 }
 }
+}
 let bestCandidate = '';
 let bestScore = -999;
 for (let attempt = 0; attempt < 8; attempt++) {
-let candidate = generateConnectedPhraseByLevel(prevTrimmed, lv, currentPoemText);
-if (/^[で|に|を|が|と|へ]/.test(candidate)) {
+let candidate = generateConnectedPhraseByLevel(prevTrimmed, lv, currentPoemText, isImmediatelyAfterFlower);
+if (!isImmediatelyAfterFlower && /^[で|に|を|が|と|へ]/.test(candidate)) {
 const nounEndings = ['カフェ', '店', '部屋', '街', '道', '駅', '空', '森', '海', '庭', '家', '公園', '夜', '朝', '風', '月', '星', '猫', '犬', '友達', '人', '時計', '光', '影', '道'];
 const endsInNoun = nounEndings.some(ne => prevTrimmed.endsWith(ne));
 if (!endsInNoun) {
@@ -2582,7 +3322,7 @@ continue; // Unmanned for 24h -> pruned
 }
 const activeHumans = (snap.waitingSlots || []).filter(p => !p.isBot);
 const restingHumans = (snap.restingPlayers || []).filter(p => !p.isBot);
-const inGameHumans = (snap.activePlayers || []).filter(p => !p.isBot);
+const inGameHumans = snap.inGame ? (snap.activePlayers || []).filter(p => !p.isBot) : [];
 const humanNamesSet = new Set([
 ...activeHumans.map(p => p.name),
 ...restingHumans.map(p => p.name),
@@ -2682,11 +3422,19 @@ return;
 (state.waitingSlots || []).forEach(p => {
 if (!p.isBot && isPlayerMe(p)) {
 p.lastSeen = now;
+p.clientId = state.clientId;
 }
 });
 (state.restingPlayers || []).forEach(p => {
 if (!p.isBot && isPlayerMe(p)) {
 p.lastSeen = now;
+p.clientId = state.clientId;
+}
+});
+(state.activePlayers || []).forEach(p => {
+if (!p.isBot && isPlayerMe(p)) {
+p.lastSeen = now;
+p.clientId = state.clientId;
 }
 });
 if (state.inGame && state.roomPhase === 'game' && state.activePlayers) {
@@ -2762,23 +3510,17 @@ scheduleBotIfNeeded();
 }
 }
 } else {
-let pruned = false;
-state.restingPlayers = (state.restingPlayers || []).filter(p => {
-if (!p.isBot && p.lastSeen && now - p.lastSeen > AFK_MAX_TIME_MS) {
-pruned = true;
-return false;
-}
-return true;
-});
-state.waitingSlots = (state.waitingSlots || []).filter(p => {
-if (!p.isBot && p.lastSeen && now - p.lastSeen > AFK_MAX_TIME_MS) {
-pruned = true;
-return false;
-}
-return true;
-});
+const pruned = sanitizeCurrentStatePlayers();
 if (pruned) {
 recolorActiveWaitingSlots();
+renderWaitingRoom();
+}
+RoomSyncEngine.pushRoomState();
+}
+const isLobbyOpen = !document.getElementById('view-lobby').classList.contains('hidden');
+if (!isLobbyOpen && !state.isHost) {
+const cleanedByGuest = sanitizeCurrentStatePlayers();
+if (cleanedByGuest) {
 renderWaitingRoom();
 }
 RoomSyncEngine.pushRoomState();
@@ -2786,6 +3528,7 @@ RoomSyncEngine.pushRoomState();
 }, PRESENCE_HEARTBEAT_INTERVAL_MS);
 }
 function syncWaitingSlotsWithCount() {
+const nowTs = Date.now();
 const humans = state.waitingSlots.filter(p => !p.isBot);
 if (humans.length === 0) {
 humans.push({
@@ -2793,7 +3536,9 @@ id: state.hostPlayerId || 'host-0',
 name: state.hostName || '007',
 isBot: false,
 isHostPlayer: true,
-joinedAt: 1,
+joinedAt: nowTs,
+lastSeen: nowTs,
+clientId: state.clientId,
 color: PLAYER_COLORS[0]
 });
 } else {
@@ -2801,6 +3546,9 @@ const hostSlot = humans.find(h => h.isHostPlayer || h.id === state.hostPlayerId 
 if (hostSlot) {
 hostSlot.name = state.hostName || hostSlot.name || '007';
 hostSlot.isHostPlayer = true;
+hostSlot.lastSeen = nowTs;
+hostSlot.clientId = state.clientId;
+if (!hostSlot.joinedAt || hostSlot.joinedAt <= 1) hostSlot.joinedAt = nowTs;
 }
 }
 if (state.lobbyMode === 'solo') {
@@ -2809,7 +3557,9 @@ id: state.hostPlayerId || 'host-0',
 name: state.hostName || '007',
 isBot: false,
 isHostPlayer: true,
-joinedAt: 1,
+joinedAt: nowTs,
+lastSeen: nowTs,
+clientId: state.clientId,
 color: PLAYER_COLORS[0]
 };
 const aiCount = state.soloAiCount !== undefined ? state.soloAiCount : 3;
@@ -3247,6 +3997,12 @@ p.color = PLAYER_COLORS[idx % PLAYER_COLORS.length];
 });
 }
 function renderWaitingRoom() {
+if (state.lobbyMode !== 'solo') {
+const cleaned = sanitizeCurrentStatePlayers();
+if (cleaned) {
+RoomSyncEngine.pushRoomState();
+}
+}
 updateYozakuraTheme();
 updateWaitingRoomBanner();
 const hostControls = document.getElementById('waiting-host-controls');
@@ -3709,20 +4465,17 @@ const targetId = state.pendingKickTargetId;
 state.pendingKickTargetId = null;
 document.getElementById('modal-kick-confirm').classList.add('hidden');
 if (!targetId) return;
-let kickedName = null;
-const activeIdx = state.waitingSlots.findIndex(p => !p.isBot && p.id === targetId);
-if (activeIdx !== -1) {
-kickedName = state.waitingSlots[activeIdx].name;
-state.waitingSlots.splice(activeIdx, 1);
+const targetSlot = state.waitingSlots.find(p => !p.isBot && p.id === targetId)
+|| (state.restingPlayers || []).find(p => !p.isBot && p.id === targetId);
+if (!targetSlot) return;
+const kickedName = targetSlot.name;
+state.waitingSlots = state.waitingSlots.filter(p => p.isBot || (p.id !== targetId && p.name !== kickedName));
+state.restingPlayers = (state.restingPlayers || []).filter(p => p.isBot || (p.id !== targetId && p.name !== kickedName));
+state.spectators = (state.spectators || []).filter(s => s.id !== targetId && s.name !== kickedName);
+if (!state.inGame && state.activePlayers) {
+state.activePlayers = state.activePlayers.filter(p => p.isBot || (p.id !== targetId && p.name !== kickedName));
+}
 recolorActiveWaitingSlots();
-} else {
-const restIdx = (state.restingPlayers || []).findIndex(p => !p.isBot && p.id === targetId);
-if (restIdx !== -1) {
-kickedName = state.restingPlayers[restIdx].name;
-state.restingPlayers.splice(restIdx, 1);
-}
-}
-if (!kickedName) return;
 addChatMessage('システム', `${kickedName}さんが主催者により退室させられました。`, true);
 showToast(`${kickedName}さんを追放しました`);
 renderWaitingRoom();
@@ -3979,6 +4732,7 @@ return true;
 return false;
 }
 function openStartConfirmModal() {
+if (state.lobbyMode !== 'solo') sanitizeCurrentStatePlayers();
 if (!state.isHost) {
 showToast('開始は主催者のみ行えます', 'error');
 return;
@@ -4052,6 +4806,7 @@ state.isSpectating = false;
 state.spectators = [];
 state.activePlayers = chosen;
 state.turnIndex = 0;
+state.lastAutoScrolledTurn = 0;
 state.currentLine = 0;
 state.lineTargets = [5, 7, 5];
 state.aiNoFlowerLockedOff = false;
@@ -4336,6 +5091,19 @@ aliasBtnsContainer.appendChild(btn);
 }
 }
 validateSingleMoraInput();
+if (myTurn && !state.isSpectating && state.lastAutoScrolledTurn !== state.turnIndex) {
+state.lastAutoScrolledTurn = state.turnIndex;
+if (state.turnIndex > 0 && (state.expandedLines[0] || state.expandedLines[1] || state.expandedLines[2])) {
+const targetPanel = state.freeMode ? document.getElementById('panel-free-mode') : document.getElementById('panel-standard-mode');
+if (targetPanel && typeof targetPanel.getBoundingClientRect === 'function') {
+const rect = targetPanel.getBoundingClientRect();
+const vh = window.innerHeight || document.documentElement.clientHeight || 800;
+if (rect.bottom > vh || rect.top < 0) {
+targetPanel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+}
+}
+}
 }
 function validateSingleMoraInput() {
 const inp = document.getElementById('input-single-mora');
@@ -4376,10 +5144,6 @@ if (isRemainingGameAllAiAndFlowerNeeded()) {
 showToast('花の名前を入れないまま進むと完成できなくなります！「花の名前を一括入力」を使用するか、「AIの花使用不可」を解除してください', 'error');
 return;
 }
-if (isRemainingGameAllAiAndFlowerNeeded()) {
-showToast('花の名前を入れないまま進むと完成できなくなります！「花の名前を一括入力」を使用するか、「AIの花使用不可」を解除してください', 'error');
-return;
-}
 openSubmitConfirmModal(moras[0]);
 }
 function requestFreeModeSubmit() {
@@ -4394,10 +5158,6 @@ const clipped = Array.from(raw).slice(0, 20).join('');
 const isLastMoraOfLastLine = (state.currentLine === 2) && (state.lines[2].length + 1 >= state.lineTargets[2]);
 if (isLastMoraOfLastLine && !state.flowerUsed) {
 showToast('一句に必ずお題の花を入れるルールです！下の花の名前ボタンを押してください', 'error');
-return;
-}
-if (isRemainingGameAllAiAndFlowerNeeded()) {
-showToast('花の名前を入れないまま進むと完成できなくなります！「花の名前を一括入力」を使用するか、「AIの花使用不可」を解除してください', 'error');
 return;
 }
 if (isRemainingGameAllAiAndFlowerNeeded()) {
@@ -4520,15 +5280,12 @@ break;
 }
 }
 if (turnsToHuman === 0) return false;
-let remainingSlotsTotal = 0;
-for (let l = state.currentLine; l < 3; l++) {
-const target = state.lineTargets[l];
-const cur = state.lines[l].length;
-remainingSlotsTotal += Math.max(0, target - cur);
-}
 const flowerTokens = getFlowerInputTokens(alias);
 const slotsConsumed = flowerTokens.length;
-const remainingSlotsAfterFlower = remainingSlotsTotal - slotsConsumed;
+let remainingSlotsAfterFlower = Math.max(0, state.lineTargets[state.currentLine] - (state.lines[state.currentLine].length + slotsConsumed));
+for (let l = state.currentLine + 1; l < 3; l++) {
+remainingSlotsAfterFlower += Math.max(0, state.lineTargets[l] - state.lines[l].length);
+}
 if (state.currentLine === 2 && state.lines[2].length + slotsConsumed >= state.lineTargets[2]) {
 return true;
 }
@@ -4703,22 +5460,22 @@ const randomInsertFlower = !effectiveAiNoFlower && !state.flowerUsed && !starvat
 if (mustInsertFlower || randomInsertFlower) {
 executeInsertFlowerAlias(candidateAlias);
 } else if (state.freeMode) {
+if (state.aiKagen) {
+const nextMora = chooseContextualMoraForBot();
+commitSingleSlotTurn(nextMora, true);
+} else {
+const initialRes = chooseContextualFreeTextForBot();
+if (initialRes && typeof initialRes === 'object' && initialRes.isKireji) {
+commitSingleSlotTurn(initialRes.text, true);
+return;
+}
 const pastInputsInPoem = new Set(state.lines.flatMap(l => l.map(c => c.text)));
 let freeText = '';
-let chosenMeta = null;
 let rewriteAttempts = 0;
 const maxRewrites = 35;
 do {
 const result = chooseContextualFreeTextForBot(pastInputsInPoem);
 freeText = (result && typeof result === 'object') ? result.text : String(result);
-chosenMeta = (result && typeof result === 'object') ? result : null;
-if (state.aiKagen) {
-const maxChars = Math.floor(Math.random() * 3) + 1; // 1, 2, or 3
-const chars = Array.from(freeText);
-if (chars.length > maxChars) {
-freeText = chars.slice(0, maxChars).join('');
-}
-}
 rewriteAttempts++;
 } while (pastInputsInPoem.has(freeText) && rewriteAttempts < maxRewrites);
 if (pastInputsInPoem.has(freeText)) {
@@ -4731,6 +5488,7 @@ break;
 }
 }
 commitSingleSlotTurn(freeText, true);
+}
 } else {
 const nextMora = chooseContextualMoraForBot();
 commitSingleSlotTurn(nextMora, false);
@@ -4766,6 +5524,11 @@ function isPlayerMe(p) {
 if (!p || p.isBot) return false;
 if (state.lobbyMode === 'solo') return true;
 if (p.id && state.myPlayerId && p.id === state.myPlayerId) return true;
+const hasMyIdInRoom =
+(state.waitingSlots || []).some(s => s && !s.isBot && s.id === state.myPlayerId) ||
+(state.restingPlayers || []).some(s => s && !s.isBot && s.id === state.myPlayerId) ||
+(state.activePlayers || []).some(s => s && !s.isBot && s.id === state.myPlayerId);
+if (hasMyIdInRoom && p.id && state.myPlayerId) return false;
 return p.name === state.currentUserName;
 }
 function startParticipantVoting() {
@@ -5020,7 +5783,7 @@ const remainingActiveSlots = [];
 state.waitingSlots.forEach((p, slotIdx) => {
 p.slotOrderRank = slotIdx;
 if (!p.isBot) {
-const alreadyInResting = (state.restingPlayers || []).some(r => r.id === p.id);
+const alreadyInResting = (state.restingPlayers || []).some(r => !r.isBot && (r.id === p.id || r.name === p.name));
 if (!alreadyInResting) {
 state.restingPlayers.push({
 ...p,
@@ -5140,24 +5903,49 @@ columns.push(currentColSegments);
 }
 return columns;
 }
+const VERTICAL_NORM_MAP = {
+'｡': '。', '､': '、', '.': '．', ',': '，', 'ｰ': 'ー', '｢': '「', '｣': '」', '･': '・',
+'!': '！', '?': '？', ':': '：', ';': '；', 'ﾞ': '゛', 'ﾟ': '゜',
+'ｧ': 'ァ', 'ｨ': 'ィ', 'ｩ': 'ゥ', 'ｪ': 'ェ', 'ｫ': 'ォ', 'ｬ': 'ャ', 'ｭ': 'ュ', 'ｮ': 'ョ', 'ｯ': 'ッ'
+};
+const VERTICAL_TOP_RIGHT_PUNCT = new Set(['。', '、', '．', '，']);
+const VERTICAL_STANDALONE_DAKUTEN = new Set(['゛', '゜']);
+const VERTICAL_TRANSPOSE_CHARS = new Set(['ー', '〜', '～', '〰']);
+const VERTICAL_ROTATE_CHARS = new Set([
+'（', '）', '(', ')', '「', '」', '『', '』', '【', '】', '［', '］', '[', ']', '｛', '｝', '{', '}',
+'〈', '〉', '《', '》', '〔', '〕', '〘', '〙', '〖', '〗', '«', '»', '‹', '›', '“', '”', '‘', '’',
+'…', '‥', '⋯', '―', '—', '–', '‐', '-', '－', '＝', '=', '：', '；', '／', '/', '＼', '\\',
+'→', '←', '⇒', '⇔', '↔'
+]);
+const VERTICAL_SMALL_KANA = new Set([
+'ゃ', 'ゅ', 'ょ', 'ぁ', 'ぃ', 'ぅ', 'ぇ', 'ぉ', 'ゎ', 'っ', 'ゕ', 'ゖ',
+'ャ', 'ュ', 'ョ', 'ァ', 'ィ', 'ゥ', 'ェ', 'ォ', 'ヮ', 'ッ', 'ヵ', 'ヶ',
+'ㇰ', 'ㇱ', 'ㇲ', 'ㇳ', 'ㇴ', 'ㇵ', 'ㇶ', 'ㇷ', 'ㇸ', 'ㇹ', 'ㇺ', 'ㇻ', 'ㇼ', 'ㇽ', 'ㇾ', 'ㇿ'
+]);
 function drawVerticalChar(ctx, ch, centerX, centerY, fontSize) {
 ctx.save();
 ctx.font = `700 ${fontSize}px "Noto Serif JP", serif`;
 ctx.textAlign = 'center';
 ctx.textBaseline = 'middle';
-const rotateChars = new Set(['ー', '〜', '～', '（', '）', '(', ')', '「', '」', '『', '』', '…', '‥', '-']);
-if (rotateChars.has(ch)) {
+const normCh = VERTICAL_NORM_MAP[ch] || ch;
+if (VERTICAL_TOP_RIGHT_PUNCT.has(normCh)) {
+ctx.fillText(normCh, centerX + fontSize * 0.58, centerY - fontSize * 0.58);
+} else if (VERTICAL_STANDALONE_DAKUTEN.has(normCh)) {
+ctx.fillText(normCh, centerX + fontSize * 0.58, centerY + fontSize * 0.08);
+} else if (VERTICAL_TRANSPOSE_CHARS.has(normCh)) {
 ctx.translate(centerX, centerY);
 ctx.rotate(Math.PI / 2);
-ctx.fillText(ch, 0, 0);
+ctx.scale(1, -1);
+ctx.fillText(normCh, 0, fontSize * 0.06);
+} else if (VERTICAL_ROTATE_CHARS.has(normCh)) {
+ctx.translate(centerX + fontSize * 0.06, centerY);
+ctx.rotate(Math.PI / 2);
+ctx.fillText(normCh, 0, 0);
+} else if (VERTICAL_SMALL_KANA.has(normCh)) {
+ctx.font = `700 ${Math.round(fontSize * 0.82)}px "Noto Serif JP", serif`;
+ctx.fillText(normCh, centerX + fontSize * 0.14, centerY - fontSize * 0.16);
 } else {
-const smallKana = new Set(['ゃ', 'ゅ', 'ょ', 'ぁ', 'ぃ', 'ぅ', 'ぇ', 'ぉ', 'ゎ', 'っ', 'ャ', 'ュ', 'ョ', 'ァ', 'ィ', 'ゥ', 'ェ', 'ォ', 'ッ']);
-if (smallKana.has(ch)) {
-ctx.font = `700 ${Math.round(fontSize * 0.8)}px "Noto Serif JP", serif`;
-ctx.fillText(ch, centerX + fontSize * 0.1, centerY - fontSize * 0.05);
-} else {
-ctx.fillText(ch, centerX, centerY);
-}
+ctx.fillText(normCh, centerX, centerY);
 }
 ctx.restore();
 }
@@ -6034,6 +6822,7 @@ const helperBar = document.getElementById('preview-export-helper-bar');
 if (helperBar && window.location && window.location.hostname && (window.location.hostname.endsWith('.github.io') || (!window.location.hostname.includes('google') && !window.location.hostname.includes('usercontent') && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1' && window.location.protocol !== 'file:' && window.location.protocol !== 'blob:' && window.location.protocol !== 'data:'))) {
 helperBar.remove();
 } else if (helperBar) {
+helperBar.classList.remove('hidden');
 const btnCopyHtml = document.getElementById('btn-export-copy-html');
 const btnDlHtml = document.getElementById('btn-export-download-html');
 if (btnCopyHtml) {
@@ -6201,6 +6990,8 @@ name: leavingName,
 isBot: false,
 isHostPlayer: false,
 joinedAt: Date.now(),
+lastSeen: Date.now(),
+clientId: state.clientId,
 restingReason: 'manual',
 manualRest: true,
 originalSlotIndex: activeIdx >= 0 ? activeIdx : 0,
@@ -6438,7 +7229,7 @@ const existingSnap = await RoomSyncEngine.fetchRoomSnapshot(state.roomKeyword, s
 if (existingSnap) {
 const roomSlots = existingSnap.waitingSlots || [];
 const restingSlots = existingSnap.restingPlayers || [];
-const activeSlots = existingSnap.activePlayers || [];
+const activeSlots = existingSnap.inGame ? (existingSnap.activePlayers || []) : [];
 const existingHumanNames = new Set([
 ...roomSlots.filter(p => !p.isBot).map(p => p.name),
 ...restingSlots.filter(p => !p.isBot).map(p => p.name),
@@ -6498,6 +7289,8 @@ name: resolvedName,
 isBot: false,
 isHostPlayer: state.isHost,
 joinedAt: Date.now(),
+lastSeen: Date.now(),
+clientId: state.clientId,
 color: PLAYER_COLORS[state.waitingSlots.length % PLAYER_COLORS.length]
 };
 if (firstAiIdx !== -1) {
@@ -6564,7 +7357,7 @@ const remoteSnap = await RoomSyncEngine.fetchRoomSnapshot(parsed.keyword, parsed
 if (remoteSnap) {
 const roomSlots = remoteSnap.waitingSlots || [];
 const restingSlots = remoteSnap.restingPlayers || [];
-const activeSlots = remoteSnap.activePlayers || [];
+const activeSlots = remoteSnap.inGame ? (remoteSnap.activePlayers || []) : [];
 const nameAlreadyExists =
 roomSlots.some(p => !p.isBot && p.name === guestName) ||
 restingSlots.some(p => !p.isBot && p.name === guestName) ||
@@ -6608,10 +7401,11 @@ errEl.textContent = '合言葉が一致しません';
 errEl.classList.remove('hidden');
 return;
 }
+sanitizeCurrentStatePlayers();
 const nameAlreadyExistsLocal =
 (state.waitingSlots || []).some(p => !p.isBot && p.name === guestName) ||
 (state.restingPlayers || []).some(p => !p.isBot && p.name === guestName) ||
-(state.activePlayers || []).some(p => !p.isBot && p.name === guestName);
+(state.inGame && (state.activePlayers || []).some(p => !p.isBot && p.name === guestName));
 if (nameAlreadyExistsLocal) {
 errEl.textContent = 'その名前の人物は既に存在します。もしかしてスパイですか？';
 errEl.classList.remove('hidden');
@@ -6643,6 +7437,8 @@ name: guestName,
 isBot: false,
 isHostPlayer: state.isHost,
 joinedAt: Date.now(),
+lastSeen: Date.now(),
+clientId: state.clientId,
 color: PLAYER_COLORS[state.waitingSlots.length % PLAYER_COLORS.length]
 };
 if (firstAiIdx !== -1) {
@@ -6880,21 +7676,20 @@ return unused;
 }
 return AI_SPY_NAMES[fallbackIdx % AI_SPY_NAMES.length];
 };
-const mySlotIdx = state.waitingSlots.findIndex(
-p => (state.myPlayerId && p.id === state.myPlayerId) || (!p.isBot && p.name === leavingName)
+const isLeavingMatch = (p) => !p.isBot && (
+(state.myPlayerId && p.id === state.myPlayerId) ||
+(state.clientId && p.clientId === state.clientId) ||
+p.name === leavingName
 );
+const mySlotIdx = state.waitingSlots.findIndex(isLeavingMatch);
 const subAiName = pickSubAiName(mySlotIdx >= 0 ? mySlotIdx : 0);
 const hadAnyBotInGame = (state.activePlayers || []).some(p => p.isBot);
 if (wasInGame && !hadAnyBotInGame) {
-if (mySlotIdx !== -1) {
-state.waitingSlots.splice(mySlotIdx, 1);
+state.waitingSlots = state.waitingSlots.filter(p => !isLeavingMatch(p));
 recolorActiveWaitingSlots();
-}
 if (state.activePlayers && state.activePlayers.length > 0) {
-const activeIdx = state.activePlayers.findIndex(
-p => (state.myPlayerId && p.id === state.myPlayerId) || (!p.isBot && p.name === leavingName)
-);
-if (activeIdx !== -1) {
+let activeIdx = state.activePlayers.findIndex(isLeavingMatch);
+while (activeIdx !== -1) {
 const currentTurnPlayerIdx = state.turnIndex % state.activePlayers.length;
 const wasMyTurn = (currentTurnPlayerIdx === activeIdx);
 state.activePlayers.splice(activeIdx, 1);
@@ -6909,11 +7704,11 @@ if (state.finishVoteState && state.finishVoteState.active && state.finishVoteSta
 delete state.finishVoteState.votes[activeIdx];
 delete state.participantVotes[activeIdx];
 }
+activeIdx = state.activePlayers.findIndex(isLeavingMatch);
 }
 }
 } else {
-if (mySlotIdx !== -1) {
-if (wasInGame) {
+if (wasInGame && mySlotIdx !== -1) {
 state.waitingSlots[mySlotIdx] = {
 id: `ai-left-${Date.now()}`,
 name: subAiName,
@@ -6922,34 +7717,44 @@ isHostPlayer: false,
 joinedAt: 0,
 color: state.waitingSlots[mySlotIdx].color
 };
+state.waitingSlots = state.waitingSlots.filter((p, idx) => idx === mySlotIdx || !isLeavingMatch(p));
+recolorActiveWaitingSlots();
 } else {
-state.waitingSlots.splice(mySlotIdx, 1);
+state.waitingSlots = state.waitingSlots.filter(p => !isLeavingMatch(p));
 recolorActiveWaitingSlots();
 }
-}
 if (state.activePlayers && state.activePlayers.length > 0) {
-const activeIdx = state.activePlayers.findIndex(
-p => (state.myPlayerId && p.id === state.myPlayerId) || (!p.isBot && p.name === leavingName)
-);
-if (activeIdx !== -1) {
-state.activePlayers[activeIdx] = {
-id: `ai-left-${Date.now()}-${activeIdx}`,
+if (wasInGame) {
+let replacedFirst = false;
+const nextAct = [];
+state.activePlayers.forEach((p, idx) => {
+if (isLeavingMatch(p)) {
+if (state.finishVoteState && state.finishVoteState.active && state.finishVoteState.votes) {
+delete state.finishVoteState.votes[idx];
+delete state.participantVotes[idx];
+}
+if (!replacedFirst) {
+replacedFirst = true;
+nextAct.push({
+id: `ai-left-${Date.now()}-${idx}`,
 name: subAiName,
 isBot: true,
 isHostPlayer: false,
 joinedAt: 0,
-color: state.activePlayers[activeIdx].color
-};
-if (state.finishVoteState && state.finishVoteState.active && state.finishVoteState.votes) {
-delete state.finishVoteState.votes[activeIdx];
-delete state.participantVotes[activeIdx];
+color: p.color
+});
+}
+} else {
+nextAct.push(p);
+}
+});
+state.activePlayers = nextAct;
+} else {
+state.activePlayers = state.activePlayers.filter(p => !isLeavingMatch(p));
 }
 }
 }
-}
-state.restingPlayers = (state.restingPlayers || []).filter(
-p => !((state.myPlayerId && p.id === state.myPlayerId) || (!p.isBot && p.name === leavingName))
-);
+state.restingPlayers = (state.restingPlayers || []).filter(p => !isLeavingMatch(p));
 state.spectators = (state.spectators || []).filter(
 s => !((state.myPlayerId && s.id === state.myPlayerId) || s.name === leavingName)
 );
@@ -7058,9 +7863,13 @@ const restingEntry = state.restingPlayers[restIdx];
 const isManualHostRest = restingEntry.restingReason === 'manual' || !!restingEntry.manualRest;
 if (!isManualHostRest) {
 const returningPlayer = state.restingPlayers.splice(restIdx, 1)[0];
+state.restingPlayers = state.restingPlayers.filter(p => !isPlayerMe(p) && p.name !== returningPlayer.name);
 const desiredRank = returningPlayer.slotOrderRank ?? returningPlayer.originalSlotIndex ?? state.waitingSlots.length;
 delete returningPlayer.restingReason;
 returningPlayer.manualRest = false;
+returningPlayer.lastSeen = Date.now();
+returningPlayer.clientId = state.clientId;
+if (!state.waitingSlots.some(p => !p.isBot && (p.id === returningPlayer.id || p.name === returningPlayer.name))) {
 let insertAt = state.waitingSlots.findIndex(
 item => item.slotOrderRank !== undefined && item.slotOrderRank > desiredRank
 );
@@ -7068,6 +7877,7 @@ if (insertAt === -1) {
 insertAt = Math.min(desiredRank, state.waitingSlots.length);
 }
 state.waitingSlots.splice(insertAt, 0, returningPlayer);
+}
 recolorActiveWaitingSlots();
 }
 }
