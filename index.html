@@ -15,11 +15,6 @@
 <meta name="twitter:image" content="https://placehold.jp/110/f4b4c4/27272a/1200x630.png?text=%E5%85%84%E5%A6%B9%E3%81%AE%E8%8A%B1">
 <meta name="description" content="兄妹の花で『詠み人知らず』ができる非公式Webサイト。１人から遊べます。">
 <title>［非公式］兄妹の花で詠み人知らず</title>
-     <script>
-  window.YOMIBITO_CLOUD_CONFIG = {
-    databaseUrl: "https://brother-and-sister-s-flowers-default-rtdb.firebaseio.com/"
-  };
-     </script>
 <script src="https://cdn.tailwindcss.com/3.4.17"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
@@ -557,10 +552,14 @@ ID変更
 </div>
 </div>
 <div id="flower-input-section" class="pt-3 border-t border-zinc-300 space-y-2.5">
-<div class="flex items-center justify-between">
+<div class="flex items-center justify-between gap-2 flex-wrap">
 <h4 class="text-xs sm:text-sm font-bold serif-jp text-zinc-800">
 花の名前を一括入力（一句にひとつ）
 </h4>
+<label id="wrap-flower-mora-compliant" class="hidden flex items-center gap-1.5 cursor-pointer select-none text-xs font-bold text-zinc-700" title="オンのとき、自由記述モードでも本来の音数ぶんで1音ずつ花の名前が入力されます（例：チューリップなら5音）">
+<input type="checkbox" id="chk-flower-mora-compliant" checked="" class="accent-[#e59bb0] rounded w-3.5 h-3.5 cursor-pointer">
+<span>音数準拠</span>
+</label>
 </div>
 <div id="flower-alias-buttons" class="grid grid-cols-1 gap-2">
 </div>
@@ -615,7 +614,8 @@ ID変更
 <div class="lg:col-span-6 flex flex-col items-center space-y-4">
 <div class="w-full max-w-xs sm:max-w-sm">
 <div class="w-full rounded-2xl overflow-hidden shadow-lg border border-zinc-300 bg-zinc-100">
-<canvas id="tanzaku-canvas" width="800" height="1200" role="img" aria-label="完成した短冊の画像" class="w-full h-auto block"></canvas>
+<canvas id="tanzaku-canvas" width="800" height="1200" role="img" aria-label="完成した短冊の画像" class="hidden w-full h-auto"></canvas>
+<img id="tanzaku-img-mirror" alt="完成した短冊の画像（長押しで保存可能）" class="w-full h-auto block select-auto" style="-webkit-touch-callout: default;">
 <div id="tanzaku-screenreader-summary" class="sr-only" aria-live="polite"></div>
 </div>
 </div>
@@ -641,6 +641,11 @@ ID変更
 </button>
 <button type="button" id="btn-download-image" class="py-3.5 px-5 rounded-xl bg-zinc-700 hover:bg-zinc-800 text-white font-bold text-sm shadow-md transition flex items-center justify-center gap-2">
 <span>📥</span> 短冊画像を保存（PNG）
+</button>
+</div>
+<div id="wrap-open-longpress-save" class="pt-1">
+<button type="button" id="btn-open-longpress-save" class="w-full py-2.5 px-4 rounded-xl border border-zinc-300 bg-white hover:bg-zinc-200 text-zinc-700 font-bold text-xs sm:text-sm shadow-sm transition">
+アプリ内ブラウザの方はこちら
 </button>
 </div>
 <div id="share-feedback-box" class="hidden p-3.5 rounded-xl bg-zinc-200 border border-zinc-300 text-xs text-zinc-800 space-y-2">
@@ -977,6 +982,28 @@ OK
 </div>
 <div class="pt-3 border-t border-zinc-300 text-right">
 <button type="button" id="btn-close-rules-bottom" class="px-5 py-2 rounded-xl btn-usumomo font-bold text-sm">
+閉じる
+</button>
+</div>
+</div>
+</div>
+<div id="modal-inapp-image-save" class="fixed inset-0 z-50 hidden bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+<div class="bg-[#f3f4f6] rounded-2xl max-w-md w-full max-h-[92vh] overflow-y-auto tanzaku-shadow border border-zinc-300 p-5 space-y-4">
+<div class="flex items-center justify-between border-b border-zinc-300 pb-2.5">
+<h3 class="text-base sm:text-lg font-bold serif-jp text-zinc-900">短冊画像の保存</h3>
+<button type="button" id="btn-close-inapp-save" class="w-8 h-8 rounded-lg bg-zinc-200 hover:bg-zinc-300 text-zinc-700 font-bold flex items-center justify-center">✕</button>
+</div>
+<div class="p-3 rounded-xl bg-pink-50 border border-pink-200 text-xs text-zinc-800 text-center leading-relaxed">
+<p><strong>下の短冊画像を「長押し」</strong>して<strong>ダウンロードして</strong>ください。</p>
+</div>
+<div class="flex flex-col items-center justify-center bg-zinc-200/70 p-3 rounded-xl border border-zinc-300">
+<img id="inapp-save-img" alt="保存用短冊画像（長押しで保存）" class="max-h-[54vh] w-auto rounded-lg shadow-md border border-zinc-300 select-auto" style="-webkit-touch-callout: default;">
+</div>
+<div class="flex flex-col gap-2 pt-1">
+<button type="button" id="btn-inapp-share-tweet" class="w-full py-2.5 px-4 rounded-xl btn-usumomo font-bold text-xs sm:text-sm shadow-sm transition flex items-center justify-center gap-1.5">
+<span>𝕏</span> 画像付きでX（Twitter）に投稿
+</button>
+<button type="button" id="btn-close-inapp-save-bottom" class="w-full py-2.5 px-4 rounded-xl border border-zinc-300 bg-white hover:bg-zinc-200 text-zinc-700 font-bold text-xs sm:text-sm transition">
 閉じる
 </button>
 </div>
@@ -1844,6 +1871,7 @@ emptySince: state.emptySince || null,
 selectedFlowerId: state.selectedFlowerId,
 shuffleOrder: state.shuffleOrder,
 freeMode: state.freeMode,
+flowerMoraCompliant: state.flowerMoraCompliant !== undefined ? !!state.flowerMoraCompliant : true,
 aiVocabLevel: state.aiVocabLevel,
 aiKagen: !!state.aiKagen,
 aiNoFlower: !!state.aiNoFlower,
@@ -2021,6 +2049,9 @@ state.emptySince = snapshot.emptySince || null;
 state.selectedFlowerId = snapshot.selectedFlowerId || state.selectedFlowerId;
 state.shuffleOrder = !!snapshot.shuffleOrder;
 state.freeMode = !!snapshot.freeMode;
+if (snapshot.flowerMoraCompliant !== undefined) {
+state.flowerMoraCompliant = !!snapshot.flowerMoraCompliant;
+}
 if (snapshot.aiVocabLevel) {
 state.aiVocabLevel = snapshot.aiVocabLevel;
 }
@@ -3150,18 +3181,23 @@ return { text: generatePostKirejiFreePhrase('', lv, currentPoemText, excludedInp
 }
 const currentLineCells = state.lines[state.currentLine];
 let prevText = '';
+let prevLineEndedWithFlower = false;
 if (currentLineCells.length > 0) {
 prevText = currentLineCells[currentLineCells.length - 1].text;
+prevLineEndedWithFlower = !!currentLineCells[currentLineCells.length - 1].isFlower;
 } else if (state.currentLine > 0) {
 for (let l = state.currentLine - 1; l >= 0; l--) {
 if (state.lines[l] && state.lines[l].length > 0) {
-prevText = state.lines[l][state.lines[l].length - 1].text;
+const prevLine = state.lines[l];
+prevText = prevLine[prevLine.length - 1].text;
+const prevJoined = prevLine.map(c => (c && c.text) ? c.text : '').join('');
+prevLineEndedWithFlower = !!prevLine[prevLine.length - 1].isFlower || isTextEndingWithAnyFlower(prevJoined);
 break;
 }
 }
 }
 const prevTrimmed = prevText ? prevText.trim() : '';
-const isImmediatelyAfterFlower = !!(flowerState && flowerState.remSlotsAtFlowerEnd >= 3 && flowerState.postFlowerCells.length === 0) || isTextEndingWithAnyFlower(prevTrimmed);
+const isImmediatelyAfterFlower = !!(flowerState && flowerState.remSlotsAtFlowerEnd >= 3 && flowerState.postFlowerCells.length === 0) || prevLineEndedWithFlower || isTextEndingWithAnyFlower(prevTrimmed);
 const pastCells = state.lines.flatMap(l => l.map(c => (c.text || '').trim())).filter(Boolean);
 const pastKanji = new Set((currentPoemText.match(/[一-龯]/g) || []));
 if (!isImmediatelyAfterFlower) {
@@ -3248,6 +3284,7 @@ waitingSlots: [],
 selectedFlowerId: 'tulip',
 shuffleOrder: false,
 freeMode: false,
+flowerMoraCompliant: true,
 aiVocabLevel: 3,
 aiKagen: true,
 aiNoFlower: false,
@@ -3686,8 +3723,11 @@ syncWaitingSlotsWithCount();
 function getSelectedFlower() {
 return FLOWERS.find(f => f.id === state.selectedFlowerId) || FLOWERS[0];
 }
+function isFlowerMoraModeActive() {
+return !state.freeMode || (state.flowerMoraCompliant !== undefined ? !!state.flowerMoraCompliant : true);
+}
 function getFlowerInputTokens(alias) {
-if (state.freeMode) {
+if (!isFlowerMoraModeActive()) {
 return [stripReadingParentheses(alias.label)];
 }
 return splitIntoMoras(alias.kana, true);
@@ -3907,6 +3947,8 @@ function buildPoemCardWithActions(entry, badgeLabel) {
 const card = document.createElement('div');
 card.className = 'p-3.5 rounded-xl bg-white border border-zinc-300 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-sm';
 const poetsStr = Array.isArray(entry.poets) ? entry.poets.join('・') : '';
+const inApp = isInAppBrowser();
+const saveBtnVisibilityClass = inApp ? 'hidden' : 'flex';
 card.innerHTML = `
 <div class="space-y-1 min-w-0 flex-1">
 <div class="flex flex-wrap items-center gap-2">
@@ -3919,7 +3961,7 @@ card.innerHTML = `
 <p class="text-[11px] text-zinc-500">詠み人：${escapeHtml(poetsStr)}</p>
 </div>
 <div class="flex items-center gap-2 shrink-0">
-<button type="button" class="poem-entry-save-btn px-3 py-1.5 rounded-lg border border-zinc-300 bg-zinc-100 hover:bg-zinc-200 text-zinc-800 font-bold text-xs shadow-sm transition flex items-center gap-1">
+<button type="button" class="poem-entry-save-btn ${saveBtnVisibilityClass} px-3 py-1.5 rounded-lg border border-zinc-300 bg-zinc-100 hover:bg-zinc-200 text-zinc-800 font-bold text-xs shadow-sm transition items-center gap-1">
 <span>📥</span> 画像保存
 </button>
 <button type="button" class="poem-entry-tweet-btn px-3 py-1.5 rounded-lg btn-usumomo font-bold text-xs shadow-sm transition flex items-center gap-1">
@@ -3927,12 +3969,18 @@ card.innerHTML = `
 </button>
 </div>
 `;
-card.querySelector('.poem-entry-save-btn').addEventListener('click', () => {
+const saveBtn = card.querySelector('.poem-entry-save-btn');
+if (saveBtn) {
+saveBtn.addEventListener('click', () => {
 downloadPoemEntryImage(entry);
 });
-card.querySelector('.poem-entry-tweet-btn').addEventListener('click', () => {
+}
+const tweetBtn = card.querySelector('.poem-entry-tweet-btn');
+if (tweetBtn) {
+tweetBtn.addEventListener('click', () => {
 tweetPoemEntry(entry);
 });
+}
 return card;
 }
 function renderWaitingPastPoems() {
@@ -5069,23 +5117,36 @@ freePanel.classList.remove('hidden');
 standardPanel.classList.remove('hidden');
 freePanel.classList.add('hidden');
 }
+const wrapFlowerMora = document.getElementById('wrap-flower-mora-compliant');
+const chkFlowerMora = document.getElementById('chk-flower-mora-compliant');
+if (chkFlowerMora) {
+chkFlowerMora.checked = state.flowerMoraCompliant !== undefined ? !!state.flowerMoraCompliant : true;
+}
+if (wrapFlowerMora) {
+if (state.freeMode) {
+wrapFlowerMora.classList.remove('hidden');
+} else {
+wrapFlowerMora.classList.add('hidden');
+}
+}
 const shouldHideBulkSection = state.flowerUsed && !state.flowerUsedManually;
 if (shouldHideBulkSection) {
 flowerSection.classList.add('hidden');
 } else {
 flowerSection.classList.remove('hidden');
 aliasBtnsContainer.innerHTML = '';
+const moraMode = isFlowerMoraModeActive();
 const remainingSlotsInLine = Math.max(0, state.lineTargets[state.currentLine] - state.lines[state.currentLine].length);
 const seenFreeLabels = new Set();
 flower.aliases.forEach(alias => {
 const cleanLabel = stripReadingParentheses(alias.label);
-if (state.freeMode) {
+if (!moraMode) {
 if (seenFreeLabels.has(cleanLabel)) return;
 seenFreeLabels.add(cleanLabel);
 }
 const tokens = getFlowerInputTokens(alias);
-const displayWord = state.freeMode ? cleanLabel : alias.kana;
-const willOverflow = !state.freeMode && (tokens.length > remainingSlotsInLine);
+const displayWord = moraMode ? alias.kana : cleanLabel;
+const willOverflow = moraMode && (tokens.length > remainingSlotsInLine);
 const btn = document.createElement('button');
 btn.type = 'button';
 btn.className = 'w-full px-3.5 py-2.5 rounded-xl border text-left transition flex items-center justify-between gap-2 bg-pink-50/70 hover:bg-pink-100/80 border-pink-300 text-zinc-900 shadow-sm';
@@ -5096,7 +5157,7 @@ btn.innerHTML = `
 </div>
 <div class="text-right shrink-0">
 <span class="inline-block text-xs font-bold px-2 py-0.5 rounded bg-white border border-pink-200 text-pink-900">
-${state.freeMode ? '1音' : `${tokens.length}音`}
+${moraMode ? `${tokens.length}音` : '1音'}
 </span>
 ${willOverflow ? `<span class="block text-[10px] text-pink-800 font-semibold mt-0.5">字余り</span>` : ''}
 </div>
@@ -5272,11 +5333,12 @@ advanceLineAndTurn(false);
 function openFlowerConfirmModal(alias) {
 if ((state.flowerUsed && !state.flowerUsedManually) || !isCurrentTurnMine()) return;
 state.pendingFlowerAlias = alias;
+const moraMode = isFlowerMoraModeActive();
 const tokens = getFlowerInputTokens(alias);
-const displayWord = state.freeMode ? stripReadingParentheses(alias.label) : alias.kana;
+const displayWord = moraMode ? alias.kana : stripReadingParentheses(alias.label);
 const previewStr = buildHypotheticalPoemPreview(tokens);
 document.getElementById('flower-confirm-poem-preview').textContent = previewStr;
-const countLabel = state.freeMode ? '1音' : `${tokens.length}音`;
+const countLabel = moraMode ? `${tokens.length}音` : '1音';
 document.getElementById('flower-confirm-message').innerHTML =
 `<strong>「${escapeHtml(displayWord)}」</strong>（${countLabel}）を<strong>入力</strong>します。よろしいですか？`;
 document.getElementById('modal-flower-confirm').classList.remove('hidden');
@@ -5320,8 +5382,9 @@ function executeInsertFlowerAlias(alias) {
 if (!alias || (state.flowerUsed && !state.flowerUsedManually)) return;
 const currentPlayer = state.activePlayers[state.turnIndex % state.activePlayers.length];
 const cleanLabel = stripReadingParentheses(alias.label);
+const moraMode = isFlowerMoraModeActive();
 const tokens = getFlowerInputTokens(alias);
-const displayWord = state.freeMode ? cleanLabel : alias.kana;
+const displayWord = moraMode ? alias.kana : cleanLabel;
 const lineCells = state.lines[state.currentLine];
 const targetLen = state.lineTargets[state.currentLine];
 const remainingSlots = targetLen - lineCells.length;
@@ -5332,7 +5395,7 @@ playerIndex: state.turnIndex % state.activePlayers.length,
 playerName: currentPlayer.name,
 playerColor: currentPlayer.color,
 isFlower: true,
-isFree: state.freeMode
+isFree: !moraMode
 });
 });
 state.flowerUsed = true;
@@ -5347,7 +5410,7 @@ playerName: currentPlayer.name
 state.pendingFlowerAlias = null;
 playSound('flower');
 const shouldNewline = lineCells.length >= targetLen;
-if (!state.freeMode && tokens.length > remainingSlots) {
+if (moraMode && tokens.length > remainingSlots) {
 showToast(`「${displayWord}」（${tokens.length}音）を字余りで収め、次の句へ改行しました`);
 } else {
 showToast(`お題の花「${displayWord}」を詠み込みました`);
@@ -5695,6 +5758,12 @@ drawVerticalTanzakuOnCanvas(canvas, flower, flower.cardTheme, '#2563eb');
 } else {
 drawVerticalTanzakuOnCanvas(canvas, flower, flower.cardTheme, flower.color);
 }
+const mirrorImg = document.getElementById('tanzaku-img-mirror');
+if (mirrorImg && canvas && typeof canvas.toDataURL === 'function') {
+try {
+mirrorImg.src = canvas.toDataURL('image/png');
+} catch (e) {}
+}
 updateDownloadButtonFlowerColor();
 }
 function renderResultScreenFromState() {
@@ -5741,6 +5810,7 @@ toggleWrap.classList.remove('hidden');
 } else {
 toggleWrap.classList.add('hidden');
 }
+updateResultActionButtonsForBrowser();
 renderCurrentResultTanzakuCanvas();
 }
 function finishPoem() {
@@ -6547,17 +6617,98 @@ suffix: state.carnationRedMode ? 'carnation-red' : 'carnation-blue'
 }
 return { canvas: primaryCanvas, suffix: flower.id };
 }
-async function downloadTanzakuImage() {
-await ensureFontsLoaded();
-const item = getTargetCanvasAndSuffix();
-if (!item.canvas) return;
-const dataUrl = item.canvas.toDataURL('image/png');
+let lastInAppSaveCanvas = null;
+let lastInAppSaveSuffix = 'tulip';
+let lastInAppSavePoemEntry = null;
+function isInAppBrowser() {
+const ua = (typeof navigator !== 'undefined' && navigator.userAgent) ? String(navigator.userAgent) : '';
+if (!ua) return false;
+if (/Twitter|TwitterAndroid|Instagram|Line\/|FBAN|FBAV|FB_IAB|MicroMessenger|TikTok/i.test(ua)) {
+return true;
+}
+const isIOS = /iP(hone|od|ad)/i.test(ua);
+const isAndroid = /Android/i.test(ua);
+const isMobile = isIOS || isAndroid;
+const isAndroidWv = isAndroid && /;\s*wv\)/i.test(ua);
+if (isAndroidWv) return true;
+if (isIOS && /AppleWebKit/i.test(ua) && !/Safari\//i.test(ua)) return true;
+if (isMobile && typeof document !== 'undefined' && document.referrer) {
+const ref = String(document.referrer);
+if (/^https?:\/\/(t\.co|twitter\.com|x\.com)(\/|$)/i.test(ref) || /^android-app:\/\/(com\.twitter\.android|com\.instagram\.android|jp\.naver\.line\.android)/i.test(ref)) {
+return true;
+}
+}
+return false;
+}
+function updateResultActionButtonsForBrowser() {
+const inApp = isInAppBrowser();
+const shareBtn = document.getElementById('btn-share-x');
+const dlBtn = document.getElementById('btn-download-image');
+const wrapLongpress = document.getElementById('wrap-open-longpress-save');
+if (dlBtn) {
+dlBtn.innerHTML = '<span>📥</span> 短冊画像を保存（PNG）';
+if (inApp) {
+dlBtn.classList.add('hidden');
+} else {
+dlBtn.classList.remove('hidden');
+}
+}
+if (shareBtn) {
+if (inApp) {
+shareBtn.classList.add('sm:col-span-2');
+} else {
+shareBtn.classList.remove('sm:col-span-2');
+}
+}
+if (wrapLongpress) {
+if (inApp) {
+wrapLongpress.classList.add('hidden');
+} else {
+wrapLongpress.classList.remove('hidden');
+}
+}
+}
+function openInAppImageSaveModal(canvas, suffix = 'tulip', poemEntry = null) {
+if (!canvas) return '';
+lastInAppSaveCanvas = canvas;
+lastInAppSaveSuffix = suffix || 'tulip';
+lastInAppSavePoemEntry = poemEntry || null;
+let dataUrl = '';
+try {
+dataUrl = canvas.toDataURL('image/png');
+} catch (e) {}
+const imgEl = document.getElementById('inapp-save-img');
+if (imgEl && dataUrl) {
+imgEl.src = dataUrl;
+}
+const modalEl = document.getElementById('modal-inapp-image-save');
+if (modalEl) {
+modalEl.classList.remove('hidden');
+}
+return dataUrl;
+}
+function triggerStandardCanvasDownload(canvas, suffix = 'tulip') {
+if (!canvas) return '';
+const fileName = `yomibito-shirazu-${suffix}-${Date.now()}.png`;
+const dataUrl = canvas.toDataURL('image/png');
 const link = document.createElement('a');
-link.download = `yomibito-shirazu-${item.suffix}-${Date.now()}.png`;
+link.download = fileName;
 link.href = dataUrl;
 document.body.appendChild(link);
 link.click();
 document.body.removeChild(link);
+return dataUrl;
+}
+async function downloadTanzakuImage(options = {}) {
+const item = getTargetCanvasAndSuffix();
+if (!item.canvas) return;
+if (isInAppBrowser() || (options && options.forceModal)) {
+openInAppImageSaveModal(item.canvas, item.suffix, null);
+showToast('下の短冊画像を「長押し」してダウンロードしてください');
+return;
+}
+await ensureFontsLoaded();
+triggerStandardCanvasDownload(item.canvas, item.suffix);
 showToast('短冊画像（PNG）を保存しました📥');
 }
 async function copyCanvasImageToClipboard(canvas) {
@@ -6600,7 +6751,8 @@ if (err && err.name === 'AbortError') return;
 }
 }
 const copiedImage = await copyCanvasImageToClipboard(mainCanvas);
-downloadTanzakuImage();
+const inApp = isInAppBrowser();
+await downloadTanzakuImage({ fromShareFallback: true });
 const intentUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}`;
 document.getElementById('link-open-x-intent').href = intentUrl;
 const feedbackBox = document.getElementById('share-feedback-box');
@@ -6608,6 +6760,8 @@ const feedbackMsg = document.getElementById('share-feedback-msg');
 feedbackBox.classList.remove('hidden');
 if (copiedImage) {
 feedbackMsg.textContent = '✅ 短冊画像をクリップボードにコピーしました！開いたX（Twitter）の投稿欄で「貼り付け（Ctrl+V / 右クリック→ペースト）」を押すとその場で画像が添付されます。';
+} else if (inApp) {
+feedbackMsg.textContent = '📱 アプリ内ブラウザでは自動保存が制限されるため、短冊画像を長押しして保存したあと、開いたXの投稿欄に添付してください。';
 } else {
 feedbackMsg.textContent = '✅ 短冊画像をPNG保存しました！開いたXの投稿欄に保存されたPNG画像を添付してください。';
 }
@@ -6649,16 +6803,16 @@ const accent = flower.id === 'carnation' ? (useRed ? '#dc2626' : '#2563eb') : fl
 drawVerticalTanzakuOnCanvas(offCanvas, flower, theme, accent, customLines, customPlayers);
 return { canvas: offCanvas, flower, playersCount: customPlayers.length };
 }
-function downloadPoemEntryImage(entry) {
+function downloadPoemEntryImage(entry, options = {}) {
 if (!entry) return;
 const built = buildOffscreenCanvasForPoemEntry(entry);
-const dataUrl = built.canvas.toDataURL('image/png');
-const link = document.createElement('a');
-link.download = `yomibito-shirazu-${built.flower.id}-${Date.now()}.png`;
-link.href = dataUrl;
-document.body.appendChild(link);
-link.click();
-document.body.removeChild(link);
+const suffix = built.flower ? built.flower.id : 'tulip';
+if (isInAppBrowser() || (options && options.forceModal)) {
+openInAppImageSaveModal(built.canvas, suffix, entry);
+showToast('下の短冊画像を「長押し」してダウンロードしてください');
+return;
+}
+triggerStandardCanvasDownload(built.canvas, suffix);
 showToast('短冊画像（PNG）を保存しました📥');
 }
 async function tweetPoemEntry(entry) {
@@ -7275,6 +7429,7 @@ state.spectators = existingSnap.spectators || [];
 state.selectedFlowerId = existingSnap.selectedFlowerId || 'tulip';
 state.shuffleOrder = !!existingSnap.shuffleOrder;
 state.freeMode = !!existingSnap.freeMode;
+state.flowerMoraCompliant = existingSnap.flowerMoraCompliant !== undefined ? !!existingSnap.flowerMoraCompliant : true;
 state.aiVocabLevel = existingSnap.aiVocabLevel || 3;
 state.aiKagen = existingSnap.aiKagen !== undefined ? !!existingSnap.aiKagen : true;
 state.aiNoFlower = !!existingSnap.aiNoFlower;
@@ -7402,6 +7557,7 @@ state.spectators = remoteSnap.spectators || [];
 state.selectedFlowerId = remoteSnap.selectedFlowerId || 'tulip';
 state.shuffleOrder = !!remoteSnap.shuffleOrder;
 state.freeMode = !!remoteSnap.freeMode;
+state.flowerMoraCompliant = remoteSnap.flowerMoraCompliant !== undefined ? !!remoteSnap.flowerMoraCompliant : true;
 state.aiVocabLevel = remoteSnap.aiVocabLevel || 3;
 state.aiKagen = remoteSnap.aiKagen !== undefined ? !!remoteSnap.aiKagen : true;
 state.aiNoFlower = !!remoteSnap.aiNoFlower;
@@ -7987,6 +8143,14 @@ chkSkipSubmitConfirmEl.addEventListener('change', (e) => {
 state.skipSubmitConfirm = !!e.target.checked;
 });
 }
+const chkFlowerMoraCompliantEl = document.getElementById('chk-flower-mora-compliant');
+if (chkFlowerMoraCompliantEl) {
+chkFlowerMoraCompliantEl.addEventListener('change', (e) => {
+state.flowerMoraCompliant = !!e.target.checked;
+renderGameView();
+RoomSyncEngine.pushRoomState('game');
+});
+}
 document.getElementById('chk-ai-kagen').addEventListener('change', (e) => {
 if (!state.isHost && state.lobbyMode !== 'solo') return;
 state.aiKagen = e.target.checked;
@@ -8043,7 +8207,30 @@ scheduleBotIfNeeded();
 });
 document.getElementById('btn-finish-init-yes').addEventListener('click', startParticipantVoting);
 document.getElementById('btn-finalize-vote').addEventListener('click', finalizeParticipantVote);
-document.getElementById('btn-download-image').addEventListener('click', downloadTanzakuImage);
+document.getElementById('btn-download-image').addEventListener('click', () => downloadTanzakuImage());
+const btnOpenLongpressSave = document.getElementById('btn-open-longpress-save');
+if (btnOpenLongpressSave) {
+btnOpenLongpressSave.addEventListener('click', () => downloadTanzakuImage({ forceModal: true }));
+}
+const closeInAppSaveModal = () => {
+const m = document.getElementById('modal-inapp-image-save');
+if (m) m.classList.add('hidden');
+};
+const btnCloseInAppSave = document.getElementById('btn-close-inapp-save');
+if (btnCloseInAppSave) btnCloseInAppSave.addEventListener('click', closeInAppSaveModal);
+const btnCloseInAppSaveBottom = document.getElementById('btn-close-inapp-save-bottom');
+if (btnCloseInAppSaveBottom) btnCloseInAppSaveBottom.addEventListener('click', closeInAppSaveModal);
+const btnInAppShareTweet = document.getElementById('btn-inapp-share-tweet');
+if (btnInAppShareTweet) {
+btnInAppShareTweet.addEventListener('click', async () => {
+if (lastInAppSavePoemEntry) {
+await tweetPoemEntry(lastInAppSavePoemEntry);
+} else {
+await shareToTwitterX();
+}
+});
+}
+updateResultActionButtonsForBrowser();
 document.getElementById('btn-share-x').addEventListener('click', shareToTwitterX);
 document.getElementById('btn-copy-image-clipboard').addEventListener('click', async () => {
 const item = getTargetCanvasAndSuffix();
