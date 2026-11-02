@@ -14,13 +14,8 @@
 <meta name="twitter:description" content="兄妹の花で『詠み人知らず』ができる非公式Webサイト。１人から遊べます。">
 <meta name="twitter:image" content="https://placehold.jp/110/f4b4c4/27272a/1200x630.png?text=%E5%85%84%E5%A6%B9%E3%81%AE%E8%8A%B1">
 <meta name="description" content="兄妹の花で『詠み人知らず』ができる非公式Webサイト。１人から遊べます。">
-  <title>［非公式］兄妹の花で詠み人知らず</title>
-   <script>
-  window.YOMIBITO_CLOUD_CONFIG = {
-    databaseUrl: "https://brother-and-sister-s-flowers-default-rtdb.firebaseio.com/"
-  };
-  </script>
-  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+<title>［非公式］兄妹の花で詠み人知らず</title>
+<script src="https://cdn.tailwindcss.com/3.4.17"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Noto+Serif+JP:wght@400;600;700;900&amp;display=swap" rel="stylesheet">
@@ -536,7 +531,7 @@ ID変更
 手番が回るまでお待ちください…
 </div>
 <div id="flower-reminder-alert" class="hidden p-3 rounded-xl bg-pink-50 border border-pink-300 text-pink-950 text-xs leading-relaxed">
-⚠️ <strong>お題の花がまだ詠み込まれていません！</strong> 結句が終わる前に、下の「花の名前を一括入力」から花を投入してください。
+⚠️ <strong>お題の花がまだ詠み込まれていません！</strong> 結句が終わる前に、下の「花の名前を一括入力」から選択してください。
 </div>
 <div id="panel-standard-mode" class="space-y-2">
 <div class="flex items-center gap-2 w-full">
@@ -550,10 +545,9 @@ ID変更
 <div id="panel-free-mode" class="hidden space-y-2.5 p-3.5 rounded-xl bg-zinc-200/80 border-2 border-zinc-300">
 <div class="flex items-center justify-between flex-wrap gap-1">
 <span class="text-xs font-bold text-zinc-800">自由記述モード</span>
-<span class="text-[11px] font-medium text-zinc-500">※「１音とばす」はこの句の目標音数を1音減らします</span>
 </div>
 <div class="flex items-end gap-2 w-full">
-<textarea id="input-free-text" rows="2" maxlength="20" placeholder="自由に入力" autocomplete="off" class="flex-1 min-w-0 w-full px-3 py-2 text-base font-bold serif-jp rounded-xl border border-zinc-300 focus:border-[#e59bb0] focus:outline-none bg-white text-zinc-900 resize-none break-all leading-relaxed overflow-y-auto"></textarea>
+<textarea id="input-free-text" rows="2" enterkeyhint="send" placeholder="入力" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" class="flex-1 min-w-0 w-full h-16 px-3 py-2 text-base font-bold serif-jp rounded-xl border-2 border-zinc-300 focus:border-[#e59bb0] focus:outline-none bg-white text-zinc-900 resize-none break-all leading-relaxed overflow-y-auto"></textarea>
 <div class="flex flex-col gap-1.5 shrink-0">
 <button type="button" id="btn-free-skip-mora" class="px-3 py-1.5 rounded-xl border border-zinc-300 bg-white hover:bg-zinc-100 text-zinc-800 font-bold serif-jp text-xs shadow-sm transition whitespace-nowrap text-center" title="この句の目標音数を1音減らし（字足らずにして）、次の手番へ進みます">
 １音とばす
@@ -1007,7 +1001,7 @@ OK
 <button type="button" id="btn-close-inapp-save" class="w-8 h-8 rounded-lg bg-zinc-200 hover:bg-zinc-300 text-zinc-700 font-bold flex items-center justify-center">✕</button>
 </div>
 <div class="p-4 rounded-xl bg-pink-50 border border-pink-200 text-xs sm:text-sm text-zinc-800 space-y-2 leading-relaxed">
-<p>ワンタップでの投稿は、標準ブラウザでの機能です。</p>
+<p>画像付き投稿は、標準ブラウザでの機能です。</p>
 <p>下に表示されている「<strong>incarnationlord.gith...︙</strong>」の「<strong>︙</strong>」を押し、「<strong>ブラウザで開く</strong>」を選択してください。</p>
 </div>
 <div class="flex flex-col gap-2 pt-1">
@@ -2091,6 +2085,9 @@ state.activePlayers = mergeLastSeen(snapshot.activePlayers || []);
 sanitizeCurrentStatePlayers();
 state.turnIndex = snapshot.turnIndex !== undefined ? snapshot.turnIndex : state.turnIndex;
 state.currentLine = snapshot.currentLine !== undefined ? snapshot.currentLine : state.currentLine;
+if (Array.isArray(snapshot.lineTargets) && snapshot.lineTargets.length === 3) {
+state.lineTargets = snapshot.lineTargets.slice();
+}
 state.lines = snapshot.lines || [[], [], []];
 state.flowerUsed = !!snapshot.flowerUsed;
 state.flowerUsedManually = !!snapshot.flowerUsedManually;
@@ -3846,6 +3843,12 @@ soloTab.className = state.lobbyMode === 'solo' ? activeTabClass : inactiveTabCla
 hostTab.className = state.lobbyMode === 'host' ? activeTabClass : inactiveTabClass;
 guestTab.className = state.lobbyMode === 'guest' ? activeTabClass : inactiveTabClass;
 const countSection = document.getElementById('lobby-player-count-section');
+const lobbyFreeChk = document.getElementById('chk-free-mode');
+if (lobbyFreeChk) {
+state.freeMode = !!lobbyFreeChk.checked;
+const waitFreeChk = document.getElementById('chk-waiting-free-mode');
+if (waitFreeChk) waitFreeChk.checked = state.freeMode;
+}
 if (state.lobbyMode === 'solo') {
 state.isHost = true;
 hostPanel.classList.remove('hidden');
@@ -5223,38 +5226,51 @@ if (!hira || !isValidHiraganaMora(hira) || moras.length !== 1) {
 showToast('平仮名1音を入力してください', 'error');
 return;
 }
+const candidateMora = moras[0];
+const willCompleteFlower = !!detectThemeFlowerInPoem(candidateMora);
 const isLastMoraOfLastLine = (state.currentLine === 2) && (state.lines[2].length + 1 >= state.lineTargets[2]);
-if (isLastMoraOfLastLine && !state.flowerUsed) {
+if (isLastMoraOfLastLine && !state.flowerUsed && !willCompleteFlower) {
 showToast('一句に必ずお題の花を入れるルールです！下の花の名前ボタンを押してください', 'error');
 return;
 }
-if (isRemainingGameAllAiAndFlowerNeeded()) {
+if (!willCompleteFlower && isRemainingGameAllAiAndFlowerNeeded()) {
 showToast('花の名前を入れないまま進むと完成できなくなります！「花の名前を一括入力」を使用するか、「AIの花使用不可」を解除してください', 'error');
 return;
 }
-openSubmitConfirmModal(moras[0]);
+openSubmitConfirmModal(candidateMora);
 }
 function requestFreeModeSubmit() {
 if (!isCurrentTurnMine()) return;
 const inp = document.getElementById('input-free-text');
-const raw = inp.value.replace(/\r?\n/g, '').trim();
+if (!inp) return;
+const raw = String(inp.value || '').replace(/\r?\n/g, '').trim();
 if (!raw) {
 showToast('テキストを入力してください', 'error');
 return;
 }
 const clipped = Array.from(raw).slice(0, 20).join('');
+const willContainFlower = !!detectThemeFlowerInPoem(clipped);
 const isLastMoraOfLastLine = (state.currentLine === 2) && (state.lines[2].length + 1 >= state.lineTargets[2]);
-if (isLastMoraOfLastLine && !state.flowerUsed) {
-showToast('一句に必ずお題の花を入れるルールです！下の花の名前ボタンを押してください', 'error');
+if (isLastMoraOfLastLine && !state.flowerUsed && !willContainFlower) {
+showToast('一句に必ずお題の花を入れるルールです！花の名前を含めて入力するか、下の花の名前ボタンを押してください', 'error');
 return;
 }
-if (isRemainingGameAllAiAndFlowerNeeded()) {
-showToast('花の名前を入れないまま進むと完成できなくなります！「花の名前を一括入力」を使用するか、「AIの花使用不可」を解除してください', 'error');
+if (!willContainFlower && isRemainingGameAllAiAndFlowerNeeded()) {
+showToast('花の名前を入れないまま進むと完成できなくなります！花の名前を含めて入力するか、「AIの花使用不可」を解除してください', 'error');
 return;
 }
 openSubmitConfirmModal(clipped);
 }
+function blurGameInputsForModal() {
+try {
+const sInp = document.getElementById('input-single-mora');
+const fInp = document.getElementById('input-free-text');
+if (sInp && typeof sInp.blur === 'function') sInp.blur();
+if (fInp && typeof fInp.blur === 'function') fInp.blur();
+} catch (e) {}
+}
 function openSubmitConfirmModal(textUnit) {
+blurGameInputsForModal();
 if (state.skipSubmitConfirm) {
 commitSingleSlotTurn(textUnit, state.freeMode);
 return;
@@ -5265,12 +5281,22 @@ document.getElementById('submit-confirm-poem-preview').textContent = previewStr;
 document.getElementById('submit-confirm-detail').innerHTML = `「${escapeHtml(textUnit)}」を<strong>送信</strong>してよろしいですか？`;
 document.getElementById('modal-submit-confirm').classList.remove('hidden');
 }
-function detectThemeFlowerInPoem() {
+const EXTRA_MIXED_FLOWER_VARIANTS = {
+tulip: ['うこん香', 'うっこん香', 'ぼたん百合', '牡丹ゆり'],
+suzuran: ['すず蘭', '鈴らん', 'きみかげ草', '君かげ草', '谷間のひめゆり', '谷間の姫ゆり', '聖母のなみだ'],
+clover: ['しろつめ草', '白つめ草', 'しろ詰草', 'つめ草', 'おらんだげんげ', '白れんげ', 'しろ蓮華'],
+azami: ['とげ草', '刺くさ', '野あざみ', 'の薊', 'やま牛蒡', '山ごぼう'],
+freesia: ['あやめ水仙', 'しょうぶ水仙', '菖蒲すいせん', 'あさぎ水仙', '浅黄すいせん', 'こあやめ水仙'],
+carnation: ['おらんだ撫子', 'オランダ撫子', '阿蘭陀なでしこ', 'じゃこう撫子', '麝香なでしこ', 'おらんだ石竹', 'オランダ石竹'],
+nemophila: ['るり唐草', '瑠璃からくさ', '瑠璃から草', 'もん唐草', '紋からくさ', '紋から草']
+};
+function detectThemeFlowerInPoem(candidateNextText = '') {
 const flower = getSelectedFlower();
 if (!flower || !flower.aliases) return null;
 const allCells = (state.lines || []).flatMap(l => l || []);
-if (allCells.length === 0) return null;
-const rawPoem = allCells.map(c => c.text || '').join('');
+const extraText = String(candidateNextText || '');
+if (allCells.length === 0 && !extraText) return null;
+const rawPoem = allCells.map(c => c.text || '').join('') + extraText;
 if (!rawPoem) return null;
 const cleanRaw = rawPoem.replace(/[\s\u3000。、！？!?〜～ー]/g, '');
 const cleanHira = toHiragana(rawPoem).replace(/[\s\u3000。、！？!?〜～ー]/g, '');
@@ -5300,6 +5326,19 @@ detectedManually: true
 }
 }
 }
+const mixedVariants = EXTRA_MIXED_FLOWER_VARIANTS[flower.id] || [];
+for (const v of mixedVariants) {
+const vNorm = v.replace(/[\s\u3000。、！？!?〜～ー]/g, '');
+if (vNorm && cleanRaw.includes(vNorm)) {
+const baseAlias = flower.aliases[0] || { label: flower.name, kana: toHiragana(flower.name) };
+return {
+label: stripReadingParentheses(baseAlias.label),
+kana: baseAlias.kana,
+insertedText: v,
+detectedManually: true
+};
+}
+}
 return null;
 }
 function checkAndSyncFlowerRecognition(currentPlayer = null) {
@@ -5323,18 +5362,21 @@ detectedManually: true
 }
 function commitSingleSlotTurn(textUnit, isFreeEntry) {
 const currentPlayer = state.activePlayers[state.turnIndex % state.activePlayers.length];
+const hadFlowerBefore = !!state.flowerUsed;
+const newlyDetectedFlower = !hadFlowerBefore ? detectThemeFlowerInPoem(textUnit) : null;
 state.lines[state.currentLine].push({
 text: textUnit,
 playerIndex: state.turnIndex % state.activePlayers.length,
 playerName: currentPlayer.name,
 playerColor: currentPlayer.color,
-isFlower: false,
+isFlower: !!newlyDetectedFlower,
 isFree: !!isFreeEntry
 });
 document.getElementById('input-single-mora').value = '';
 const freeInp = document.getElementById('input-free-text');
+if (freeInp) {
 freeInp.value = '';
-freeInp.style.height = 'auto';
+}
 playSound('mora');
 checkAndSyncFlowerRecognition(currentPlayer);
 advanceLineAndTurn(false);
@@ -8283,31 +8325,101 @@ syncLatestCarnationPoemHistory();
 renderCurrentResultTanzakuCanvas();
 });
 }
+let isSingleInputComposing = false;
+let singleSubmitTouchFallbackTimer = null;
 const singleInput = document.getElementById('input-single-mora');
-singleInput.addEventListener('input', validateSingleMoraInput);
+singleInput.addEventListener('compositionstart', () => { isSingleInputComposing = true; });
+singleInput.addEventListener('compositionend', () => {
+isSingleInputComposing = false;
+validateSingleMoraInput();
+});
+singleInput.addEventListener('input', (e) => {
+if (e && e.isComposing) return;
+validateSingleMoraInput();
+});
 singleInput.addEventListener('keydown', (e) => {
-if (e.key === 'Enter' && !e.isComposing) {
+if ((e.key === 'Enter' || e.keyCode === 13) && !e.isComposing && !isSingleInputComposing) {
 e.preventDefault();
 requestSingleMoraSubmit();
 }
 });
-document.getElementById('btn-submit-mora').addEventListener('click', requestSingleMoraSubmit);
+const btnSubmitMoraEl = document.getElementById('btn-submit-mora');
+if (btnSubmitMoraEl) {
+btnSubmitMoraEl.addEventListener('touchend', () => {
+isSingleInputComposing = false;
+if (singleInput && typeof singleInput.blur === 'function') singleInput.blur();
+if (singleSubmitTouchFallbackTimer) clearTimeout(singleSubmitTouchFallbackTimer);
+singleSubmitTouchFallbackTimer = setTimeout(() => {
+singleSubmitTouchFallbackTimer = null;
+requestSingleMoraSubmit();
+}, 70);
+}, { passive: true });
+btnSubmitMoraEl.addEventListener('click', () => {
+if (singleSubmitTouchFallbackTimer) {
+clearTimeout(singleSubmitTouchFallbackTimer);
+singleSubmitTouchFallbackTimer = null;
+}
+isSingleInputComposing = false;
+requestSingleMoraSubmit();
+});
+}
+let isFreeInputComposing = false;
+let freeSubmitTouchFallbackTimer = null;
 const freeInput = document.getElementById('input-free-text');
-freeInput.addEventListener('input', () => {
-const chars = Array.from(freeInput.value.replace(/\r?\n/g, ''));
+freeInput.addEventListener('compositionstart', () => {
+isFreeInputComposing = true;
+});
+freeInput.addEventListener('compositionend', () => {
+isFreeInputComposing = false;
+const cleaned = String(freeInput.value || '').replace(/\r?\n/g, '');
+const chars = Array.from(cleaned);
 if (chars.length > 20) {
 freeInput.value = chars.slice(0, 20).join('');
+} else if (cleaned !== freeInput.value) {
+freeInput.value = cleaned;
 }
-freeInput.style.height = 'auto';
-freeInput.style.height = Math.max(56, freeInput.scrollHeight) + 'px';
+});
+freeInput.addEventListener('input', (e) => {
+if ((e && e.isComposing) || isFreeInputComposing) return;
+const rawVal = String(freeInput.value || '');
+const hasNewline = /\r?\n/.test(rawVal) || (e && (e.inputType === 'insertLineBreak' || e.inputType === 'insertParagraph'));
+const cleaned = rawVal.replace(/\r?\n/g, '');
+const chars = Array.from(cleaned);
+if (chars.length > 20) {
+freeInput.value = chars.slice(0, 20).join('');
+} else if (cleaned !== rawVal) {
+freeInput.value = cleaned;
+}
+if (hasNewline && freeInput.value.trim().length > 0) {
+requestFreeModeSubmit();
+}
 });
 freeInput.addEventListener('keydown', (e) => {
-if (e.key === 'Enter' && !e.isComposing) {
+if ((e.key === 'Enter' || e.keyCode === 13) && !e.isComposing && !isFreeInputComposing) {
 e.preventDefault();
 requestFreeModeSubmit();
 }
 });
-document.getElementById('btn-submit-free').addEventListener('click', requestFreeModeSubmit);
+const btnSubmitFreeEl = document.getElementById('btn-submit-free');
+if (btnSubmitFreeEl) {
+btnSubmitFreeEl.addEventListener('touchend', () => {
+isFreeInputComposing = false;
+if (freeInput && typeof freeInput.blur === 'function') freeInput.blur();
+if (freeSubmitTouchFallbackTimer) clearTimeout(freeSubmitTouchFallbackTimer);
+freeSubmitTouchFallbackTimer = setTimeout(() => {
+freeSubmitTouchFallbackTimer = null;
+requestFreeModeSubmit();
+}, 70);
+}, { passive: true });
+btnSubmitFreeEl.addEventListener('click', () => {
+if (freeSubmitTouchFallbackTimer) {
+clearTimeout(freeSubmitTouchFallbackTimer);
+freeSubmitTouchFallbackTimer = null;
+}
+isFreeInputComposing = false;
+requestFreeModeSubmit();
+});
+}
 document.getElementById('btn-free-skip-mora').addEventListener('click', requestSkipFreeModeMora);
 document.getElementById('btn-confirm-free-skip').addEventListener('click', executeConfirmedFreeModeSkip);
 document.getElementById('btn-cancel-free-skip').addEventListener('click', () => {
@@ -8351,14 +8463,30 @@ document.getElementById('btn-cancel-submit').addEventListener('click', () => {
 state.pendingInputText = null;
 document.getElementById('modal-submit-confirm').classList.add('hidden');
 });
-document.getElementById('btn-confirm-submit').addEventListener('click', () => {
+let confirmSubmitTouchFallbackTimer = null;
+const executeModalConfirmSubmit = () => {
+if (confirmSubmitTouchFallbackTimer) {
+clearTimeout(confirmSubmitTouchFallbackTimer);
+confirmSubmitTouchFallbackTimer = null;
+}
 const textToCommit = state.pendingInputText;
 document.getElementById('modal-submit-confirm').classList.add('hidden');
 state.pendingInputText = null;
 if (textToCommit) {
 commitSingleSlotTurn(textToCommit, state.freeMode);
 }
-});
+};
+const btnConfirmSubmitEl = document.getElementById('btn-confirm-submit');
+if (btnConfirmSubmitEl) {
+btnConfirmSubmitEl.addEventListener('touchend', () => {
+if (confirmSubmitTouchFallbackTimer) clearTimeout(confirmSubmitTouchFallbackTimer);
+confirmSubmitTouchFallbackTimer = setTimeout(() => {
+confirmSubmitTouchFallbackTimer = null;
+executeModalConfirmSubmit();
+}, 70);
+}, { passive: true });
+btnConfirmSubmitEl.addEventListener('click', executeModalConfirmSubmit);
+}
 document.getElementById('btn-cancel-flower').addEventListener('click', () => {
 state.pendingFlowerAlias = null;
 document.getElementById('modal-flower-confirm').classList.add('hidden');
