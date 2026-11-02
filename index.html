@@ -14,13 +14,8 @@
 <meta name="twitter:description" content="兄妹の花で『詠み人知らず』ができる非公式Webサイト。１人から遊べます。">
 <meta name="twitter:image" content="https://placehold.jp/110/f4b4c4/27272a/1200x630.png?text=%E5%85%84%E5%A6%B9%E3%81%AE%E8%8A%B1">
 <meta name="description" content="兄妹の花で『詠み人知らず』ができる非公式Webサイト。１人から遊べます。">
-  <title>［非公式］兄妹の花で詠み人知らず</title>
-   <script>
-  window.YOMIBITO_CLOUD_CONFIG = {
-    databaseUrl: "https://brother-and-sister-s-flowers-default-rtdb.firebaseio.com/"
-  };
-  </script>
-  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+<title>［非公式］兄妹の花で詠み人知らず</title>
+<script src="https://cdn.tailwindcss.com/3.4.17"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Noto+Serif+JP:wght@400;600;700;900&amp;display=swap" rel="stylesheet">
@@ -76,6 +71,14 @@ box-shadow: 0 0 0 6px rgba(244, 180, 196, 0.15);
 .vertical-text {
 writing-mode: vertical-rl;
 text-orientation: upright;
+}
+.longpressable-img {
+-webkit-touch-callout: default !important;
+-webkit-user-select: auto !important;
+user-select: auto !important;
+pointer-events: auto !important;
+touch-action: auto !important;
+-webkit-user-drag: auto !important;
 }
 .dragging-row {
 opacity: 0.45;
@@ -620,7 +623,7 @@ ID変更
 <div class="w-full max-w-xs sm:max-w-sm">
 <div class="w-full rounded-2xl overflow-hidden shadow-lg border border-zinc-300 bg-zinc-100">
 <canvas id="tanzaku-canvas" width="800" height="1200" role="img" aria-label="完成した短冊の画像" class="hidden w-full h-auto"></canvas>
-<img id="tanzaku-img-mirror" alt="完成した短冊の画像（長押しで保存可能）" class="w-full h-auto block select-auto" style="-webkit-touch-callout: default;">
+<img id="tanzaku-img-mirror" alt="完成した短冊の画像（長押しで保存可能）" class="w-full h-auto block select-auto longpressable-img">
 <div id="tanzaku-screenreader-summary" class="sr-only" aria-live="polite"></div>
 </div>
 </div>
@@ -1000,14 +1003,16 @@ OK
 </div>
 <div class="p-3.5 rounded-xl bg-pink-50 border border-pink-200 text-xs sm:text-sm text-zinc-800 space-y-2 leading-relaxed">
 <p>短冊画像を<strong>長押しでダウンロード</strong>し、投稿に添付してください。</p>
-<p>ワンタップでの投稿は、標準ブラウザでの機能です。<br>下に表示されている「<strong>incarnationlord.gith...︙</strong>」の「<strong>︙</strong>」を押し、「<strong>ブラウザで開く</strong>」を選択してください。</p>
-<p class="text-[11px] sm:text-xs font-bold text-pink-900 pt-1">※データはブラウザ間で引き継げません。</p>
+<p>ワンタップでの投稿（およびアプリ内ブラウザで長押しメニューが出ない場合の保存）は、標準ブラウザでの機能です。<br>下の<strong>「標準ブラウザでこの完成画面を開く」</strong>を押すか、下に表示されている「<strong>incarnationlord.gith...︙</strong>」の「<strong>︙</strong>」を押し、「<strong>ブラウザで開く</strong>」を選択してください（完成画面・部屋の合言葉を引き継いで開きます）。</p>
 </div>
 <div class="flex flex-col items-center justify-center bg-zinc-200/70 p-3 rounded-xl border border-zinc-300">
-<img id="inapp-save-img" alt="保存用短冊画像（長押しで保存）" class="max-h-[50vh] w-auto rounded-lg shadow-md border border-zinc-300 select-auto" style="-webkit-touch-callout: default;">
+<img id="inapp-save-img" alt="保存用短冊画像（長押しで保存）" class="max-h-[46vh] w-auto rounded-lg shadow-md border border-zinc-300 select-auto longpressable-img">
 </div>
 <div class="flex flex-col gap-2 pt-1">
-<button type="button" id="btn-close-inapp-save-bottom" class="w-full py-2.5 px-4 rounded-xl btn-usumomo font-bold text-xs sm:text-sm shadow-sm transition">
+<button type="button" id="btn-open-external-browser" class="w-full py-2.5 px-4 rounded-xl btn-usumomo font-bold text-xs sm:text-sm shadow-sm transition flex items-center justify-center gap-1.5">
+🌐 標準ブラウザでこの完成画面を開く ↗
+</button>
+<button type="button" id="btn-close-inapp-save-bottom" class="w-full py-2.5 px-4 rounded-xl border border-zinc-300 bg-white hover:bg-zinc-200 text-zinc-700 font-bold text-xs sm:text-sm transition">
 閉じる
 </button>
 </div>
@@ -4618,6 +4623,7 @@ renderWaitingChat();
 RoomSyncEngine.pushRoomState();
 }
 function openWaitingRoom(pushPhase = true) {
+clearResultStateUrlInAddressBar();
 window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
 const roomHistBtn = document.getElementById('btn-open-room-history');
 if (roomHistBtn) roomHistBtn.classList.add('hidden');
@@ -5749,6 +5755,118 @@ await document.fonts.ready;
 } catch (e) {}
 }
 }
+function getCompactLongPressDataUrl(canvas) {
+if (!canvas || typeof canvas.toDataURL !== 'function') return '';
+try {
+const pngUrl = canvas.toDataURL('image/png');
+if (pngUrl && pngUrl.length <= 55000) {
+return pngUrl;
+}
+const jpegUrl = canvas.toDataURL('image/jpeg', 0.92);
+if (jpegUrl && jpegUrl.startsWith('data:image/')) {
+return jpegUrl;
+}
+return pngUrl;
+} catch (e) {
+try {
+return canvas.toDataURL('image/png');
+} catch (e2) {
+return '';
+}
+}
+}
+function encodeUtf8Base64Url(str) {
+try {
+if (typeof TextEncoder !== 'undefined' && typeof btoa === 'function') {
+const bytes = new TextEncoder().encode(str);
+let bin = '';
+for (let i = 0; i < bytes.length; i++) {
+bin += String.fromCharCode(bytes[i]);
+}
+return btoa(bin).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/g, '');
+}
+return encodeURIComponent(str);
+} catch (e) {
+return '';
+}
+}
+function decodeUtf8Base64Url(b64url) {
+try {
+if (typeof TextDecoder !== 'undefined' && typeof atob === 'function') {
+let b64 = String(b64url).replace(/-/g, '+').replace(/_/g, '/');
+while (b64.length % 4 !== 0) b64 += '=';
+const bin = atob(b64);
+const bytes = new Uint8Array(bin.length);
+for (let i = 0; i < bin.length; i++) {
+bytes[i] = bin.charCodeAt(i);
+}
+return new TextDecoder().decode(bytes);
+}
+return decodeURIComponent(b64url);
+} catch (e) {
+return '';
+}
+}
+function buildHandoffUrlForResult(customEntry = null) {
+try {
+const base = getShareSiteUrl(false);
+const u = new URL(base);
+let payload = null;
+if (customEntry) {
+const flower = FLOWERS.find(f => f.id === customEntry.flowerId) || FLOWERS.find(f => f.name === customEntry.flowerName) || FLOWERS[0];
+const players = Array.isArray(customEntry.activePlayers) && customEntry.activePlayers.length > 0
+? customEntry.activePlayers
+: (Array.isArray(customEntry.poets) ? customEntry.poets.map((n, i) => ({ name: n, color: PLAYER_COLORS[i % PLAYER_COLORS.length], isBot: false })) : [{ name: '007', color: PLAYER_COLORS[0], isBot: false }]);
+const lines = Array.isArray(customEntry.lines) && customEntry.lines.length > 0 ? customEntry.lines : [[], [], []];
+payload = {
+f: flower.id,
+r: customEntry.carnationRedMode ? 1 : 0,
+p: players.map(pl => [pl.name || '007', pl.color || PLAYER_COLORS[0], pl.isBot ? 1 : 0]),
+l: lines.map(line => (line || []).map(c => [c.text || '', c.playerIndex || 0, c.isFlower ? 1 : 0])),
+kw: state.lobbyMode !== 'solo' ? (state.roomKeyword || '') : '',
+rm: state.lobbyMode !== 'solo' ? (state.roomId || '') : '',
+un: state.currentUserName || '007'
+};
+} else {
+payload = {
+f: state.selectedFlowerId || 'tulip',
+r: state.carnationRedMode ? 1 : 0,
+p: (state.activePlayers || []).map(pl => [pl.name || '007', pl.color || PLAYER_COLORS[0], pl.isBot ? 1 : 0]),
+l: (state.lines || [[], [], []]).map(line => (line || []).map(c => [c.text || '', c.playerIndex || 0, c.isFlower ? 1 : 0])),
+kw: state.lobbyMode !== 'solo' ? (state.roomKeyword || '') : '',
+rm: state.lobbyMode !== 'solo' ? (state.roomId || '') : '',
+un: state.currentUserName || '007'
+};
+}
+const encoded = encodeUtf8Base64Url(JSON.stringify(payload));
+if (encoded) {
+u.searchParams.set('r', encoded);
+}
+return u.toString();
+} catch (e) {
+return getShareSiteUrl(false);
+}
+}
+function syncResultStateUrlInAddressBar(customEntry = null) {
+try {
+if (typeof window !== 'undefined' && window.history && typeof window.history.replaceState === 'function') {
+const handoffUrl = buildHandoffUrlForResult(customEntry);
+const u = new URL(handoffUrl);
+window.history.replaceState(null, '', u.pathname + u.search + u.hash);
+}
+} catch (e) {}
+}
+function clearResultStateUrlInAddressBar() {
+try {
+if (typeof window !== 'undefined' && window.history && typeof window.history.replaceState === 'function' && window.location) {
+const u = new URL(window.location.href);
+if (u.searchParams.has('r')) {
+u.searchParams.delete('r');
+window.history.replaceState(null, '', u.pathname + u.search + u.hash);
+}
+}
+} catch (e) {}
+}
 async function renderCurrentResultTanzakuCanvas() {
 await ensureFontsLoaded();
 const flower = getSelectedFlower();
@@ -5763,11 +5881,13 @@ drawVerticalTanzakuOnCanvas(canvas, flower, flower.cardTheme, '#2563eb');
 drawVerticalTanzakuOnCanvas(canvas, flower, flower.cardTheme, flower.color);
 }
 const mirrorImg = document.getElementById('tanzaku-img-mirror');
-if (mirrorImg && canvas && typeof canvas.toDataURL === 'function') {
-try {
-mirrorImg.src = canvas.toDataURL('image/png');
-} catch (e) {}
+if (mirrorImg && canvas) {
+const compactUrl = getCompactLongPressDataUrl(canvas);
+if (compactUrl) {
+mirrorImg.src = compactUrl;
 }
+}
+syncResultStateUrlInAddressBar(null);
 updateDownloadButtonFlowerColor();
 }
 function renderResultScreenFromState() {
@@ -6705,14 +6825,12 @@ lastInAppSaveCanvas = canvas;
 lastInAppSaveSuffix = suffix || 'tulip';
 lastInAppSavePoemEntry = poemEntry || null;
 if (intentUrl) lastInAppSaveIntentUrl = intentUrl;
-let dataUrl = '';
-try {
-dataUrl = canvas.toDataURL('image/png');
-} catch (e) {}
+const dataUrl = getCompactLongPressDataUrl(canvas);
 const imgEl = document.getElementById('inapp-save-img');
 if (imgEl && dataUrl) {
 imgEl.src = dataUrl;
 }
+syncResultStateUrlInAddressBar(poemEntry);
 const modalEl = document.getElementById('modal-inapp-image-save');
 if (modalEl) {
 modalEl.classList.remove('hidden');
@@ -7093,17 +7211,30 @@ startPresenceHeartbeat();
 const hostKwInputEl = document.getElementById('input-room-keyword');
 if (hostKwInputEl) hostKwInputEl.value = state.roomKeyword;
 updateHostPassphrasePreviewUI();
+let restoredResultPayload = null;
 try {
 const params = new URLSearchParams(window.location.search);
-const urlRoomId = params.get('room');
-const urlKw = params.get('kw');
+const rParam = params.get('r');
+if (rParam) {
+const decodedJson = decodeUtf8Base64Url(rParam);
+if (decodedJson) {
+const parsedPayload = JSON.parse(decodedJson);
+if (parsedPayload && Array.isArray(parsedPayload.l)) {
+restoredResultPayload = parsedPayload;
+}
+}
+}
+const urlRoomId = params.get('room') || (restoredResultPayload && restoredResultPayload.rm) || '';
+const urlKw = params.get('kw') || (restoredResultPayload && restoredResultPayload.kw) || '';
 if (urlRoomId || urlKw) {
 state.lobbyMode = 'guest';
 state.isHost = false;
 if (urlKw) {
+state.roomKeyword = urlKw;
 document.getElementById('guest-keyword-input').value = urlKw;
 }
 if (urlRoomId) {
+state.roomId = urlRoomId;
 document.getElementById('guest-room-id-input').value = urlRoomId;
 }
 }
@@ -8030,6 +8161,7 @@ RoomSyncEngine.pushRoomState(phaseToPreserve);
 return roomBecameUnmanned;
 };
 const executeReturnToLobby = () => {
+clearResultStateUrlInAddressBar();
 document.getElementById('modal-return-title-confirm').classList.add('hidden');
 if (state.botTimer) {
 clearTimeout(state.botTimer);
@@ -8271,7 +8403,120 @@ const btnCloseInAppSave = document.getElementById('btn-close-inapp-save');
 if (btnCloseInAppSave) btnCloseInAppSave.addEventListener('click', closeInAppSaveModal);
 const btnCloseInAppSaveBottom = document.getElementById('btn-close-inapp-save-bottom');
 if (btnCloseInAppSaveBottom) btnCloseInAppSaveBottom.addEventListener('click', closeInAppSaveModal);
+const btnOpenExternalBrowser = document.getElementById('btn-open-external-browser');
+if (btnOpenExternalBrowser) {
+btnOpenExternalBrowser.addEventListener('click', () => {
+const handoffUrl = buildHandoffUrlForResult(lastInAppSavePoemEntry);
+syncResultStateUrlInAddressBar(lastInAppSavePoemEntry);
+copyTextToClipboard(handoffUrl);
+const ua = (typeof navigator !== 'undefined' && navigator.userAgent) ? String(navigator.userAgent) : '';
+if (/Android/i.test(ua)) {
+try {
+const parsed = new URL(handoffUrl);
+const hostAndPath = parsed.host + parsed.pathname + parsed.search + parsed.hash;
+const scheme = parsed.protocol.replace(':', '') || 'https';
+const intentUri = `intent://${hostAndPath}#Intent;scheme=${scheme};action=android.intent.action.VIEW;S.browser_fallback_url=${encodeURIComponent(handoffUrl)};end`;
+window.location.href = intentUri;
+return;
+} catch (e) {}
+} else if (/iP(hone|od|ad)/i.test(ua)) {
+try {
+window.location.href = 'x-safari-' + handoffUrl;
+showToast('標準ブラウザを起動しています（開かない場合は右下の「︙」→「ブラウザで開く」を選択してください）');
+return;
+} catch (e) {}
+}
+window.open(handoffUrl, '_blank', 'noopener,noreferrer');
+showToast('引き継ぎ用URLをコピーしました。標準ブラウザで開いてください');
+});
+}
 updateResultActionButtonsForBrowser();
+if (restoredResultPayload) {
+try {
+if (restoredResultPayload.un) {
+saveLastUsedUserName(restoredResultPayload.un);
+state.currentUserName = restoredResultPayload.un;
+state.hostName = restoredResultPayload.un;
+}
+state.selectedFlowerId = FLOWERS.some(f => f.id === restoredResultPayload.f) ? restoredResultPayload.f : 'tulip';
+state.carnationRedMode = !!restoredResultPayload.r;
+state.activePlayers = (restoredResultPayload.p || []).map((item, idx) => ({
+id: item[2] ? `ai-restored-${idx}` : `human-restored-${idx}`,
+name: item[0] || '007',
+color: item[1] || PLAYER_COLORS[idx % PLAYER_COLORS.length],
+isBot: !!item[2],
+isHostPlayer: idx === 0
+}));
+if (state.activePlayers.length === 0) {
+state.activePlayers = [{ id: 'host-0', name: state.currentUserName || '007', color: PLAYER_COLORS[0], isBot: false, isHostPlayer: true }];
+}
+state.lines = [0, 1, 2].map(lIdx => {
+const rawLine = (restoredResultPayload.l && restoredResultPayload.l[lIdx]) ? restoredResultPayload.l[lIdx] : [];
+return rawLine.map(cellArr => {
+const pIdx = Number(cellArr[1]) || 0;
+const pl = state.activePlayers[pIdx] || state.activePlayers[0];
+return {
+text: String(cellArr[0] || ''),
+playerIndex: pIdx,
+playerName: pl.name,
+playerColor: pl.color,
+isFlower: !!cellArr[2]
+};
+});
+});
+state.flowerUsed = true;
+state.inGame = false;
+state.roomPhase = 'result';
+const nonEmptyLines = state.lines.map(line => line.map(c => c.text).join('')).filter(Boolean);
+const fullPoemText = nonEmptyLines.join('　');
+const flower = getSelectedFlower();
+if (fullPoemText) {
+const now = new Date();
+const timeStr = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+const restoredEntry = {
+id: `poem-restored-${Date.now()}`,
+flowerId: flower.id,
+flowerName: flower.name,
+usedFlowerNotation: flower.name,
+flowerSwatchCss: flower.swatchCss,
+poemText: fullPoemText,
+poets: state.activePlayers.map(p => p.name),
+time: timeStr,
+lines: JSON.parse(JSON.stringify(state.lines)),
+activePlayers: JSON.parse(JSON.stringify(state.activePlayers)),
+carnationRedMode: !!state.carnationRedMode
+};
+state.completedPoems.push(restoredEntry);
+savePoemToPersonalHistory(restoredEntry);
+}
+if (restoredResultPayload.kw && restoredResultPayload.rm) {
+state.roomKeyword = restoredResultPayload.kw;
+state.roomId = restoredResultPayload.rm;
+state.lobbyMode = 'guest';
+RoomSyncEngine.subscribeToRoom(state.roomKeyword, state.roomId);
+RoomSyncEngine.fetchRoomSnapshot(state.roomKeyword, state.roomId).then(snap => {
+if (snap) {
+const myName = state.currentUserName || '007';
+const existingSlot = (snap.waitingSlots || []).find(p => !p.isBot && p.name === myName)
+|| (snap.restingPlayers || []).find(p => !p.isBot && p.name === myName);
+if (existingSlot) {
+state.myPlayerId = existingSlot.id;
+state.isHost = !!existingSlot.isHostPlayer || existingSlot.id === snap.hostPlayerId;
+if (state.isHost) state.lobbyMode = 'host';
+}
+const rk = RoomSyncEngine.makeRoomKey(state.roomKeyword, state.roomId);
+RoomSyncEngine.handleIncomingSnapshot(rk, snap, null);
+}
+}).catch(() => {});
+}
+document.getElementById('view-lobby').classList.add('hidden');
+document.getElementById('view-waiting').classList.add('hidden');
+document.getElementById('view-game').classList.add('hidden');
+document.getElementById('view-result').classList.remove('hidden');
+document.getElementById('btn-back-lobby').classList.remove('hidden');
+renderResultScreenFromState();
+} catch (e) {}
+}
 document.getElementById('btn-share-x').addEventListener('click', shareToTwitterX);
 document.getElementById('btn-copy-image-clipboard').addEventListener('click', async () => {
 const item = getTargetCanvasAndSuffix();
