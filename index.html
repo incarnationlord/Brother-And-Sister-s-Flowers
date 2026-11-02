@@ -15,11 +15,6 @@
 <meta name="twitter:image" content="https://placehold.jp/110/f4b4c4/27272a/1200x630.png?text=%E5%85%84%E5%A6%B9%E3%81%AE%E8%8A%B1">
 <meta name="description" content="兄妹の花で『詠み人知らず』ができる非公式Webサイト。１人から遊べます。">
 <title>［非公式］兄妹の花で詠み人知らず</title>
-     <script>
-  window.YOMIBITO_CLOUD_CONFIG = {
-    databaseUrl: "https://brother-and-sister-s-flowers-default-rtdb.firebaseio.com/"
-  };
-     </script>
 <script src="https://cdn.tailwindcss.com/3.4.17"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
@@ -650,7 +645,7 @@ ID変更
 </div>
 <div id="wrap-open-longpress-save" class="pt-1">
 <button type="button" id="btn-open-longpress-save" class="w-full py-2.5 px-4 rounded-xl border border-zinc-300 bg-white hover:bg-zinc-200 text-zinc-700 font-bold text-xs sm:text-sm shadow-sm transition">
-アプリ内ブラウザの方はこちら
+画像付きで投稿したい場合
 </button>
 </div>
 <div id="share-feedback-box" class="hidden p-3.5 rounded-xl bg-zinc-200 border border-zinc-300 text-xs text-zinc-800 space-y-2">
@@ -995,20 +990,19 @@ OK
 <div id="modal-inapp-image-save" class="fixed inset-0 z-50 hidden bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
 <div class="bg-[#f3f4f6] rounded-2xl max-w-md w-full max-h-[92vh] overflow-y-auto tanzaku-shadow border border-zinc-300 p-5 space-y-4">
 <div class="flex items-center justify-between border-b border-zinc-300 pb-2.5">
-<h3 class="text-base sm:text-lg font-bold serif-jp text-zinc-900">短冊画像の保存</h3>
+<h3 class="text-base sm:text-lg font-bold serif-jp text-zinc-900">画像付きで投稿したい場合</h3>
 <button type="button" id="btn-close-inapp-save" class="w-8 h-8 rounded-lg bg-zinc-200 hover:bg-zinc-300 text-zinc-700 font-bold flex items-center justify-center">✕</button>
 </div>
-<div class="p-3 rounded-xl bg-pink-50 border border-pink-200 text-xs text-zinc-800 text-center leading-relaxed">
-<p><strong>下の短冊画像を「長押し」</strong>して<strong>ダウンロードして</strong>ください。</p>
+<div class="p-3.5 rounded-xl bg-pink-50 border border-pink-200 text-xs sm:text-sm text-zinc-800 space-y-2 leading-relaxed">
+<p>短冊画像を<strong>長押しでダウンロード</strong>し、投稿に添付してください。</p>
+<p>ワンタップでの投稿は、標準ブラウザでの機能です。<br>下に表示されている「<strong>incarnationlord.gith...︙</strong>」の「<strong>︙</strong>」を押し、「<strong>ブラウザで開く</strong>」を選択してください。</p>
+<p class="text-[11px] sm:text-xs font-bold text-pink-900 pt-1">※データはブラウザ間で引き継げません。</p>
 </div>
 <div class="flex flex-col items-center justify-center bg-zinc-200/70 p-3 rounded-xl border border-zinc-300">
-<img id="inapp-save-img" alt="保存用短冊画像（長押しで保存）" class="max-h-[54vh] w-auto rounded-lg shadow-md border border-zinc-300 select-auto" style="-webkit-touch-callout: default;">
+<img id="inapp-save-img" alt="保存用短冊画像（長押しで保存）" class="max-h-[50vh] w-auto rounded-lg shadow-md border border-zinc-300 select-auto" style="-webkit-touch-callout: default;">
 </div>
 <div class="flex flex-col gap-2 pt-1">
-<button type="button" id="btn-inapp-share-tweet" class="w-full py-2.5 px-4 rounded-xl btn-usumomo font-bold text-xs sm:text-sm shadow-sm transition flex items-center justify-center gap-1.5">
-<span>𝕏</span> 画像付きでX（Twitter）に投稿
-</button>
-<button type="button" id="btn-close-inapp-save-bottom" class="w-full py-2.5 px-4 rounded-xl border border-zinc-300 bg-white hover:bg-zinc-200 text-zinc-700 font-bold text-xs sm:text-sm transition">
+<button type="button" id="btn-close-inapp-save-bottom" class="w-full py-2.5 px-4 rounded-xl btn-usumomo font-bold text-xs sm:text-sm shadow-sm transition">
 閉じる
 </button>
 </div>
@@ -3953,7 +3947,7 @@ const card = document.createElement('div');
 card.className = 'p-3.5 rounded-xl bg-white border border-zinc-300 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-sm';
 const poetsStr = Array.isArray(entry.poets) ? entry.poets.join('・') : '';
 const inApp = isInAppBrowser();
-const saveBtnVisibilityClass = inApp ? 'hidden' : 'flex';
+const saveBtnLabel = inApp ? '画像付きで投稿したい場合' : '<span>📥</span> 画像保存';
 card.innerHTML = `
 <div class="space-y-1 min-w-0 flex-1">
 <div class="flex flex-wrap items-center gap-2">
@@ -3965,9 +3959,9 @@ card.innerHTML = `
 <p class="text-base sm:text-lg font-bold serif-jp text-zinc-900 break-words">${escapeHtml(entry.poemText)}</p>
 <p class="text-[11px] text-zinc-500">詠み人：${escapeHtml(poetsStr)}</p>
 </div>
-<div class="flex items-center gap-2 shrink-0">
-<button type="button" class="poem-entry-save-btn ${saveBtnVisibilityClass} px-3 py-1.5 rounded-lg border border-zinc-300 bg-zinc-100 hover:bg-zinc-200 text-zinc-800 font-bold text-xs shadow-sm transition items-center gap-1">
-<span>📥</span> 画像保存
+<div class="flex items-center gap-2 shrink-0 flex-wrap">
+<button type="button" class="poem-entry-save-btn flex px-3 py-1.5 rounded-lg border border-zinc-300 bg-zinc-100 hover:bg-zinc-200 text-zinc-800 font-bold text-xs shadow-sm transition items-center gap-1">
+${saveBtnLabel}
 </button>
 <button type="button" class="poem-entry-tweet-btn px-3 py-1.5 rounded-lg btn-usumomo font-bold text-xs shadow-sm transition flex items-center gap-1">
 <span>𝕏</span> ツイートする
@@ -6625,6 +6619,8 @@ return { canvas: primaryCanvas, suffix: flower.id };
 let lastInAppSaveCanvas = null;
 let lastInAppSaveSuffix = 'tulip';
 let lastInAppSavePoemEntry = null;
+let lastInAppSaveIntentUrl = '';
+const INAPP_REF_SESSION_KEY = 'yomibito_inapp_ref_v1';
 function isInAppBrowser() {
 const ua = (typeof navigator !== 'undefined' && navigator.userAgent) ? String(navigator.userAgent) : '';
 if (!ua) return false;
@@ -6637,11 +6633,30 @@ const isMobile = isIOS || isAndroid;
 const isAndroidWv = isAndroid && /;\s*wv\)/i.test(ua);
 if (isAndroidWv) return true;
 if (isIOS && /AppleWebKit/i.test(ua) && !/Safari\//i.test(ua)) return true;
-if (isMobile && typeof document !== 'undefined' && document.referrer) {
-const ref = String(document.referrer);
-if (/^https?:\/\/(t\.co|twitter\.com|x\.com)(\/|$)/i.test(ref) || /^android-app:\/\/(com\.twitter\.android|com\.instagram\.android|jp\.naver\.line\.android)/i.test(ref)) {
+if (isMobile) {
+try {
+if (typeof sessionStorage !== 'undefined' && sessionStorage.getItem(INAPP_REF_SESSION_KEY) === '1') {
 return true;
 }
+} catch (e) {}
+if (typeof document !== 'undefined' && document.referrer) {
+const ref = String(document.referrer);
+if (/^https?:\/\/(t\.co|twitter\.com|x\.com)(\/|$)/i.test(ref) || /^android-app:\/\/(com\.twitter\.android|com\.instagram\.android|jp\.naver\.line\.android)/i.test(ref)) {
+try {
+if (typeof sessionStorage !== 'undefined') sessionStorage.setItem(INAPP_REF_SESSION_KEY, '1');
+} catch (e) {}
+return true;
+}
+}
+try {
+if (typeof window !== 'undefined' && window.location && window.location.search) {
+const sp = new URLSearchParams(window.location.search);
+if (sp.has('twclid') || sp.has('fbclid') || sp.has('igshid')) {
+if (typeof sessionStorage !== 'undefined') sessionStorage.setItem(INAPP_REF_SESSION_KEY, '1');
+return true;
+}
+}
+} catch (e) {}
 }
 return false;
 }
@@ -6650,6 +6665,7 @@ const inApp = isInAppBrowser();
 const shareBtn = document.getElementById('btn-share-x');
 const dlBtn = document.getElementById('btn-download-image');
 const wrapLongpress = document.getElementById('wrap-open-longpress-save');
+const btnLongpress = document.getElementById('btn-open-longpress-save');
 if (dlBtn) {
 dlBtn.innerHTML = '<span>📥</span> 短冊画像を保存（PNG）';
 if (inApp) {
@@ -6660,24 +6676,30 @@ dlBtn.classList.remove('hidden');
 }
 if (shareBtn) {
 if (inApp) {
+shareBtn.innerHTML = '<span>𝕏</span> X（Twitter）に投稿';
 shareBtn.classList.add('sm:col-span-2');
 } else {
+shareBtn.innerHTML = '<span>𝕏</span> 画像付きでX（Twitter）に投稿';
 shareBtn.classList.remove('sm:col-span-2');
 }
 }
+if (btnLongpress) {
+btnLongpress.textContent = '画像付きで投稿したい場合';
+}
 if (wrapLongpress) {
 if (inApp) {
-wrapLongpress.classList.add('hidden');
-} else {
 wrapLongpress.classList.remove('hidden');
+} else {
+wrapLongpress.classList.add('hidden');
 }
 }
 }
-function openInAppImageSaveModal(canvas, suffix = 'tulip', poemEntry = null) {
+function openInAppImageSaveModal(canvas, suffix = 'tulip', poemEntry = null, intentUrl = '') {
 if (!canvas) return '';
 lastInAppSaveCanvas = canvas;
 lastInAppSaveSuffix = suffix || 'tulip';
 lastInAppSavePoemEntry = poemEntry || null;
+if (intentUrl) lastInAppSaveIntentUrl = intentUrl;
 let dataUrl = '';
 try {
 dataUrl = canvas.toDataURL('image/png');
@@ -6709,7 +6731,6 @@ const item = getTargetCanvasAndSuffix();
 if (!item.canvas) return;
 if (isInAppBrowser() || (options && options.forceModal)) {
 openInAppImageSaveModal(item.canvas, item.suffix, null);
-showToast('下の短冊画像を「長押し」してダウンロードしてください');
 return;
 }
 await ensureFontsLoaded();
@@ -6737,6 +6758,13 @@ const blankTwoLines = '\n\uFE0E \uFE0E\n\uFE0E \uFE0E\n';
 const shareText = `題 ${flower.name}${blankTwoLines}${poemText}${blankTwoLines}#兄妹の花で詠み人知らず\n\n${siteUrl}`;
 const item = getTargetCanvasAndSuffix();
 const mainCanvas = item.canvas;
+const intentUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}`;
+document.getElementById('link-open-x-intent').href = intentUrl;
+const inApp = isInAppBrowser();
+if (inApp) {
+window.open(intentUrl, '_blank', 'noopener,noreferrer');
+return;
+}
 if (navigator.canShare && navigator.share && mainCanvas) {
 try {
 const blob = await new Promise(resolve => mainCanvas.toBlob(resolve, 'image/png'));
@@ -6756,17 +6784,12 @@ if (err && err.name === 'AbortError') return;
 }
 }
 const copiedImage = await copyCanvasImageToClipboard(mainCanvas);
-const inApp = isInAppBrowser();
-await downloadTanzakuImage({ fromShareFallback: true });
-const intentUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}`;
-document.getElementById('link-open-x-intent').href = intentUrl;
+triggerStandardCanvasDownload(mainCanvas, item.suffix);
 const feedbackBox = document.getElementById('share-feedback-box');
 const feedbackMsg = document.getElementById('share-feedback-msg');
 feedbackBox.classList.remove('hidden');
 if (copiedImage) {
 feedbackMsg.textContent = '✅ 短冊画像をクリップボードにコピーしました！開いたX（Twitter）の投稿欄で「貼り付け（Ctrl+V / 右クリック→ペースト）」を押すとその場で画像が添付されます。';
-} else if (inApp) {
-feedbackMsg.textContent = '📱 アプリ内ブラウザでは自動保存が制限されるため、短冊画像を長押しして保存したあと、開いたXの投稿欄に添付してください。';
 } else {
 feedbackMsg.textContent = '✅ 短冊画像をPNG保存しました！開いたXの投稿欄に保存されたPNG画像を添付してください。';
 }
@@ -6814,7 +6837,6 @@ const built = buildOffscreenCanvasForPoemEntry(entry);
 const suffix = built.flower ? built.flower.id : 'tulip';
 if (isInAppBrowser() || (options && options.forceModal)) {
 openInAppImageSaveModal(built.canvas, suffix, entry);
-showToast('下の短冊画像を「長押し」してダウンロードしてください');
 return;
 }
 triggerStandardCanvasDownload(built.canvas, suffix);
@@ -6829,6 +6851,12 @@ const flowerName = built.flower ? built.flower.name : (entry.flowerName || 'チ�
 const poemText = String(entry.poemText || '').replace(/[ 　]/g, '');
 const blankTwoLines = '\n\uFE0E \uFE0E\n\uFE0E \uFE0E\n';
 const shareText = `題 ${flowerName}${blankTwoLines}${poemText}${blankTwoLines}#兄妹の花で詠み人知らず\n\n${siteUrl}`;
+const intentUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}`;
+const inApp = isInAppBrowser();
+if (inApp) {
+window.open(intentUrl, '_blank', 'noopener,noreferrer');
+return;
+}
 if (navigator.canShare && navigator.share) {
 try {
 const blob = await new Promise(resolve => built.canvas.toBlob(resolve, 'image/png'));
@@ -6845,8 +6873,8 @@ if (err && err.name === 'AbortError') return;
 }
 }
 const copied = await copyCanvasImageToClipboard(built.canvas);
-downloadPoemEntryImage(entry);
-const intentUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}`;
+const suffix = built.flower ? built.flower.id : 'tulip';
+triggerStandardCanvasDownload(built.canvas, suffix);
 if (copied) {
 showToast('短冊画像をクリップボードにコピー＆PNG保存しました！開いたX投稿欄で貼り付け（Ctrl+V）できます');
 } else {
@@ -8088,6 +8116,17 @@ RoomSyncEngine.pushRoomState(phaseToKeep);
 showToast('待機室に戻りました');
 }
 });
+const syncLatestCarnationPoemHistory = () => {
+if (Array.isArray(state.completedPoems) && state.completedPoems.length > 0) {
+const lastEntry = state.completedPoems[state.completedPoems.length - 1];
+if (lastEntry && lastEntry.flowerId === 'carnation') {
+lastEntry.carnationRedMode = !!state.carnationRedMode;
+if (!state.isSpectating) {
+savePoemToPersonalHistory(lastEntry);
+}
+}
+}
+};
 const chkCarnationBlue = document.getElementById('chk-carnation-blue');
 const chkCarnationRed = document.getElementById('chk-carnation-red');
 if (chkCarnationBlue && chkCarnationRed) {
@@ -8099,6 +8138,7 @@ state.carnationRedMode = false;
 chkCarnationRed.checked = true;
 state.carnationRedMode = true;
 }
+syncLatestCarnationPoemHistory();
 renderCurrentResultTanzakuCanvas();
 });
 chkCarnationRed.addEventListener('change', () => {
@@ -8109,6 +8149,7 @@ state.carnationRedMode = true;
 chkCarnationBlue.checked = true;
 state.carnationRedMode = false;
 }
+syncLatestCarnationPoemHistory();
 renderCurrentResultTanzakuCanvas();
 });
 }
@@ -8225,16 +8266,6 @@ const btnCloseInAppSave = document.getElementById('btn-close-inapp-save');
 if (btnCloseInAppSave) btnCloseInAppSave.addEventListener('click', closeInAppSaveModal);
 const btnCloseInAppSaveBottom = document.getElementById('btn-close-inapp-save-bottom');
 if (btnCloseInAppSaveBottom) btnCloseInAppSaveBottom.addEventListener('click', closeInAppSaveModal);
-const btnInAppShareTweet = document.getElementById('btn-inapp-share-tweet');
-if (btnInAppShareTweet) {
-btnInAppShareTweet.addEventListener('click', async () => {
-if (lastInAppSavePoemEntry) {
-await tweetPoemEntry(lastInAppSavePoemEntry);
-} else {
-await shareToTwitterX();
-}
-});
-}
 updateResultActionButtonsForBrowser();
 document.getElementById('btn-share-x').addEventListener('click', shareToTwitterX);
 document.getElementById('btn-copy-image-clipboard').addEventListener('click', async () => {
