@@ -15,11 +15,6 @@
 <meta name="twitter:image" content="https://placehold.jp/110/f4b4c4/27272a/1200x630.png?text=%E5%85%84%E5%A6%B9%E3%81%AE%E8%8A%B1">
 <meta name="description" content="兄妹の花で『詠み人知らず』ができる非公式Webサイト。１人から遊べます。">
 <title>［非公式］兄妹の花で詠み人知らず</title>
-  <script>
-    window.YOMIBITO_CLOUD_CONFIG = {
-      databaseUrl: "https://brother-and-sister-s-flowers-default-rtdb.firebaseio.com/"
-    };
-  </script>
 <script src="https://cdn.tailwindcss.com/3.4.17"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
@@ -354,7 +349,7 @@ ID変更
 ☕ 休憩中
 <span id="waiting-resting-count-badge" class="text-[11px] font-bold px-2 py-0.5 rounded-full bg-white border border-zinc-300 text-zinc-700">0人</span>
 </span>
-<span class="text-[11px] text-zinc-500">※ここにいる人は次の句会に参加しません（AIは入れません）</span>
+<span class="text-[11px] text-zinc-500">※ここにいる人は次の句会に参加しません</span>
 </div>
 <div id="waiting-resting-list" class="space-y-2 min-h-[2.75rem]">
 </div>
@@ -6184,6 +6179,26 @@ const VERTICAL_SMALL_KANA = new Set([
 'ャ', 'ュ', 'ョ', 'ァ', 'ィ', 'ゥ', 'ェ', 'ォ', 'ヮ', 'ッ', 'ヵ', 'ヶ',
 'ㇰ', 'ㇱ', 'ㇲ', 'ㇳ', 'ㇴ', 'ㇵ', 'ㇶ', 'ㇷ', 'ㇸ', 'ㇹ', 'ㇺ', 'ㇻ', 'ㇼ', 'ㇽ', 'ㇾ', 'ㇿ'
 ]);
+function drawVerticalChouon(ctx, cx, cy, fontSize) {
+const s = fontSize / 1000;
+ctx.beginPath();
+ctx.moveTo(cx - 113 * s, cy - 374 * s);
+ctx.lineTo(cx - 113 * s, cy - 362 * s);
+ctx.bezierCurveTo(cx - 69 * s, cy - 347 * s, cx - 37 * s, cy - 332 * s, cx - 33 * s, cy - 288 * s);
+ctx.bezierCurveTo(cx - 28 * s, cy - 239 * s, cx - 27 * s, cy - 141 * s, cx - 27 * s, cy - 61 * s);
+ctx.bezierCurveTo(cx - 27 * s, cy - 1 * s, cx - 29 * s, cy + 99 * s, cx - 34 * s, cy + 161 * s);
+ctx.bezierCurveTo(cx - 37 * s, cy + 207 * s, cx - 46 * s, cy + 250 * s, cx - 46 * s, cy + 277 * s);
+ctx.bezierCurveTo(cx - 46 * s, cy + 331 * s, cx - 26 * s, cy + 396 * s, cx + 23 * s, cy + 396 * s);
+ctx.bezierCurveTo(cx + 70 * s, cy + 396 * s, cx + 84 * s, cy + 366 * s, cx + 84 * s, cy + 322 * s);
+ctx.bezierCurveTo(cx + 84 * s, cy + 261 * s, cx + 80 * s, cy + 23 * s, cx + 80 * s, cy - 36 * s);
+ctx.bezierCurveTo(cx + 80 * s, cy - 104 * s, cx + 83 * s, cy - 190 * s, cx + 88 * s, cy - 226 * s);
+ctx.bezierCurveTo(cx + 93 * s, cy - 262 * s, cx + 113 * s, cy - 282 * s, cx + 113 * s, cy - 309 * s);
+ctx.bezierCurveTo(cx + 113 * s, cy - 344 * s, cx + 32 * s, cy - 396 * s, cx - 24 * s, cy - 396 * s);
+ctx.bezierCurveTo(cx - 57 * s, cy - 396 * s, cx - 92 * s, cy - 384 * s, cx - 113 * s, cy - 374 * s);
+ctx.closePath();
+ctx.fill();
+}
+
 function drawVerticalChar(ctx, ch, centerX, centerY, fontSize) {
 ctx.save();
 ctx.font = `700 ${fontSize}px "Noto Serif JP", serif`;
@@ -6194,11 +6209,12 @@ if (VERTICAL_TOP_RIGHT_PUNCT.has(normCh)) {
 ctx.fillText(normCh, centerX + fontSize * 0.58, centerY - fontSize * 0.58);
 } else if (VERTICAL_STANDALONE_DAKUTEN.has(normCh)) {
 ctx.fillText(normCh, centerX + fontSize * 0.58, centerY + fontSize * 0.08);
+} else if (normCh === 'ー') {
+drawVerticalChouon(ctx, centerX, centerY, fontSize);
 } else if (VERTICAL_TRANSPOSE_CHARS.has(normCh)) {
 ctx.translate(centerX, centerY);
 ctx.rotate(Math.PI / 2);
-ctx.scale(1, -1);
-ctx.fillText(normCh, 0, fontSize * 0.06);
+ctx.fillText(normCh, 0, 0);
 } else if (VERTICAL_ROTATE_CHARS.has(normCh)) {
 ctx.translate(centerX + fontSize * 0.06, centerY);
 ctx.rotate(Math.PI / 2);
