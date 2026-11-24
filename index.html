@@ -15,11 +15,6 @@
 <meta name="twitter:image" content="https://placehold.jp/110/f4b4c4/27272a/1200x630.png?text=%E5%85%84%E5%A6%B9%E3%81%AE%E8%8A%B1">
 <meta name="description" content="兄妹の花で『詠み人知らず』ができる非公式Webサイト。１人から遊べます。">
 <title>［非公式］兄妹の花で詠み人知らず</title>
-  <script>
-    window.YOMIBITO_CLOUD_CONFIG = {
-      databaseUrl: "https://brother-and-sister-s-flowers-default-rtdb.firebaseio.com/"
-    };
-  </script>
 <script src="https://cdn.tailwindcss.com/3.4.17"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
@@ -923,7 +918,7 @@ OK
 入室記録 <span class="text-xs sm:text-sm font-normal text-zinc-600">（直近10部屋）</span>
 </h3>
 </div>
-<button type="button" id="btn-close-room-history" class="w-8 h-8 rounded-lg bg-zinc-200 hover:bg-zinc-300 text-zinc-700 font-bold flex items-center justify-center">✕</button>
+<button type="button" id="btn-close-room-history" class="w-8 h-8 rounded-lg bg-zinc-300/90 hover:bg-zinc-400 text-zinc-900 border border-zinc-400 text-lg font-bold flex items-center justify-center leading-none">×</button>
 </div>
 <p class="text-xs text-zinc-600">
 タップするとIDつき合言葉をコピーします。※無人で24時間経過した部屋は自動的に消去されます。
@@ -946,7 +941,7 @@ OK
 </h3>
 <span id="history-poems-count" class="text-xs font-bold px-2 py-0.5 rounded-full bg-zinc-200 text-zinc-800 border border-zinc-300">0句</span>
 </div>
-<button type="button" id="btn-close-history" class="w-8 h-8 rounded-lg bg-zinc-200 hover:bg-zinc-300 text-zinc-700 font-bold flex items-center justify-center">✕</button>
+<button type="button" id="btn-close-history" class="w-8 h-8 rounded-lg bg-zinc-300/90 hover:bg-zinc-400 text-zinc-900 border border-zinc-400 text-lg font-bold flex items-center justify-center leading-none">×</button>
 </div>
 <div id="history-poems-list" class="space-y-3 max-h-[60vh] overflow-y-auto pr-1">
 </div>
@@ -1033,7 +1028,7 @@ OK
 <div class="bg-[#f3f4f6] rounded-2xl max-w-3xl w-full max-h-[85vh] overflow-y-auto tanzaku-shadow border border-zinc-300 p-6 space-y-5">
 <div class="flex items-center justify-between border-b border-zinc-300 pb-3">
 <h3 class="text-xl font-bold serif-jp text-zinc-900">ルール</h3>
-<button type="button" id="btn-close-rules" class="w-8 h-8 rounded-lg bg-zinc-200 hover:bg-zinc-300 text-zinc-700 font-bold flex items-center justify-center">✕</button>
+<button type="button" id="btn-close-rules" class="w-8 h-8 rounded-lg bg-zinc-300/90 hover:bg-zinc-400 text-zinc-900 border border-zinc-400 text-lg font-bold flex items-center justify-center leading-none">×</button>
 </div>
 <div class="space-y-2 text-sm text-zinc-700 leading-relaxed">
 <h4 class="font-bold text-zinc-900 serif-jp text-base">基本ルール</h4>
@@ -1058,7 +1053,7 @@ OK
 <li><strong>お題の花</strong>：兄妹の花から１つ選びます。Wikipedia に記載された別名も使え、一覧やスタンプ進捗はヘッダーの「図鑑」で確認できます。</li>
 <li><strong>自由記述モード</strong>：ひとり１音の制限を撤廃した、複数文字・漢字や記号ありの自由創作モードです。</li>
 <li><strong>潜入捜査モード</strong>（人間２人以上が必要）：全員が匿名（スパイA〜）で句を詠み、完成後にAIスパイを摘発する裏の裏ルールです。
-<ul class="list-circle pl-5 mt-1 space-y-1 text-zinc-600">
+<ul class="pl-5 mt-1 space-y-1 text-zinc-600" style="list-style-type: circle;">
 <li>開始時に「手番順シャッフル」と「AIの花使用（一括入力含む）」が強制オンになり、入力には<strong>６秒の制限時間</strong>（超過時はAIが自動補填）が設けられます。</li>
 <li>人間が３人以上いる場合、人間の中から１人だけ<strong>二重スパイ</strong>が秘密裏に選ばれます（本人のみに通達され、他者からは分かりません）。二重スパイは時間切れになると実名が露見し、摘発時の投票権もありません。</li>
 <li>完成後は匿名短冊を見ながら、自分以外の参加者からAIスパイの人数分だけ容疑者を選んで投票します（多数決で１位タイがAI人数に満たない場合は２位タイまでを被疑者として選出）。</li>
@@ -1083,7 +1078,7 @@ OK
 <h3 class="text-lg sm:text-xl font-bold serif-jp text-zinc-900">図鑑</h3>
 <span id="encyclopedia-progress-badge" class="text-xs font-bold px-2.5 py-0.5 rounded-full bg-pink-50 border border-pink-300 text-pink-900">済 0/0・🌸 0/7</span>
 </div>
-<button type="button" id="btn-close-encyclopedia" class="w-8 h-8 rounded-lg bg-zinc-200 hover:bg-zinc-300 text-zinc-700 font-bold flex items-center justify-center">✕</button>
+<button type="button" id="btn-close-encyclopedia" class="w-8 h-8 rounded-lg bg-zinc-300/90 hover:bg-zinc-400 text-zinc-900 border border-zinc-400 text-lg font-bold flex items-center justify-center leading-none">×</button>
 </div>
 <div class="flex-1 overflow-y-auto px-4 sm:px-6 py-4 space-y-3">
 <div class="flex items-center justify-between gap-2 text-xs text-zinc-500">
@@ -1107,7 +1102,7 @@ OK
 <div class="bg-[#f3f4f6] rounded-2xl max-w-md w-full max-h-[92vh] overflow-y-auto tanzaku-shadow border border-zinc-300 p-6 space-y-5">
 <div class="flex items-center justify-between border-b border-zinc-300 pb-3">
 <h3 class="text-base sm:text-lg font-bold serif-jp text-zinc-900">画像付きで投稿したい場合</h3>
-<button type="button" id="btn-close-inapp-save" class="w-8 h-8 rounded-lg bg-zinc-200 hover:bg-zinc-300 text-zinc-700 font-bold flex items-center justify-center">✕</button>
+<button type="button" id="btn-close-inapp-save" class="w-8 h-8 rounded-lg bg-zinc-300/90 hover:bg-zinc-400 text-zinc-900 border border-zinc-400 text-lg font-bold flex items-center justify-center leading-none">×</button>
 </div>
 <div class="p-4 rounded-xl bg-pink-50 border border-pink-200 text-xs sm:text-sm text-zinc-800 space-y-2 leading-relaxed">
 <p>画像付き投稿は、標準ブラウザでの機能です。</p>
@@ -1584,7 +1579,7 @@ return false;
 if (isLiveRoom && p.clientId && state.clientId && p.clientId === state.clientId) {
 return true;
 }
-const name = String(p.name || '').trim();
+const name = String((zone === 'game' && p.realName) ? p.realName : (p.name || '')).trim();
 if (!name) return true;
 const baseName = name.replace(/^偽+/, '');
 const st = chatStats[name];
@@ -1773,8 +1768,8 @@ const nextActive = [];
 snap.activePlayers.forEach((p, idx) => {
 if (!p) { modified = true; return; }
 if (p.isBot) { nextActive.push(p); return; }
-const nm = String(p.name || '').trim();
-const isGhost = (!validHumanIds.has(p.id) && !validHumanNames.has(nm)) || shouldRemoveHumanSlot(p, 'game');
+const nm = String(p.realName || p.name || '').trim();
+const isGhost = (!validHumanIds.has(p.id) && !validHumanNames.has(nm)) || (!snap.undercoverMode && shouldRemoveHumanSlot(p, 'game'));
 const isDup = seenInGameHumans.has(p.id || nm);
 if (isGhost || isDup) {
 modified = true;
@@ -2351,13 +2346,6 @@ const isCurrentlyViewingGame = !document.getElementById('view-game').classList.c
 if (snapshot.roomPhase === 'spy-guess') {
 state.inGame = false;
 state.isSpectating = false;
-state.undercoverMode = false;
-state.doubleSpyPlayerId = null;
-state.spyGuessState = null;
-state.spyGuessLocalSelection = [];
-state.shownDoubleSpyRoundId = 0;
-state.shownSuspectDecidedRoundId = 0;
-state.shownUndercoverResultRoundId = 0;
 if (!isCurrentlyViewingLobby && (amIInActivePlayers || isCurrentlyViewingGame || isCurrentlyViewingSpyGuess)) {
 state.roomPhase = 'spy-guess';
 document.getElementById('modal-finish-vote').classList.add('hidden');
@@ -6232,7 +6220,10 @@ undercoverTurnInterval = null;
 }
 undercoverScheduledTurnKey = '';
 const bar = document.getElementById('undercover-turn-timer-bar');
-if (bar) bar.classList.add('hidden');
+if (bar) {
+bar.classList.add('hidden');
+bar.style.display = 'none';
+}
 }
 function startUndercoverTurnTimerIfNeeded() {
 const bar = document.getElementById('undercover-turn-timer-bar');
@@ -6251,7 +6242,10 @@ return;
 }
 const turnKey = `${state.roundId}:${state.turnIndex}`;
 if (undercoverScheduledTurnKey === turnKey && undercoverTurnTimer) {
-if (bar) bar.classList.remove('hidden');
+if (bar) {
+bar.classList.remove('hidden');
+bar.style.display = 'flex';
+}
 return;
 }
 clearUndercoverTurnTimer();
@@ -6260,6 +6254,7 @@ undercoverTurnDeadline = Date.now() + 6000;
 if (bar) {
 bar.classList.remove('hidden', 'bg-red-700', 'text-white');
 bar.classList.add('bg-zinc-800', 'text-pink-200');
+bar.style.display = 'flex';
 }
 if (txt) txt.textContent = '残り 6秒';
 undercoverTurnInterval = setInterval(() => {
