@@ -15,11 +15,6 @@
 <meta name="twitter:image" content="https://placehold.jp/110/f4b4c4/27272a/1200x630.png?text=%E5%85%84%E5%A6%B9%E3%81%AE%E8%8A%B1">
 <meta name="description" content="兄妹の花で『詠み人知らず』ができる非公式Webサイト。１人から遊べます。">
 <title>［非公式］兄妹の花で詠み人知らず</title>
-<script>
-    window.YOMIBITO_CLOUD_CONFIG = {
-      databaseUrl: "https://brother-and-sister-s-flowers-default-rtdb.firebaseio.com/"
-    };
-</script>
 <script src="https://cdn.tailwindcss.com/3.4.17"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
@@ -359,8 +354,9 @@ ID変更
 <p id="waiting-reorder-hint" class="text-xs text-zinc-600">
 ※主催者はドラッグ＆ドロップで手番順の並べ替えや「休憩中」への移動ができます。
 </p>
-<div id="waiting-ai-count-controls" class="flex items-center gap-2 bg-zinc-200/80 px-3 py-1.5 rounded-xl border border-zinc-300">
+<div id="waiting-ai-count-controls" class="flex flex-wrap items-center gap-2 bg-zinc-200/80 px-3 py-1.5 rounded-xl border border-zinc-300">
 <span class="text-xs font-bold text-zinc-700">AIスパイ：<strong id="waiting-ai-count-label" class="text-zinc-900">3人</strong></span>
+<span id="waiting-ai-fixed-note" class="hidden text-[11px] font-bold text-pink-700">（潜入捜査モードでは人間と同数に固定）</span>
 <button type="button" id="btn-waiting-ai-minus" class="w-7 h-7 rounded-lg border border-zinc-300 bg-white hover:bg-zinc-100 text-zinc-800 font-bold text-sm flex items-center justify-center shadow-sm transition" title="AIスパイを1人減らす">－</button>
 <button type="button" id="btn-waiting-ai-plus" class="w-7 h-7 rounded-lg btn-usumomo font-bold text-sm flex items-center justify-center shadow-sm transition" title="AIスパイを1人増やす">＋</button>
 </div>
@@ -567,7 +563,7 @@ ID変更
 </div>
 <div id="undercover-turn-timer-bar" class="hidden px-3.5 py-2 rounded-xl bg-zinc-800 text-pink-200 text-xs font-bold flex items-center justify-between shadow-sm">
 <span>制限時間</span>
-<span id="undercover-turn-timer-text" class="font-mono text-sm">残り 6秒</span>
+<span id="undercover-turn-timer-text" class="font-mono text-sm">残り 10秒</span>
 </div>
 <div id="flower-reminder-alert" class="hidden p-3 rounded-xl bg-pink-50 border border-pink-300 text-pink-950 text-xs leading-relaxed">
 ⚠️ <strong>お題の花がまだ詠み込まれていません！</strong> 結句が終わる前に、下の「花の名前を一括入力」から選択してください。
@@ -1122,7 +1118,7 @@ OK
 <h4 class="font-bold text-zinc-900 serif-jp text-base border-b border-zinc-200 pb-1">「潜入捜査モード」とは</h4>
 <div class="space-y-2 text-xs sm:text-sm">
 <p>このモードは、人狼ゲームです。参加者が２人以上必要となります。<br>全員が匿名になって一句をつくるのですが、そのなかにはAIスパイが紛れています。完成した一句を見ながら、誰がAIスパイなのかを当てましょう。</p>
-<p>開始時には、手番順が自動的にシャッフルされ、かつ、名前では人間かAIスパイかの判別がつかなくなります。<br>また、入力には６秒の制限時間が設けられます。この時間を超過すると、AIによって勝手に入力されてしまうため、AIスパイのような言葉選びになってしまうかもしれません。</p>
+<p>開始時には、手番順が自動的にシャッフルされ、かつ、名前では人間かAIスパイかの判別がつかなくなります。<br>また、入力には１０秒の制限時間が設けられます。この時間を超過すると、AIによって勝手に入力されてしまうため、AIスパイのような言葉選びになってしまうかもしれません。</p>
 <p>参加者が３人以上のとき、ひとりだけ二重スパイが選ばれます。<br>二重スパイには、AIスパイが摘発されないよう工作するという秘密任務があります。無論、自分が摘発されてもいけません。ただし、それ以外の参加者に、二重スパイを摘発するメリットはありません。<br>二重スパイは「ハッキング」ボタンにより、１句につき一度だけ次の手番の人（人間・AI問わず）の入力権を奪い、その人として入力することができます。<br>二重スパイが入力の制限時間を超過すると、実名が晒されてしまいます。AIスパイでないことが確定するため、不利になることでしょう。</p>
 <p>一句が完成したら、投票に移ります。これまでの入力結果を見ながら、AIスパイが誰かを予想し、多数決で被疑者を選出します。<br>ここで、二重スパイには投票権はありません。</p>
 <p>被疑者にAIスパイがすべて含まれていたら、任務成功です。ただし、被疑者の過半数が参加者だった場合は、冤罪事件として失敗となります。<br>二重スパイは、自分が生き残り、かつ、AIスパイがひとりでも容疑を逃れたら、任務成功です。</p>
@@ -2386,7 +2382,8 @@ const isStaleTurnRollback = sameRoundGame && (
 (snapshot.turnIndex !== undefined && snapshot.turnIndex < state.turnIndex) ||
 (snapshot.turnIndex === state.turnIndex && snapCellCount < localCellCount)
 );
-const isWithinLocalGrace = sameRoundGame && state.lastLocalGameActionAt && (Date.now() - state.lastLocalGameActionAt < 3500) && (snapshot.updatedAt && snapshot.updatedAt < state.lastLocalGameActionAt);
+const isStrictlyAhead = sameRoundGame && ((snapshot.turnIndex !== undefined && snapshot.turnIndex > state.turnIndex) || (snapshot.turnIndex === state.turnIndex && snapCellCount > localCellCount));
+const isWithinLocalGrace = sameRoundGame && !isStrictlyAhead && state.lastLocalGameActionAt && (Date.now() - state.lastLocalGameActionAt < 3500) && (snapshot.updatedAt && snapshot.updatedAt < state.lastLocalGameActionAt);
 if (!isStaleTurnRollback && !isWithinLocalGrace) {
 state.activePlayers = mergeLastSeen(normalizeArrayField(snapshot.activePlayers));
 sanitizeCurrentStatePlayers();
@@ -3688,7 +3685,9 @@ pendingFlowerAlias: null,
 pendingInputText: null,
 participantVotes: {},
 finishVoteState: null,
-botTimer: null
+botTimer: null,
+botScheduledTurnKey: '',
+botScheduledFireAt: 0
 };
 const ROOM_HISTORY_STORAGE_KEY = 'yomibito_room_history_v1';
 function saveRoomToHistory(keyword, roomId) {
@@ -4519,6 +4518,23 @@ const aiCountControls = document.getElementById('waiting-ai-count-controls');
 const aiCountLabel = document.getElementById('waiting-ai-count-label');
 const aiCount = state.waitingSlots.filter(p => p.isBot).length;
 if (aiCountLabel) aiCountLabel.textContent = `${aiCount}人`;
+const aiFixedNote = document.getElementById('waiting-ai-fixed-note');
+const btnAiMinus = document.getElementById('btn-waiting-ai-minus');
+const btnAiPlus = document.getElementById('btn-waiting-ai-plus');
+if (aiFixedNote) {
+if (state.undercoverMode) aiFixedNote.classList.remove('hidden');
+else aiFixedNote.classList.add('hidden');
+}
+[btnAiMinus, btnAiPlus].forEach(b => {
+if (!b) return;
+if (state.undercoverMode) {
+b.disabled = true;
+b.classList.add('opacity-40', 'cursor-not-allowed', 'pointer-events-none');
+} else {
+b.disabled = false;
+b.classList.remove('opacity-40', 'cursor-not-allowed', 'pointer-events-none');
+}
+});
 const topStartWrap = document.getElementById('waiting-top-start-wrap');
 const gameActiveBanner = document.getElementById('waiting-game-active-banner');
 if (state.isHost) {
@@ -6455,19 +6471,19 @@ return;
 }
 clearUndercoverTurnTimer();
 undercoverScheduledTurnKey = turnKey;
-undercoverTurnDeadline = Date.now() + 6000;
+undercoverTurnDeadline = Date.now() + 10000;
 if (bar) {
 bar.classList.remove('hidden', 'bg-red-700', 'text-white');
 bar.classList.add('bg-zinc-800', 'text-pink-200');
 bar.style.display = 'flex';
 }
-if (txt) txt.textContent = '残り 6秒';
+if (txt) txt.textContent = '残り 10秒';
 undercoverTurnInterval = setInterval(() => {
 const remMs = Math.max(0, undercoverTurnDeadline - Date.now());
 const remSec = Math.ceil(remMs / 1000);
 if (txt) txt.textContent = `残り ${remSec}秒`;
 if (bar) {
-if (remSec <= 2) {
+if (remSec <= 3) {
 bar.classList.remove('bg-zinc-800', 'text-pink-200');
 bar.classList.add('bg-red-700', 'text-white');
 } else {
@@ -6482,7 +6498,7 @@ undercoverTurnInterval = null;
 }, 250);
 undercoverTurnTimer = setTimeout(() => {
 handleUndercoverTurnTimeout(turnKey);
-}, 6000);
+}, 10000);
 }
 function handleUndercoverTurnTimeout(expectedTurnKey) {
 if (!state.inGame || state.roomPhase !== 'game' || !state.undercoverMode) return;
@@ -6580,18 +6596,47 @@ commitSingleSlotTurn(nextMora, false);
 state.aiVocabLevel = prevAiVocabLevel;
 }
 }
-function scheduleBotIfNeeded() {
+function clearBotTimer() {
 if (state.botTimer) {
 clearTimeout(state.botTimer);
 state.botTimer = null;
 }
-if (!state.isHost && state.lobbyMode !== 'solo') return;
-if (!state.inGame || !state.activePlayers || state.activePlayers.length === 0) return;
-if (state.finishVoteState && state.finishVoteState.active) return;
-if (state.undercoverMode && state.hackedTurnIndex === state.turnIndex) return;
+state.botScheduledTurnKey = '';
+state.botScheduledFireAt = 0;
+}
+function scheduleBotIfNeeded() {
+if (!state.isHost && state.lobbyMode !== 'solo') {
+clearBotTimer();
+return;
+}
+if (!state.inGame || state.roomPhase !== 'game' || !state.activePlayers || state.activePlayers.length === 0) {
+clearBotTimer();
+return;
+}
+if (state.finishVoteState && state.finishVoteState.active) {
+clearBotTimer();
+return;
+}
+if (state.undercoverMode && state.hackedTurnIndex === state.turnIndex) {
+clearBotTimer();
+return;
+}
 const currentPlayer = state.activePlayers[state.turnIndex % state.activePlayers.length];
-if (!currentPlayer || !currentPlayer.isBot) return;
+if (!currentPlayer || !currentPlayer.isBot) {
+clearBotTimer();
+return;
+}
+const turnKey = `${state.roundId}:${state.turnIndex}`;
+if (state.botTimer && state.botScheduledTurnKey === turnKey) {
+if (state.botScheduledFireAt && Date.now() >= state.botScheduledFireAt) {
+clearBotTimer();
+executeBotMoveForPlayer(currentPlayer);
+}
+return;
+}
+clearBotTimer();
 const scheduledTurnIndex = state.turnIndex;
+const scheduledRoundId = state.roundId;
 const delayMs = state.undercoverMode
 ? (2000 + Math.floor(Math.random() * 4001))
 : (state.freeMode
@@ -6607,8 +6652,13 @@ if (notMyTurn && notMyTurn.classList.contains('hidden') === false) {
 notMyTurn.textContent = `${currentPlayer.name} が句の並びを確認し、推敲しています…`;
 }
 }
+state.botScheduledTurnKey = turnKey;
+state.botScheduledFireAt = Date.now() + delayMs;
 state.botTimer = setTimeout(() => {
-if (!state.inGame || state.turnIndex !== scheduledTurnIndex) return;
+state.botTimer = null;
+state.botScheduledTurnKey = '';
+state.botScheduledFireAt = 0;
+if (!state.inGame || state.roomPhase !== 'game' || state.roundId !== scheduledRoundId || state.turnIndex !== scheduledTurnIndex) return;
 if (state.undercoverMode && state.hackedTurnIndex === state.turnIndex) return;
 const activeNow = state.activePlayers[state.turnIndex % state.activePlayers.length];
 if (!activeNow || !activeNow.isBot) return;
@@ -8521,6 +8571,7 @@ const rk = RoomSyncEngine.makeRoomKey(state.roomKeyword, state.roomId);
 RoomSyncEngine.handleIncomingSnapshot(rk, snap, null);
 }
 }
+scheduleBotIfNeeded();
 }
 });
 window.addEventListener('focus', async () => {
@@ -8943,6 +8994,10 @@ try {
 const enteredName = (document.getElementById('input-host-name').value.trim() || '007').slice(0, 20);
 saveLastUsedUserName(enteredName);
 state.roomKeyword = (document.getElementById('input-room-keyword').value.trim() || 'はなびら').slice(0, 17);
+const lobbyFreeChkAtCreate = document.getElementById('chk-free-mode');
+const lobbyUcChkAtCreate = document.getElementById('chk-lobby-undercover-mode');
+const requestedFreeMode = !!(lobbyFreeChkAtCreate && lobbyFreeChkAtCreate.checked);
+const requestedUndercoverMode = !!(lobbyUcChkAtCreate && lobbyUcChkAtCreate.checked);
 if (state.lobbyMode === 'solo') {
 state.isHost = true;
 state.myPlayerId = 'host-0';
@@ -9001,8 +9056,9 @@ state.restingPlayers = restingSlots;
 state.spectators = existingSnap.spectators || [];
 state.selectedFlowerId = existingSnap.selectedFlowerId || 'tulip';
 state.shuffleOrder = !!existingSnap.shuffleOrder;
-state.freeMode = !!existingSnap.freeMode;
-state.undercoverMode = !!existingSnap.undercoverMode;
+const existingHasHumans = existingHumanNames.size > 0;
+state.freeMode = existingHasHumans ? !!existingSnap.freeMode : requestedFreeMode;
+state.undercoverMode = existingHasHumans ? !!existingSnap.undercoverMode : requestedUndercoverMode;
 state.doubleSpyPlayerId = existingSnap.doubleSpyPlayerId || null;
 state.spyGuessState = existingSnap.spyGuessState || null;
 state.flowerMoraCompliant = existingSnap.flowerMoraCompliant !== undefined ? !!existingSnap.flowerMoraCompliant : true;
@@ -9080,6 +9136,8 @@ state.lastViewedResultRoundId = 0;
 state.lastCreatedRoomKey = newRoomKey;
 }
 saveRoomToHistory(state.roomKeyword, state.roomId);
+state.freeMode = requestedFreeMode;
+state.undercoverMode = requestedUndercoverMode;
 syncWaitingSlotsWithCount();
 if (state.undercoverMode) {
 state.preUndercoverAiCount = state.waitingSlots.filter(p => p.isBot).length;
@@ -9113,19 +9171,22 @@ errEl.textContent = '合言葉を入力してください。';
 errEl.classList.remove('hidden');
 return;
 }
+let resolvedGuestName = guestName;
 const remoteSnap = await RoomSyncEngine.fetchRoomSnapshot(parsed.keyword, parsed.roomId);
 if (remoteSnap) {
 const roomSlots = remoteSnap.waitingSlots || [];
 const restingSlots = remoteSnap.restingPlayers || [];
 const activeSlots = remoteSnap.inGame ? (remoteSnap.activePlayers || []) : [];
-const nameAlreadyExists =
-roomSlots.some(p => !p.isBot && p.name === guestName) ||
-restingSlots.some(p => !p.isBot && p.name === guestName) ||
-activeSlots.some(p => !p.isBot && p.name === guestName);
-if (nameAlreadyExists) {
-errEl.textContent = 'その名前の人物は既に存在します。もしかしてスパイですか？';
-errEl.classList.remove('hidden');
-return;
+const existingHumanNamesRemote = new Set([
+...roomSlots.filter(p => !p.isBot).map(p => p.name),
+...restingSlots.filter(p => !p.isBot).map(p => p.name),
+...activeSlots.filter(p => !p.isBot).map(p => p.name)
+]);
+while (existingHumanNamesRemote.has(resolvedGuestName)) {
+resolvedGuestName = '偽' + resolvedGuestName;
+}
+if (resolvedGuestName !== guestName) {
+showToast(`同じ通り名の人物が既に存在するため「${resolvedGuestName}」として入室しました（もしかしてスパイ？）`);
 }
 state.roomKeyword = remoteSnap.roomKeyword;
 state.roomId = remoteSnap.roomId;
@@ -9166,19 +9227,22 @@ errEl.classList.remove('hidden');
 return;
 }
 sanitizeCurrentStatePlayers();
-const nameAlreadyExistsLocal =
-(state.waitingSlots || []).some(p => !p.isBot && p.name === guestName) ||
-(state.restingPlayers || []).some(p => !p.isBot && p.name === guestName) ||
-(state.inGame && (state.activePlayers || []).some(p => !p.isBot && p.name === guestName));
-if (nameAlreadyExistsLocal) {
-errEl.textContent = 'その名前の人物は既に存在します。もしかしてスパイですか？';
-errEl.classList.remove('hidden');
-return;
+const existingHumanNamesLocal = new Set([
+...(state.waitingSlots || []).filter(p => !p.isBot).map(p => p.name),
+...(state.restingPlayers || []).filter(p => !p.isBot).map(p => p.name),
+...(state.inGame ? (state.activePlayers || []).filter(p => !p.isBot).map(p => p.name) : [])
+]);
+while (existingHumanNamesLocal.has(resolvedGuestName)) {
+resolvedGuestName = '偽' + resolvedGuestName;
+}
+if (resolvedGuestName !== guestName) {
+showToast(`同じ通り名の人物が既に存在するため「${resolvedGuestName}」として入室しました（もしかしてスパイ？）`);
 }
 }
+const finalGuestName = resolvedGuestName;
 errEl.classList.add('hidden');
-saveLastUsedUserName(guestName);
-state.currentUserName = guestName;
+saveLastUsedUserName(finalGuestName);
+state.currentUserName = finalGuestName;
 const newGuestId = `guest-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`;
 state.myPlayerId = newGuestId;
 const existingHumansCount =
@@ -9222,7 +9286,7 @@ humanNames.add(replacement);
 });
 state.lastCreatedRoomKey = RoomSyncEngine.makeRoomKey(state.roomKeyword, state.roomId);
 saveRoomToHistory(state.roomKeyword, state.roomId);
-addChatMessage('システム', `${guestName}さんが入室しました。`, true);
+addChatMessage('システム', `${finalGuestName}さんが入室しました。`, true);
 openWaitingRoom(!state.inGame);
 } finally {
 setTimeout(() => {
