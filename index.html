@@ -15,11 +15,6 @@
 <meta name="twitter:image" content="https://placehold.jp/110/f4b4c4/27272a/1200x630.png?text=%E5%85%84%E5%A6%B9%E3%81%AE%E8%8A%B1">
 <meta name="description" content="兄妹の花で『詠み人知らず』ができる非公式Webサイト。１人から遊べます。">
 <title>［非公式］兄妹の花で詠み人知らず</title>
-  <script>
-    window.YOMIBITO_CLOUD_CONFIG = {
-      databaseUrl: "https://brother-and-sister-s-flowers-default-rtdb.firebaseio.com/"
-    };
-  </script>
 <script src="https://cdn.tailwindcss.com/3.4.17"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
@@ -35,7 +30,7 @@
 --nezumi-border: #cbd0d8;
 }
 body {
-font-family: 'Inter', 'Noto Serif JP', serif;
+font-family: 'Inter', 'Noto Serif JP', 'Apple Color Emoji', 'Segoe UI Emoji', 'Noto Color Emoji', sans-serif;
 background-color: var(--nezumi-bg);
 background-image:
 radial-gradient(circle at 15% 20%, rgba(161, 161, 170, 0.22) 0%, transparent 45%),
@@ -164,7 +159,7 @@ outline-offset: 2px !important;
 </div>
 <div class="flex items-center gap-2">
 <div id="header-user-name-badge" title="あなたの通り名" class="hidden h-9 min-w-[2.25rem] px-3 rounded-lg btn-usumomo flex items-center justify-center gap-1.5 font-bold serif-jp text-sm sm:text-base shadow-sm">
-<span class="w-5 h-5 rounded-full bg-white/80 text-zinc-800 text-xs flex items-center justify-center shrink-0 shadow-inner">👤</span>
+<span class="w-5 h-5 rounded-full bg-white/80 text-zinc-800 text-[10px] font-bold flex items-center justify-center shrink-0 shadow-inner">名</span>
 <span id="header-user-name-text" class="truncate max-w-[9rem]">007</span>
 </div>
 <button id="btn-open-room-history" class="px-3 py-1.5 text-xs sm:text-sm font-medium rounded-lg border border-zinc-300 bg-zinc-100 hover:bg-zinc-200 text-zinc-700 transition flex items-center gap-1.5 shadow-sm" title="入室した直近10部屋の一覧">
@@ -237,7 +232,7 @@ ID変更
 <div id="lobby-player-count-section" class="space-y-3">
 <label id="lobby-count-label" class="text-sm font-bold text-zinc-700 block">参加AI人数の選択</label>
 <div class="flex items-center gap-2 bg-zinc-200/80 px-3.5 py-2 rounded-xl border border-zinc-300 w-fit">
-<span class="text-xs sm:text-sm font-bold text-zinc-700">🤖 AIスパイ：<strong id="solo-ai-count-label" class="text-zinc-900">3人</strong></span>
+<span class="text-xs sm:text-sm font-bold text-zinc-700">AIスパイ：<strong id="solo-ai-count-label" class="text-zinc-900">3人</strong></span>
 <button type="button" id="btn-solo-ai-minus" class="w-7 h-7 rounded-lg border border-zinc-300 bg-white hover:bg-zinc-100 text-zinc-800 font-bold text-sm flex items-center justify-center shadow-sm transition" title="AIスパイを1人減らす">－</button>
 <button type="button" id="btn-solo-ai-plus" class="w-7 h-7 rounded-lg btn-usumomo font-bold text-sm flex items-center justify-center shadow-sm transition" title="AIスパイを1人増やす">＋</button>
 </div>
@@ -272,7 +267,10 @@ ID変更
 <div id="wrap-lobby-undercover-mode" class="hidden flex items-center bg-zinc-200/80 px-3.5 py-2.5 rounded-xl border border-zinc-300">
 <label class="flex items-center gap-2 cursor-pointer select-none">
 <input type="checkbox" id="chk-lobby-undercover-mode" class="rounded accent-pink-400 focus:ring-pink-300 w-4 h-4">
-<span class="text-xs font-bold text-zinc-800">潜入捜査モード</span>
+<div class="space-y-0.5">
+<span class="text-xs font-bold text-zinc-800 block">潜入捜査モード</span>
+<span class="text-[11px] text-zinc-600 block">※人間2人以上必要・全員匿名で句を詠みAIスパイを摘発します</span>
+</div>
 </label>
 </div>
 </div>
@@ -331,7 +329,7 @@ ID変更
 </div>
 </div>
 <button type="button" id="btn-recruit-tweet" class="px-4 py-2.5 rounded-xl btn-usumomo font-bold text-xs sm:text-sm shadow-sm transition flex items-center gap-2 shrink-0">
-<span>𝕏</span> 参加者を募集する
+<span class="font-sans font-black">X</span> 参加者を募集する
 </button>
 </div>
 <div class="max-w-4xl mx-auto space-y-5">
@@ -358,7 +356,7 @@ ID変更
 ※主催者はドラッグ＆ドロップで手番順の並べ替えや「休憩中」への移動ができます。
 </p>
 <div id="waiting-ai-count-controls" class="flex items-center gap-2 bg-zinc-200/80 px-3 py-1.5 rounded-xl border border-zinc-300">
-<span class="text-xs font-bold text-zinc-700">🤖 AIスパイ：<strong id="waiting-ai-count-label" class="text-zinc-900">3人</strong></span>
+<span class="text-xs font-bold text-zinc-700">AIスパイ：<strong id="waiting-ai-count-label" class="text-zinc-900">3人</strong></span>
 <button type="button" id="btn-waiting-ai-minus" class="w-7 h-7 rounded-lg border border-zinc-300 bg-white hover:bg-zinc-100 text-zinc-800 font-bold text-sm flex items-center justify-center shadow-sm transition" title="AIスパイを1人減らす">－</button>
 <button type="button" id="btn-waiting-ai-plus" class="w-7 h-7 rounded-lg btn-usumomo font-bold text-sm flex items-center justify-center shadow-sm transition" title="AIスパイを1人増やす">＋</button>
 </div>
@@ -406,7 +404,10 @@ ID変更
 <div class="flex items-center bg-zinc-200/80 px-3.5 py-2.5 rounded-xl border border-zinc-300">
 <label class="flex items-center gap-2 cursor-pointer select-none">
 <input type="checkbox" id="chk-waiting-undercover-mode" class="rounded accent-pink-400 focus:ring-pink-300 w-4 h-4">
-<span class="text-xs font-bold text-zinc-800">潜入捜査モード</span>
+<div class="space-y-0.5">
+<span class="text-xs font-bold text-zinc-800 block">潜入捜査モード</span>
+<span class="text-[11px] text-zinc-600 block">※人間2人以上必要・全員匿名で句を詠みAIスパイを摘発します</span>
+</div>
 </label>
 </div>
 </div>
@@ -460,6 +461,7 @@ ID変更
 <span class="text-sm sm:text-base font-bold serif-jp text-zinc-900 truncate">
 お題：<span id="game-theme-name">チューリップ</span>
 </span>
+<span id="game-my-undercover-badge" class="hidden text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-zinc-800 text-pink-200 shrink-0"></span>
 </div>
 <div class="flex items-center gap-2 shrink-0">
 <span id="game-spectator-banner" class="hidden px-2.5 py-0.5 rounded-full bg-zinc-200 border border-zinc-300 text-xs font-bold text-zinc-800 serif-jp"></span>
@@ -642,7 +644,7 @@ ID変更
 </div>
 </div>
 </div>
-<div class="bg-[#f3f4f6] rounded-2xl p-4 tanzaku-shadow border border-zinc-300 flex flex-wrap items-center justify-center gap-3 sm:gap-4">
+<div id="game-bottom-action-bar" class="bg-[#f3f4f6] rounded-2xl p-4 tanzaku-shadow border border-zinc-300 flex flex-wrap items-center justify-center gap-3 sm:gap-4">
 <button type="button" id="btn-skip-turn" title="句の目標音数は減らさず、現在の手番をパスして次の人へ回します" class="flex-1 sm:flex-initial px-6 py-3 rounded-xl border-2 border-zinc-300 bg-white hover:bg-zinc-200 text-zinc-800 font-bold serif-jp text-sm sm:text-base transition shadow-sm">
 スキップ
 </button>
@@ -711,7 +713,7 @@ ID変更
 <div class="space-y-3 pt-2">
 <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
 <button type="button" id="btn-share-x" class="py-3.5 px-5 rounded-xl btn-usumomo font-bold text-sm shadow-md transition flex items-center justify-center gap-2">
-<span>𝕏</span> 画像付きでX（Twitter）に投稿
+<span class="font-sans font-black">X</span> 画像付きでX（Twitter）に投稿
 </button>
 <button type="button" id="btn-download-image" class="py-3.5 px-5 rounded-xl bg-zinc-700 hover:bg-zinc-800 text-white font-bold text-sm shadow-md transition flex items-center justify-center gap-2">
 <span>📥</span> 短冊画像を保存（PNG）
@@ -729,7 +731,7 @@ ID変更
 📋 画像をクリップボードに再コピー
 </button>
 <a id="link-open-x-intent" href="https://twitter.com/intent/tweet" target="_blank" rel="noopener noreferrer" class="px-3 py-1.5 rounded-lg btn-usumomo font-bold text-xs shadow-sm">
-𝕏 Xの投稿画面を開く（Ctrl+Vで画像貼付） ↗
+X Xの投稿画面を開く（Ctrl+Vで画像貼付） ↗
 </a>
 </div>
 </div>
@@ -813,8 +815,10 @@ OK
 <h3 class="text-lg font-bold serif-jp text-zinc-900">確認</h3>
 <div class="p-3.5 rounded-xl bg-white border border-zinc-300 flex items-center gap-3">
 <span id="start-confirm-flower-icon" class="w-7 h-7 rounded-full shrink-0 shadow-sm border border-zinc-300"></span>
-<div class="text-sm font-bold serif-jp text-zinc-900">
-お題：<span id="start-confirm-flower-name">チューリップ</span>
+<div class="text-sm font-bold serif-jp text-zinc-900 flex flex-wrap items-center gap-2">
+<span>お題：<span id="start-confirm-flower-name">チューリップ</span></span>
+<span id="start-confirm-free-badge" class="hidden text-[11px] font-bold px-2 py-0.5 rounded-full bg-[#fce7f3] text-[#592534] border border-[#e59bb0]">自由記述</span>
+<span id="start-confirm-undercover-badge" class="hidden text-[11px] font-bold px-2 py-0.5 rounded-full bg-zinc-800 text-pink-200">潜入捜査</span>
 </div>
 </div>
 <div class="p-4 rounded-xl bg-zinc-200/70 border border-zinc-300 space-y-2 max-h-56 overflow-y-auto pr-1">
@@ -1042,12 +1046,21 @@ OK
 </div>
 <div class="space-y-2 text-sm text-zinc-700 leading-relaxed">
 <h4 class="font-bold text-zinc-900 serif-jp text-base">主催者</h4>
-<div class="space-y-1.5 text-xs sm:text-sm">
+<div class="space-y-2 text-xs sm:text-sm">
 <p>主催者は、部屋の設定を変えることができます。主な変更点は４つ。</p>
-<p>参加人数は、部屋に入ることのできる人数の上限です。設定した人数に対して、参加者数が不足している場合、AIが代わりに詠み手となってくれます。AIなしで開始することも可能です。</p>
-<p>お題の花は、兄妹の花から、ひとつ選ぶことができます。花の呼び方は複数ありますが、ここでは Wikipedia 内で別名として記載されているものを採用しています。詳しくはヘッダーの「図鑑」を参照。</p>
-<p>自由記述モードは、裏ルールです。ひとり１音の制限を撤廃した、複数文字あり、漢字や記号ありの無法地帯。自由な創作を楽しみたいときは。</p>
-<p>潜入捜査モードは、裏の裏ルールです。全員が匿名で句を詠み、完成後に紛れ込んだAIスパイを摘発します。人間が３人以上いる場合は二重スパイが１人選ばれ、摘発を妨害する立場となります。６秒の入力制限もあるため、迅速な立ち回りが求められます。</p>
+<ul class="list-disc pl-5 space-y-1.5">
+<li><strong>参加人数</strong>：部屋に入れる人数の上限です。人数に満たない分はAIが代わりに詠み手となります（AIなしでの開始も可能）。</li>
+<li><strong>お題の花</strong>：兄妹の花から１つ選びます。Wikipedia に記載された別名も使え、一覧やスタンプ進捗はヘッダーの「図鑑」で確認できます。</li>
+<li><strong>自由記述モード</strong>：ひとり１音の制限を撤廃した、複数文字・漢字や記号ありの自由創作モードです。</li>
+<li><strong>潜入捜査モード</strong>（人間２人以上が必要）：全員が匿名（スパイA〜）で句を詠み、完成後にAIスパイを摘発する裏の裏ルールです。
+<ul class="list-circle pl-5 mt-1 space-y-1 text-zinc-600">
+<li>開始時に「手番順シャッフル」と「AIの花使用（一括入力含む）」が強制オンになり、入力には<strong>６秒の制限時間</strong>（超過時はAIが自動補填）が設けられます。</li>
+<li>人間が３人以上いる場合、人間の中から１人だけ<strong>二重スパイ</strong>が秘密裏に選ばれます（本人のみに通達され、他者からは分かりません）。二重スパイは時間切れになると実名が露見し、摘発時の投票権もありません。</li>
+<li>完成後は匿名短冊を見ながら、自分以外の参加者からAIスパイの人数分だけ容疑者を選んで投票します（多数決で１位タイがAI人数に満たない場合は２位タイまでを被疑者として選出）。</li>
+<li><strong>勝敗条件</strong>：被疑者のうち人間の割合が50%以上の場合は冤罪多数で人間側全員が任務失敗となります。それ以外でAIスパイを全員捕獲できれば通常側の任務成功、二重スパイは自分が捕まらずAIが逃げおおせれば任務成功となります。</li>
+</ul>
+</li>
+</ul>
 <p>そのほか、参加者の手番順の変更、参加者の追放、現在の手番のスキップといった権限があります。全員が楽しめる部屋づくりを心がけましょう。</p>
 </div>
 </div>
@@ -1763,9 +1776,14 @@ modified = true;
 if (!isDup && hadAnyBot) {
 const botName = AI_SPY_NAMES.find(n => !usedBotNames.has(n)) || 'AIスパイ';
 usedBotNames.add(botName);
+const isUc = !!snap.undercoverMode;
+const keepAnon = p.anonymousName || getSpyAliasName(idx);
 nextActive.push({
 id: `ai-sub-${Date.now()}-${idx}`,
-name: botName,
+name: isUc ? keepAnon : botName,
+realName: botName,
+anonymousName: isUc ? keepAnon : undefined,
+botVocabLevel: isUc ? (1 + Math.floor(Math.random() * 5)) : undefined,
 isBot: true,
 isHostPlayer: false,
 joinedAt: 0,
@@ -2055,9 +2073,13 @@ updatedBy: state.clientId
 async pushRoomState(overridePhase = null) {
 const isLobbyOpen = !document.getElementById('view-lobby').classList.contains('hidden');
 if (this.isApplyingRemote || state.lobbyMode === 'solo' || (isLobbyOpen && !overridePhase)) return;
+if (overridePhase === 'game' || state.roomPhase === 'game') {
+state.lastLocalGameActionAt = Date.now();
+}
 const roomKey = this.makeRoomKey(state.roomKeyword, state.roomId);
 this.currentRoomKey = roomKey;
 const snapshot = this.buildSnapshotFromState(overridePhase);
+this.lastPushedAt = snapshot.updatedAt;
 try {
 localStorage.setItem(ROOM_STORAGE_PREFIX + roomKey, JSON.stringify(snapshot));
 } catch (e) {}
@@ -2161,7 +2183,9 @@ this.cloudPollTimer = null;
 const cloudCfg = window.YOMIBITO_CLOUD_CONFIG;
 if (cloudCfg && cloudCfg.databaseUrl && /^https?:\/\//.test(cloudCfg.databaseUrl)) {
 this.cloudPollTimer = setInterval(async () => {
+const pollStartedAt = Date.now();
 const snap = await this.fetchRoomSnapshot(state.roomKeyword, state.roomId);
+if (this.lastPushedAt && pollStartedAt < this.lastPushedAt) return;
 if (snap && snap.updatedBy !== state.clientId) {
 this.handleIncomingSnapshot(this.currentRoomKey, snap, snap.updatedBy);
 }
@@ -2246,6 +2270,15 @@ existingPoemKeys.add(k);
 }
 });
 }
+const localCellCount = (state.lines || [[], [], []]).reduce((acc, l) => acc + (l ? l.length : 0), 0);
+const snapCellCount = (snapshot.lines || [[], [], []]).reduce((acc, l) => acc + (l ? l.length : 0), 0);
+const sameRoundGame = (state.roomPhase === 'game' && snapshot.roomPhase === 'game' && (snapshot.roundId || 1) === (state.roundId || 1));
+const isStaleTurnRollback = sameRoundGame && (
+(snapshot.turnIndex !== undefined && snapshot.turnIndex < state.turnIndex) ||
+(snapshot.turnIndex === state.turnIndex && snapCellCount < localCellCount)
+);
+const isWithinLocalGrace = sameRoundGame && state.lastLocalGameActionAt && (Date.now() - state.lastLocalGameActionAt < 3500) && (snapshot.updatedAt && snapshot.updatedAt < state.lastLocalGameActionAt);
+if (!isStaleTurnRollback && !isWithinLocalGrace) {
 state.activePlayers = mergeLastSeen(snapshot.activePlayers || []);
 sanitizeCurrentStatePlayers();
 state.turnIndex = snapshot.turnIndex !== undefined ? snapshot.turnIndex : state.turnIndex;
@@ -2259,6 +2292,7 @@ state.flowerUsedManually = !!snapshot.flowerUsedManually;
 state.flowerUsedInfo = snapshot.flowerUsedInfo || null;
 checkAndSyncFlowerRecognition();
 state.roundId = snapshot.roundId || state.roundId;
+}
 if (state.inGame && state.spectators.length > 0) {
 state.spectators.forEach(sp => {
 const key = sp.id || sp.name;
@@ -2358,7 +2392,11 @@ renderResultScreenFromState();
 renderWaitingRoom();
 }
 } else if (snapshot.inGame && snapshot.roomPhase === 'game') {
+const enteringNewGame = !state.inGame || state.roomPhase !== 'game' || snapshot.roundId !== state.roundId;
 state.inGame = true;
+if (enteringNewGame && state.undercoverMode) {
+state.skipSubmitConfirm = true;
+}
 state.lastFreeModeCategory = null;
 state.lastUsedParticleLine0 = null;
 state.onomatopoeiaCooldownMoras = 0;
@@ -3527,6 +3565,7 @@ lastFreeModeCategory: null,
 lastUsedParticleLine0: null,
 onomatopoeiaCooldownMoras: 0,
 roundId: 1,
+lastLocalGameActionAt: 0,
 lastViewedResultRoundId: 0,
 roomPhase: 'waiting', // 'waiting' | 'game' | 'result'
 inGame: false,
@@ -3717,9 +3756,13 @@ state.restingPlayers.push(disconnectedHuman);
 }
 const usedNames = new Set((state.activePlayers || []).map(a => a.name));
 const botName = AI_SPY_NAMES.find(n => !usedNames.has(n)) || 'AIスパイ';
+const keepAnon = p.anonymousName || getSpyAliasName(activeIdx);
 state.activePlayers[activeIdx] = {
 id: `ai-sub-${p.id}`,
-name: botName,
+name: state.undercoverMode ? keepAnon : botName,
+realName: botName,
+anonymousName: state.undercoverMode ? keepAnon : undefined,
+botVocabLevel: state.undercoverMode ? (1 + Math.floor(Math.random() * 5)) : undefined,
 isBot: true,
 isHostPlayer: false,
 joinedAt: 0,
@@ -3784,7 +3827,9 @@ if (pruned) {
 recolorActiveWaitingSlots();
 renderWaitingRoom();
 }
-RoomSyncEngine.pushRoomState();
+if (!state.inGame && state.roomPhase === 'waiting') {
+RoomSyncEngine.pushRoomState('waiting');
+}
 }
 const isLobbyOpen = !document.getElementById('view-lobby').classList.contains('hidden');
 if (!isLobbyOpen && !state.isHost) {
@@ -3792,7 +3837,9 @@ const cleanedByGuest = sanitizeCurrentStatePlayers();
 if (cleanedByGuest) {
 renderWaitingRoom();
 }
-RoomSyncEngine.pushRoomState();
+if (!state.inGame && state.roomPhase === 'waiting') {
+RoomSyncEngine.pushRoomState('waiting');
+}
 }
 }, PRESENCE_HEARTBEAT_INTERVAL_MS);
 }
@@ -4207,7 +4254,7 @@ card.innerHTML = `
 ${saveBtnLabel}
 </button>
 <button type="button" class="poem-entry-tweet-btn px-3 py-1.5 rounded-lg btn-usumomo font-bold text-xs shadow-sm transition flex items-center gap-1">
-<span>𝕏</span> ツイートする
+<span class="font-sans font-black">X</span> ツイートする
 </button>
 </div>
 `;
@@ -4431,7 +4478,7 @@ row.innerHTML = `
 <span class="text-zinc-400 text-sm select-none" title="ドラッグして移動">☰</span>
 <div class="flex items-center gap-2 flex-1 min-w-0 flex-wrap">
 ${nameHtml}
-${p.isBot ? `<span class="text-[11px] font-semibold px-2 py-0.5 rounded-md border bg-zinc-200 border-zinc-300 text-zinc-700 shrink-0">🤖 AI</span>` : ''}
+${p.isBot ? `<span class="text-[11px] font-semibold px-2 py-0.5 rounded-md border bg-zinc-200 border-zinc-300 text-zinc-700 shrink-0">AI</span>` : ''}
 </div>
 </div>
 <div class="flex items-center gap-1 w-full justify-end pt-1.5 border-t border-zinc-200/70 flex-nowrap overflow-x-auto">
@@ -4450,7 +4497,7 @@ row.className = `flex items-center justify-between gap-2 p-3 rounded-xl border s
 row.innerHTML = `
 <div class="flex items-center gap-2 min-w-0 flex-wrap flex-1">
 ${nameHtml}
-${p.isBot ? `<span class="text-[11px] font-semibold px-2 py-0.5 rounded-md border bg-zinc-200 border-zinc-300 text-zinc-700 shrink-0">🤖 AI</span>` : ''}
+${p.isBot ? `<span class="text-[11px] font-semibold px-2 py-0.5 rounded-md border bg-zinc-200 border-zinc-300 text-zinc-700 shrink-0">AI</span>` : ''}
 </div>
 `;
 }
@@ -5333,6 +5380,10 @@ const flowerIconEl = document.getElementById('start-confirm-flower-icon');
 const flowerNameEl = document.getElementById('start-confirm-flower-name');
 if (flowerIconEl) flowerIconEl.setAttribute('style', flower.swatchCss);
 if (flowerNameEl) flowerNameEl.textContent = flower.name;
+const scFree = document.getElementById('start-confirm-free-badge');
+const scUc = document.getElementById('start-confirm-undercover-badge');
+if (scFree) scFree.classList.toggle('hidden', !state.freeMode);
+if (scUc) scUc.classList.toggle('hidden', !state.undercoverMode);
 const listEl = document.getElementById('start-confirm-player-list');
 listEl.innerHTML = '';
 state.waitingSlots.forEach(p => {
@@ -5491,6 +5542,21 @@ const myTurn = isCurrentTurnMine();
 const themeIcon = document.getElementById('game-theme-icon');
 themeIcon.setAttribute('style', flower.swatchCss);
 document.getElementById('game-theme-name').textContent = flower.name;
+const myUcBadge = document.getElementById('game-my-undercover-badge');
+if (myUcBadge) {
+if (state.undercoverMode && !state.isSpectating) {
+const mePlayer = (state.activePlayers || []).find(p => isPlayerMe(p));
+if (mePlayer) {
+const isDs = !!state.doubleSpyPlayerId && state.doubleSpyPlayerId === state.myPlayerId;
+myUcBadge.textContent = isDs ? `あなたは：${mePlayer.name}（二重スパイ）` : `あなたは：${mePlayer.name}`;
+myUcBadge.classList.remove('hidden');
+} else {
+myUcBadge.classList.add('hidden');
+}
+} else {
+myUcBadge.classList.add('hidden');
+}
+}
 updateAiVocabSliderUI();
 const headerHistBtn = document.getElementById('btn-open-history');
 if (headerHistBtn) headerHistBtn.classList.add('hidden');
@@ -5549,6 +5615,12 @@ forceFinishBtn.title = '';
 forceFinishBtn.classList.add('hidden');
 }
 }
+const bottomActionBar = document.getElementById('game-bottom-action-bar');
+if (bottomActionBar) {
+const skipHidden = !skipBtn || skipBtn.classList.contains('hidden');
+const finishHidden = !forceFinishBtn || forceFinishBtn.classList.contains('hidden');
+bottomActionBar.classList.toggle('hidden', skipHidden && finishHidden);
+}
 const aiVocabCard = document.getElementById('game-ai-vocab-card');
 const hasBotsInGame = (state.activePlayers || []).some(p => p.isBot);
 if (aiVocabCard) {
@@ -5572,7 +5644,7 @@ isCurrent
 badge.innerHTML = `
 <span class="w-4 h-4 rounded-full text-[10px] text-white flex items-center justify-center" style="background-color: ${p.color}">${idx + 1}</span>
 <span>${escapeHtml(p.name)}</span>
-${(!state.undercoverMode && p.isBot) ? '<span class="text-[10px] opacity-80">🤖</span>' : ''}
+${(!state.undercoverMode && p.isBot) ? '<span class="text-[10px] opacity-80">AI</span>' : ''}
 `;
 playerBar.appendChild(badge);
 });
@@ -7840,10 +7912,10 @@ dlBtn.classList.remove('hidden');
 }
 if (shareBtn) {
 if (inApp) {
-shareBtn.innerHTML = '<span>𝕏</span> X（Twitter）に投稿';
+shareBtn.innerHTML = '<span class="font-sans font-black">X</span> X（Twitter）に投稿';
 shareBtn.classList.add('sm:col-span-2');
 } else {
-shareBtn.innerHTML = '<span>𝕏</span> 画像付きでX（Twitter）に投稿';
+shareBtn.innerHTML = '<span class="font-sans font-black">X</span> 画像付きでX（Twitter）に投稿';
 shareBtn.classList.remove('sm:col-span-2');
 }
 }
@@ -8354,13 +8426,18 @@ if (activeIdx !== -1) {
 if (hadAnyBot) {
 const usedNames = new Set((state.activePlayers || []).map(a => a.name));
 const subAi = AI_SPY_NAMES.find(n => !usedNames.has(n)) || 'AIスパイ';
+const prevP = state.activePlayers[activeIdx];
+const keepAnon = prevP.anonymousName || getSpyAliasName(activeIdx);
 state.activePlayers[activeIdx] = {
 id: `ai-left-${Date.now()}`,
-name: subAi,
+name: state.undercoverMode ? keepAnon : subAi,
+realName: subAi,
+anonymousName: state.undercoverMode ? keepAnon : undefined,
+botVocabLevel: state.undercoverMode ? (1 + Math.floor(Math.random() * 5)) : undefined,
 isBot: true,
 isHostPlayer: false,
 joinedAt: 0,
-color: state.activePlayers[activeIdx].color
+color: prevP.color
 };
 } else {
 state.activePlayers.splice(activeIdx, 1);
@@ -8679,6 +8756,9 @@ state.spectators = existingSnap.spectators || [];
 state.selectedFlowerId = existingSnap.selectedFlowerId || 'tulip';
 state.shuffleOrder = !!existingSnap.shuffleOrder;
 state.freeMode = !!existingSnap.freeMode;
+state.undercoverMode = !!existingSnap.undercoverMode;
+state.doubleSpyPlayerId = existingSnap.doubleSpyPlayerId || null;
+state.spyGuessState = existingSnap.spyGuessState || null;
 state.flowerMoraCompliant = existingSnap.flowerMoraCompliant !== undefined ? !!existingSnap.flowerMoraCompliant : true;
 state.aiVocabLevel = existingSnap.aiVocabLevel || 3;
 state.aiKagen = existingSnap.aiKagen !== undefined ? !!existingSnap.aiKagen : true;
@@ -8822,6 +8902,9 @@ state.spectators = remoteSnap.spectators || [];
 state.selectedFlowerId = remoteSnap.selectedFlowerId || 'tulip';
 state.shuffleOrder = !!remoteSnap.shuffleOrder;
 state.freeMode = !!remoteSnap.freeMode;
+state.undercoverMode = !!remoteSnap.undercoverMode;
+state.doubleSpyPlayerId = remoteSnap.doubleSpyPlayerId || null;
+state.spyGuessState = remoteSnap.spyGuessState || null;
 state.flowerMoraCompliant = remoteSnap.flowerMoraCompliant !== undefined ? !!remoteSnap.flowerMoraCompliant : true;
 state.aiVocabLevel = remoteSnap.aiVocabLevel || 3;
 state.aiKagen = remoteSnap.aiKagen !== undefined ? !!remoteSnap.aiKagen : true;
@@ -9268,9 +9351,13 @@ delete state.participantVotes[idx];
 }
 if (!replacedFirst) {
 replacedFirst = true;
+const keepAnon = p.anonymousName || getSpyAliasName(idx);
 nextAct.push({
 id: `ai-left-${Date.now()}-${idx}`,
-name: subAiName,
+name: state.undercoverMode ? keepAnon : subAiName,
+realName: subAiName,
+anonymousName: state.undercoverMode ? keepAnon : undefined,
+botVocabLevel: state.undercoverMode ? (1 + Math.floor(Math.random() * 5)) : undefined,
 isBot: true,
 isHostPlayer: false,
 joinedAt: 0,
