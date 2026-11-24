@@ -15,11 +15,6 @@
 <meta name="twitter:image" content="https://placehold.jp/110/f4b4c4/27272a/1200x630.png?text=%E5%85%84%E5%A6%B9%E3%81%AE%E8%8A%B1">
 <meta name="description" content="兄妹の花で『詠み人知らず』ができる非公式Webサイト。１人から遊べます。">
 <title>［非公式］兄妹の花で詠み人知らず</title>
-<script>
-    window.YOMIBITO_CLOUD_CONFIG = {
-      databaseUrl: "https://brother-and-sister-s-flowers-default-rtdb.firebaseio.com/"
-    };
-  </script>
 <script src="https://cdn.tailwindcss.com/3.4.17"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
@@ -568,7 +563,7 @@ ID変更
 </div>
 <div id="undercover-turn-timer-bar" class="hidden px-3.5 py-2 rounded-xl bg-zinc-800 text-pink-200 text-xs font-bold flex items-center justify-between shadow-sm">
 <span>制限時間</span>
-<span id="undercover-turn-timer-text" class="font-mono text-sm">残り 10秒</span>
+<span id="undercover-turn-timer-text" class="font-mono text-sm">残り 8秒</span>
 </div>
 <div id="flower-reminder-alert" class="hidden p-3 rounded-xl bg-pink-50 border border-pink-300 text-pink-950 text-xs leading-relaxed">
 ⚠️ <strong>お題の花がまだ詠み込まれていません！</strong> 結句が終わる前に、下の「花の名前を一括入力」から選択してください。
@@ -1123,7 +1118,7 @@ OK
 <h4 class="font-bold text-zinc-900 serif-jp text-base border-b border-zinc-200 pb-1">「潜入捜査モード」とは</h4>
 <div class="space-y-2 text-xs sm:text-sm">
 <p>このモードは、人狼ゲームです。参加者が２人以上必要となります。<br>全員が匿名になって一句をつくるのですが、そのなかにはAIスパイが紛れています。完成した一句を見ながら、誰がAIスパイなのかを当てましょう。</p>
-<p>開始時には、手番順が自動的にシャッフルされ、かつ、名前では人間かAIスパイかの判別がつかなくなります。<br>また、入力には１０秒の制限時間が設けられます。この時間を超過すると、AIによって勝手に入力されてしまうため、AIスパイのような言葉選びになってしまうかもしれません。</p>
+<p>開始時には、手番順が自動的にシャッフルされ、かつ、名前では人間かAIスパイかの判別がつかなくなります。<br>また、入力には８秒の制限時間が設けられます。この時間を超過すると、AIによって勝手に入力されてしまうため、AIスパイのような言葉選びになってしまうかもしれません。</p>
 <p>参加者が３人以上のとき、ひとりだけ二重スパイが選ばれます。<br>二重スパイには、AIスパイが摘発されないよう工作するという秘密任務があります。無論、自分が摘発されてもいけません。ただし、それ以外の参加者に、二重スパイを摘発するメリットはありません。<br>二重スパイは「ハッキング」ボタンにより、１句につき一度だけ次の手番の人（人間・AI問わず）の入力権を奪い、その人として入力することができます。<br>二重スパイが入力の制限時間を超過すると、実名が晒されてしまいます。AIスパイでないことが確定するため、不利になることでしょう。</p>
 <p>一句が完成したら、投票に移ります。これまでの入力結果を見ながら、AIスパイが誰かを予想し、多数決で被疑者を選出します。<br>ここで、二重スパイには投票権はありません。</p>
 <p>被疑者にAIスパイがすべて含まれていたら、任務成功です。ただし、被疑者の過半数が参加者だった場合は、冤罪事件として失敗となります。<br>二重スパイは、自分が生き残り、かつ、AIスパイがひとりでも容疑を逃れたら、任務成功です。</p>
@@ -1727,12 +1722,12 @@ if (!p.joinedAt || p.joinedAt <= 1) {
 if ((snap.updatedAt && now - snap.updatedAt > PRESENCE_TIMEOUT_MS) || allInitialHumans.length > 1 || (Array.isArray(snap.chatMessages) && snap.chatMessages.length > 1)) {
 return true;
 }
-} else if (joinedTs > 0 && (now - joinedTs > PRESENCE_TIMEOUT_MS)) {
+} else if (snap.roomPhase !== 'result' && snap.roomPhase !== 'spy-guess' && !snap.inResult && joinedTs > 0 && (now - joinedTs > PRESENCE_TIMEOUT_MS)) {
 return true;
-} else if (snap.updatedAt && (now - snap.updatedAt > PRESENCE_TIMEOUT_MS)) {
+} else if (snap.roomPhase !== 'result' && snap.roomPhase !== 'spy-guess' && !snap.inResult && snap.updatedAt && (now - snap.updatedAt > PRESENCE_TIMEOUT_MS)) {
 return true;
 }
-} else if (now - lastSeenTs > (p.clientId ? DISCONNECTED_PRUNE_TIMEOUT_MS : PRESENCE_TIMEOUT_MS)) {
+} else if (snap.roomPhase !== 'result' && snap.roomPhase !== 'spy-guess' && !snap.inResult && now - lastSeenTs > (p.clientId ? DISCONNECTED_PRUNE_TIMEOUT_MS : PRESENCE_TIMEOUT_MS)) {
 return true;
 }
 if (zone === 'resting' && (p.restingReason === 'result' || p.restingReason === 'disconnect') && snap.roomPhase === 'waiting' && !hasFreshHeartbeat) {
@@ -2324,8 +2319,22 @@ merged.clientId = state.clientId;
 }
 return merged;
 });
+const wasViewingWaiting = !document.getElementById('view-waiting').classList.contains('hidden');
 state.waitingSlots = mergeLastSeen(normalizeArrayField(snapshot.waitingSlots || state.waitingSlots));
 state.restingPlayers = mergeLastSeen(normalizeArrayField(snapshot.restingPlayers));
+if (wasViewingWaiting && !state.inGame) {
+const myRestIdx = state.restingPlayers.findIndex(p => isPlayerMe(p) && p.restingReason !== 'manual' && !p.manualRest);
+if (myRestIdx !== -1) {
+const restoredMe = state.restingPlayers.splice(myRestIdx, 1)[0];
+delete restoredMe.restingReason;
+restoredMe.manualRest = false;
+restoredMe.lastSeen = Date.now();
+restoredMe.clientId = state.clientId;
+if (!state.waitingSlots.some(p => !p.isBot && isPlayerMe(p))) {
+state.waitingSlots.push(restoredMe);
+}
+}
+}
 state.spectators = normalizeArrayField(snapshot.spectators);
 state.emptySince = snapshot.emptySince || null;
 state.selectedFlowerId = snapshot.selectedFlowerId || state.selectedFlowerId;
@@ -6476,13 +6485,13 @@ return;
 }
 clearUndercoverTurnTimer();
 undercoverScheduledTurnKey = turnKey;
-undercoverTurnDeadline = Date.now() + 10000;
+undercoverTurnDeadline = Date.now() + 8000;
 if (bar) {
 bar.classList.remove('hidden', 'bg-red-700', 'text-white');
 bar.classList.add('bg-zinc-800', 'text-pink-200');
 bar.style.display = 'flex';
 }
-if (txt) txt.textContent = '残り 10秒';
+if (txt) txt.textContent = '残り 8秒';
 undercoverTurnInterval = setInterval(() => {
 const remMs = Math.max(0, undercoverTurnDeadline - Date.now());
 const remSec = Math.ceil(remMs / 1000);
@@ -6503,7 +6512,7 @@ undercoverTurnInterval = null;
 }, 250);
 undercoverTurnTimer = setTimeout(() => {
 handleUndercoverTurnTimeout(turnKey);
-}, 10000);
+}, 8000);
 }
 function handleUndercoverTurnTimeout(expectedTurnKey) {
 if (!state.inGame || state.roomPhase !== 'game' || !state.undercoverMode) return;
@@ -6643,7 +6652,12 @@ clearBotTimer();
 const scheduledTurnIndex = state.turnIndex;
 const scheduledRoundId = state.roundId;
 const delayMs = state.undercoverMode
-? (2000 + Math.floor(Math.random() * 4001))
+? (() => {
+const r = Math.random();
+if (r < 0.10) return 8000 + Math.floor(Math.random() * 150);
+if (r < 0.45) return 4500 + Math.floor(Math.random() * 2800);
+return 2200 + Math.floor(Math.random() * 2300);
+})()
 : (state.freeMode
 ? (state.isHost ? 1400 : 2300)
 : (state.isHost ? 650 : 1700));
@@ -7047,7 +7061,9 @@ const submittedCount = humans.filter(h => Array.isArray(submissions[h.id])).leng
 const mySubmitted = amIDoubleSpy || Array.isArray(submissions[state.myPlayerId]);
 const substatusEl = document.getElementById('spy-guess-substatus');
 if (substatusEl) {
-substatusEl.textContent = `${aiCount}人を選択してください（投票済み：${submittedCount} / ${humans.length}人）`;
+substatusEl.textContent = amIDoubleSpy
+? `他の参加者が投票を行っています…（投票済み：${submittedCount} / ${humans.length}人）`
+: `${aiCount}人を選択してください（投票済み：${submittedCount} / ${humans.length}人）`;
 }
 await ensureFontsLoaded();
 const canvas = document.getElementById('spy-guess-tanzaku-canvas');
@@ -7164,17 +7180,24 @@ const aiCount = Math.max(1, players.filter(p => p.isBot).length);
 const positiveVotes = votesCount.filter(v => v > 0);
 const uniqueDescVotes = Array.from(new Set(positiveVotes)).sort((a, b) => b - a);
 let decidedIndices = [];
-if (uniqueDescVotes.length > 0) {
-const top1 = uniqueDescVotes[0];
-const top1Indices = players.map((_, i) => i).filter(i => votesCount[i] === top1);
-if (top1Indices.length < aiCount && uniqueDescVotes.length >= 2) {
-const top2 = uniqueDescVotes[1];
-const top2Indices = players.map((_, i) => i).filter(i => votesCount[i] === top2);
-decidedIndices = [...top1Indices, ...top2Indices].sort((a, b) => a - b);
+for (const voteVal of uniqueDescVotes) {
+if (decidedIndices.length >= aiCount) break;
+const group = players.map((_, i) => i).filter(i => votesCount[i] === voteVal);
+const remainingSlots = aiCount - decidedIndices.length;
+if (group.length <= remainingSlots) {
+decidedIndices.push(...group);
 } else {
-decidedIndices = top1Indices.sort((a, b) => a - b);
+const shuffledGroup = group.slice();
+for (let k = shuffledGroup.length - 1; k > 0; k--) {
+const r = Math.floor(Math.random() * (k + 1));
+const tmp = shuffledGroup[k];
+shuffledGroup[k] = shuffledGroup[r];
+shuffledGroup[r] = tmp;
+}
+decidedIndices.push(...shuffledGroup.slice(0, remainingSlots));
 }
 }
+decidedIndices.sort((a, b) => a - b);
 const actualAiIndices = players.map((p, i) => p.isBot ? i : -1).filter(i => i !== -1).sort((a, b) => a - b);
 const isCorrect = decidedIndices.length === actualAiIndices.length && decidedIndices.every((v, i) => v === actualAiIndices[i]);
 state.spyGuessState.decidedSuspectIndices = decidedIndices;
@@ -7185,7 +7208,11 @@ showSuspectDecidedModal(decidedIndices);
 function showSuspectDecidedModal(decidedIndices) {
 state.shownSuspectDecidedRoundId = state.roundId;
 const players = state.activePlayers || [];
-const names = (decidedIndices || []).map(i => (players[i] && (players[i].anonymousName || getSpyAliasName(i))) || '').filter(Boolean);
+const names = (decidedIndices || []).map(i => {
+const p = players[i];
+if (!p) return '';
+return (p.anonymousExposed && p.realName) ? p.realName : (p.anonymousName || getSpyAliasName(i));
+}).filter(Boolean);
 const namesEl = document.getElementById('suspect-decided-names');
 if (namesEl) namesEl.textContent = names.join('、');
 const m = document.getElementById('modal-suspect-decided');
@@ -9036,7 +9063,13 @@ state.shuffleOrder = !!state.soloShuffleOrder;
 startGameFromWaitingRoom(false);
 return;
 }
-const existingSnap = await RoomSyncEngine.fetchRoomSnapshot(state.roomKeyword, state.roomId, true);
+const existingSnapRaw = await RoomSyncEngine.fetchRoomSnapshot(state.roomKeyword, state.roomId, true);
+const existingOtherHumans = existingSnapRaw ? [
+...(existingSnapRaw.waitingSlots || []),
+...(existingSnapRaw.restingPlayers || []),
+...(existingSnapRaw.inGame ? (existingSnapRaw.activePlayers || []) : [])
+].filter(p => p && !p.isBot && p.clientId !== state.clientId) : [];
+const existingSnap = (existingSnapRaw && existingOtherHumans.length > 0) ? existingSnapRaw : null;
 if (existingSnap) {
 const roomSlots = existingSnap.waitingSlots || [];
 const restingSlots = existingSnap.restingPlayers || [];
@@ -9836,13 +9869,10 @@ openReturnToTitleConfirm();
 }
 }
 });
-document.getElementById('btn-play-again-same').addEventListener('click', () => {
+document.getElementById('btn-play-again-same').addEventListener('click', async () => {
 syncLatestCarnationPoemHistory();
 state.preCompletionStampsSnapshot = null;
-if (state.botTimer) {
-clearTimeout(state.botTimer);
-state.botTimer = null;
-}
+clearBotTimer();
 if (state.lobbyMode === 'solo') {
 state.inGame = false;
 state.waitingSlots = [];
@@ -9850,13 +9880,26 @@ state.shuffleOrder = !!state.soloShuffleOrder;
 syncWaitingSlotsWithCount();
 startGameFromWaitingRoom(false);
 } else {
-const restIdx = (state.restingPlayers || []).findIndex(p => isPlayerMe(p));
-if (restIdx !== -1) {
-const restingEntry = state.restingPlayers[restIdx];
+try {
+const latestSnap = await RoomSyncEngine.fetchRoomSnapshot(state.roomKeyword, state.roomId, true);
+if (latestSnap) {
+const normWait = normalizeArrayField(latestSnap.waitingSlots);
+const normRest = normalizeArrayField(latestSnap.restingPlayers);
+if (normWait.length > 0) state.waitingSlots = normWait;
+if (latestSnap.restingPlayers !== undefined) state.restingPlayers = normRest;
+if (latestSnap.hostPlayerId) {
+state.hostPlayerId = latestSnap.hostPlayerId;
+state.hostName = latestSnap.hostName || state.hostName;
+state.isHost = !!(state.myPlayerId && state.hostPlayerId === state.myPlayerId);
+}
+}
+} catch (e) {}
+const restorePlayerFromResting = (idx) => {
+const restingEntry = state.restingPlayers[idx];
 const isManualHostRest = restingEntry.restingReason === 'manual' || !!restingEntry.manualRest;
-if (!isManualHostRest) {
-const returningPlayer = state.restingPlayers.splice(restIdx, 1)[0];
-state.restingPlayers = state.restingPlayers.filter(p => !isPlayerMe(p) && p.name !== returningPlayer.name);
+if (isManualHostRest) return false;
+const returningPlayer = state.restingPlayers.splice(idx, 1)[0];
+state.restingPlayers = state.restingPlayers.filter(p => p.id !== returningPlayer.id && p.name !== returningPlayer.name);
 const desiredRank = returningPlayer.slotOrderRank ?? returningPlayer.originalSlotIndex ?? state.waitingSlots.length;
 delete returningPlayer.restingReason;
 returningPlayer.manualRest = false;
@@ -9871,9 +9914,27 @@ insertAt = Math.min(desiredRank, state.waitingSlots.length);
 }
 state.waitingSlots.splice(insertAt, 0, returningPlayer);
 }
+return true;
+};
+const restIdx = (state.restingPlayers || []).findIndex(p => isPlayerMe(p));
+if (restIdx !== -1) {
+restorePlayerFromResting(restIdx);
+}
+(state.waitingSlots || []).forEach(p => {
+if (!p.isBot && isPlayerMe(p)) {
+p.lastSeen = Date.now();
+p.clientId = state.clientId;
+}
+});
+if (state.isHost) {
+for (let i = (state.restingPlayers || []).length - 1; i >= 0; i--) {
+const rp = state.restingPlayers[i];
+if (rp && !rp.isBot && rp.restingReason !== 'manual' && !rp.manualRest) {
+restorePlayerFromResting(i);
+}
+}
+}
 recolorActiveWaitingSlots();
-}
-}
 state.doubleSpyPlayerId = null;
 state.spyGuessState = null;
 state.spyGuessLocalSelection = [];
@@ -9887,7 +9948,10 @@ document.getElementById('modal-suspect-decided').classList.add('hidden');
 document.getElementById('modal-undercover-result').classList.add('hidden');
 document.getElementById('modal-double-spy-notice').classList.add('hidden');
 state.hasReturnedFromResult = true;
-const phaseToKeep = state.inGame ? 'game' : (state.roomPhase || 'result');
+if (state.isHost && !state.inGame) {
+state.roomPhase = 'waiting';
+}
+const phaseToKeep = state.inGame ? 'game' : (state.isHost ? 'waiting' : (state.roomPhase || 'result'));
 openWaitingRoom(false);
 RoomSyncEngine.pushRoomState(phaseToKeep);
 showToast('待機室に戻りました');
