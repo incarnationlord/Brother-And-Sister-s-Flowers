@@ -15,11 +15,6 @@
 <meta name="twitter:image" content="https://placehold.jp/110/f4b4c4/27272a/1200x630.png?text=%E5%85%84%E5%A6%B9%E3%81%AE%E8%8A%B1">
 <meta name="description" content="兄妹の花で『詠み人知らず』ができる非公式Webサイト。１人から遊べます。">
 <title>［非公式］兄妹の花で詠み人知らず</title>
-<script>
-    window.YOMIBITO_CLOUD_CONFIG = {
-      databaseUrl: "https://brother-and-sister-s-flowers-default-rtdb.firebaseio.com/"
-    };
-</script>
 <script src="https://cdn.tailwindcss.com/3.4.17"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
@@ -164,7 +159,7 @@ outline-offset: 2px !important;
 </div>
 <div class="flex items-center gap-2">
 <div id="header-user-name-badge" title="あなたの通り名" class="hidden h-9 min-w-[2.25rem] px-3 rounded-lg btn-usumomo flex items-center justify-center gap-1.5 font-bold serif-jp text-sm sm:text-base shadow-sm">
-<span class="w-5 h-5 rounded-full bg-white/80 text-zinc-800 text-[10px] font-bold flex items-center justify-center shrink-0 shadow-inner">名</span>
+<span id="header-user-name-initial" class="w-5 h-5 rounded-full bg-white/80 text-zinc-800 text-[10px] font-bold flex items-center justify-center shrink-0 shadow-inner">0</span>
 <span id="header-user-name-text" class="truncate max-w-[9rem]">007</span>
 </div>
 <button id="btn-open-room-history" class="px-3 py-1.5 text-xs sm:text-sm font-medium rounded-lg border border-zinc-300 bg-zinc-100 hover:bg-zinc-200 text-zinc-700 transition flex items-center gap-1.5 shadow-sm" title="入室した直近10部屋の一覧">
@@ -274,7 +269,6 @@ ID変更
 <input type="checkbox" id="chk-lobby-undercover-mode" class="rounded accent-pink-400 focus:ring-pink-300 w-4 h-4">
 <div class="space-y-0.5">
 <span class="text-xs font-bold text-zinc-800 block">潜入捜査モード</span>
-<span class="text-[11px] text-zinc-600 block">※人間2人以上必要・全員匿名で句を詠みAIスパイを摘発します</span>
 </div>
 </label>
 </div>
@@ -411,7 +405,6 @@ ID変更
 <input type="checkbox" id="chk-waiting-undercover-mode" class="rounded accent-pink-400 focus:ring-pink-300 w-4 h-4">
 <div class="space-y-0.5">
 <span class="text-xs font-bold text-zinc-800 block">潜入捜査モード</span>
-<span class="text-[11px] text-zinc-600 block">※人間2人以上必要・全員匿名で句を詠みAIスパイを摘発します</span>
 </div>
 </label>
 </div>
@@ -467,6 +460,9 @@ ID変更
 お題：<span id="game-theme-name">チューリップ</span>
 </span>
 <span id="game-my-undercover-badge" class="hidden text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-zinc-800 text-pink-200 shrink-0"></span>
+<button type="button" id="btn-double-spy-hack" class="hidden text-[11px] font-bold px-2.5 py-1 rounded-lg bg-red-700 hover:bg-red-800 text-white shadow-sm transition active:scale-95 shrink-0" title="一度だけ次の手番の人の入力権を奪い、その人として入力します">
+ハッキング
+</button>
 </div>
 <div class="flex items-center gap-2 shrink-0">
 <span id="game-spectator-banner" class="hidden px-2.5 py-0.5 rounded-full bg-zinc-200 border border-zinc-300 text-xs font-bold text-zinc-800 serif-jp"></span>
@@ -537,12 +533,7 @@ ID変更
 <span class="text-zinc-500 font-medium">▼ タップで表示</span>
 </button>
 </div>
-<div class="pt-2.5 border-t border-zinc-300">
-<div class="text-sm serif-jp text-zinc-700">
-<span class="text-xs font-sans text-zinc-500 block mb-0.5">現在の句の並び：</span>
-<span id="live-poem-preview" class="font-bold text-base sm:text-lg text-zinc-900 break-words">（まだ入力されていません）</span>
-</div>
-</div>
+
 </div>
 </div>
 <div class="lg:col-span-5 space-y-4 min-w-0">
@@ -565,7 +556,7 @@ ID変更
 <div id="not-my-turn-notice" class="hidden py-4 px-3.5 rounded-xl bg-zinc-200/70 border border-zinc-300 text-center text-xs sm:text-sm font-bold text-zinc-600 serif-jp">
 手番が回るまでお待ちください…
 </div>
-<div id="mobile-input-poem-preview-wrap" class="lg:hidden px-3 py-2 rounded-xl bg-white/80 border border-zinc-300 text-xs serif-jp text-zinc-700">
+<div id="mobile-input-poem-preview-wrap" class="px-3 py-2 rounded-xl bg-white/80 border border-zinc-300 text-xs serif-jp text-zinc-700">
 <span class="text-[10px] font-sans text-zinc-500 block">現在の句：</span>
 <span id="mobile-input-poem-preview" class="font-bold text-sm text-zinc-900 break-words">（まだ入力されていません）</span>
 </div>
@@ -689,18 +680,18 @@ ID変更
 </div>
 </div>
 </section>
-<section id="view-result" class="hidden space-y-6">
-<div class="bg-[#f3f4f6] rounded-2xl p-6 sm:p-8 tanzaku-shadow border border-zinc-300">
-<div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-<div class="lg:col-span-6 flex flex-col items-center space-y-4">
-<div class="w-full max-w-xs sm:max-w-sm">
+<section id="view-result" class="hidden space-y-4">
+<div class="bg-[#f3f4f6] rounded-2xl p-4 sm:p-7 tanzaku-shadow border border-zinc-300">
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-8 items-start">
+<div class="lg:col-span-6 flex flex-col items-center space-y-2.5 sm:space-y-4">
+<div class="w-full max-w-[270px] sm:max-w-sm">
 <div class="w-full rounded-2xl overflow-hidden shadow-lg border border-zinc-300 bg-zinc-100">
 <canvas id="tanzaku-canvas" width="800" height="1200" role="img" aria-label="完成した短冊の画像" class="hidden w-full h-auto"></canvas>
-<img id="tanzaku-img-mirror" alt="完成した短冊の画像（長押しで保存可能）" class="w-full h-auto block select-auto longpressable-img">
+<img id="tanzaku-img-mirror" alt="完成した短冊の画像（長押しで保存可能）" class="w-full max-h-[54vh] lg:max-h-none object-contain mx-auto block select-auto longpressable-img">
 <div id="tanzaku-screenreader-summary" class="sr-only" aria-live="polite"></div>
 </div>
 </div>
-<div id="carnation-color-toggle-wrap" class="hidden flex items-center justify-center gap-6 bg-zinc-200/80 px-5 py-2.5 rounded-xl border border-zinc-300 text-xs font-bold text-zinc-800">
+<div id="carnation-color-toggle-wrap" class="hidden flex items-center justify-center gap-6 bg-zinc-200/80 px-4 py-1.5 sm:py-2.5 rounded-xl border border-zinc-300 text-xs font-bold text-zinc-800">
 <label class="flex items-center gap-2 cursor-pointer select-none">
 <input type="checkbox" id="chk-carnation-blue" checked="" class="rounded accent-blue-600 w-4 h-4">
 <span class="text-blue-700">青</span>
@@ -711,20 +702,17 @@ ID変更
 </label>
 </div>
 </div>
-<div class="lg:col-span-6 space-y-6">
-<div class="bg-zinc-200/60 rounded-xl p-4 border border-zinc-300 space-y-3">
-<div id="result-breakdown-list" class="space-y-2 text-sm"></div>
-</div>
-<div class="space-y-3 pt-2">
-<div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-<button type="button" id="btn-share-x" class="py-3.5 px-5 rounded-xl btn-usumomo font-bold text-sm shadow-md transition flex items-center justify-center gap-2">
+<div class="lg:col-span-6 space-y-3.5 sm:space-y-5">
+<div class="space-y-2.5">
+<div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 sm:gap-3">
+<button type="button" id="btn-share-x" class="py-3 sm:py-3.5 px-4 sm:px-5 rounded-xl btn-usumomo font-bold text-sm shadow-md transition flex items-center justify-center gap-2">
 <span class="font-sans font-black">X</span> 画像付きでX（Twitter）に投稿
 </button>
-<button type="button" id="btn-download-image" class="py-3.5 px-5 rounded-xl bg-zinc-700 hover:bg-zinc-800 text-white font-bold text-sm shadow-md transition flex items-center justify-center gap-2">
+<button type="button" id="btn-download-image" class="py-3 sm:py-3.5 px-4 sm:px-5 rounded-xl bg-zinc-700 hover:bg-zinc-800 text-white font-bold text-sm shadow-md transition flex items-center justify-center gap-2">
 <span>📥</span> 短冊画像を保存（PNG）
 </button>
 </div>
-<div id="wrap-open-longpress-save" class="pt-1">
+<div id="wrap-open-longpress-save">
 <button type="button" id="btn-open-longpress-save" class="w-full py-2.5 px-4 rounded-xl border border-zinc-300 bg-white hover:bg-zinc-200 text-zinc-700 font-bold text-xs sm:text-sm shadow-sm transition">
 画像付きで投稿したい場合
 </button>
@@ -740,14 +728,23 @@ X Xの投稿画面を開く（Ctrl+Vで画像貼付） ↗
 </a>
 </div>
 </div>
-<div class="flex flex-wrap items-center justify-between gap-3 pt-4 border-t border-zinc-300">
+</div>
+<div class="bg-zinc-200/60 rounded-xl border border-zinc-300 overflow-hidden">
+<button type="button" id="btn-toggle-result-breakdown" class="w-full px-4 py-2.5 text-left flex items-center justify-between gap-2 hover:bg-zinc-200/80 transition select-none">
+<span class="text-xs sm:text-sm font-bold serif-jp text-zinc-800">詠み人の内訳</span>
+<span id="icon-toggle-result-breakdown" class="text-xs font-bold text-zinc-500">▼ タップで表示</span>
+</button>
+<div id="result-breakdown-body" class="hidden px-4 pb-3.5 pt-2 border-t border-zinc-300">
+<div id="result-breakdown-list" class="space-y-2 text-sm"></div>
+</div>
+</div>
+<div class="flex flex-wrap items-center justify-between gap-3 pt-3 border-t border-zinc-300">
 <button type="button" id="btn-play-again-same" class="flex-1 py-3 px-4 rounded-xl btn-usumomo font-bold serif-jp text-sm shadow-sm transition">
 待機室に戻る
 </button>
 <button type="button" id="btn-result-to-lobby" class="py-3 px-4 rounded-xl border border-zinc-300 bg-white hover:bg-zinc-200 text-zinc-700 font-medium text-sm transition">
 タイトルへ戻る
 </button>
-</div>
 </div>
 </div>
 </div>
@@ -1030,43 +1027,100 @@ OK
 </div>
 </div>
 <div id="modal-rules" class="fixed inset-0 z-50 hidden bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
-<div class="bg-[#f3f4f6] rounded-2xl max-w-3xl w-full max-h-[85vh] overflow-y-auto tanzaku-shadow border border-zinc-300 p-6 space-y-5">
+<div id="modal-rules-scroll-body" class="bg-[#f3f4f6] rounded-2xl max-w-3xl w-full max-h-[85vh] overflow-y-auto tanzaku-shadow border border-zinc-300 p-6 space-y-6">
 <div class="flex items-center justify-between border-b border-zinc-300 pb-3">
 <h3 class="text-xl font-bold serif-jp text-zinc-900">ルール</h3>
 <button type="button" id="btn-close-rules" class="w-8 h-8 rounded-lg bg-zinc-300/90 hover:bg-zinc-400 text-zinc-900 border border-zinc-400 text-lg font-bold flex items-center justify-center leading-none">×</button>
 </div>
-<div class="space-y-2 text-sm text-zinc-700 leading-relaxed">
-<h4 class="font-bold text-zinc-900 serif-jp text-base">基本ルール</h4>
+<nav class="p-3.5 rounded-xl bg-white border border-zinc-300 space-y-2">
+<div class="text-xs font-bold text-zinc-500">目次</div>
+<div class="flex flex-wrap gap-1.5 text-xs">
+<button type="button" data-rule-jump="rule-sec-basic" class="px-2.5 py-1 rounded-lg bg-zinc-100 hover:bg-pink-50 border border-zinc-300 text-zinc-800 font-bold transition">基本ルール</button>
+<button type="button" data-rule-jump="rule-sec-howto" class="px-2.5 py-1 rounded-lg bg-zinc-100 hover:bg-pink-50 border border-zinc-300 text-zinc-800 font-bold transition">あそびかた</button>
+<button type="button" data-rule-jump="rule-sec-solo" class="px-2.5 py-1 rounded-lg bg-zinc-100 hover:bg-pink-50 border border-zinc-300 text-zinc-800 font-bold transition">「ひとりで遊ぶ」とは</button>
+<button type="button" data-rule-jump="rule-sec-host" class="px-2.5 py-1 rounded-lg bg-zinc-100 hover:bg-pink-50 border border-zinc-300 text-zinc-800 font-bold transition">「部屋を立てる」とは</button>
+<button type="button" data-rule-jump="rule-sec-guest" class="px-2.5 py-1 rounded-lg bg-zinc-100 hover:bg-pink-50 border border-zinc-300 text-zinc-800 font-bold transition">「合言葉で入室」とは</button>
+<button type="button" data-rule-jump="rule-sec-free" class="px-2.5 py-1 rounded-lg bg-zinc-100 hover:bg-pink-50 border border-zinc-300 text-zinc-800 font-bold transition">「自由記述モード」とは</button>
+<button type="button" data-rule-jump="rule-sec-undercover" class="px-2.5 py-1 rounded-lg bg-zinc-100 hover:bg-pink-50 border border-zinc-300 text-zinc-800 font-bold transition">「潜入捜査モード」とは</button>
+</div>
+</nav>
+<div id="rule-sec-basic" class="space-y-2 text-sm text-zinc-700 leading-relaxed scroll-mt-4">
+<h4 class="font-bold text-zinc-900 serif-jp text-base border-b border-zinc-200 pb-1">基本ルール</h4>
 <p class="text-xs sm:text-sm">
 参加者は順番に１音ずつ文字を入力し、全員で五・七・五を完成させます。ただし、句のなかには『兄妹の花』の名前を入れなければなりません。
 </p>
 </div>
-<div class="space-y-2 text-sm text-zinc-700 leading-relaxed">
-<h4 class="font-bold text-zinc-900 serif-jp text-base">操作方法</h4>
+<div id="rule-sec-howto" class="space-y-2 text-sm text-zinc-700 leading-relaxed scroll-mt-4">
+<h4 class="font-bold text-zinc-900 serif-jp text-base border-b border-zinc-200 pb-1">あそびかた</h4>
 <div class="space-y-1.5 text-xs sm:text-sm">
 <p>文字の入力は、一度につき、ひらがな１音ずつ。音で数えるため、「っ」や「ー」は１音。「ょ」は「きょ」などで１音になります。</p>
 <p>一句にひとつ、花の名前を入れる必要があります。そのときは、文字入力欄の下にある、花の名前一覧をタップ。選んだ名前を一括で入力できます。</p>
 <p>完成した一句は、自動で画像になります。お気に入りの作品ができましたら、是非見せびらかしてください。</p>
 </div>
 </div>
-<div class="space-y-2 text-sm text-zinc-700 leading-relaxed">
-<h4 class="font-bold text-zinc-900 serif-jp text-base">主催者</h4>
+<div id="rule-sec-solo" class="space-y-2 text-sm text-zinc-700 leading-relaxed scroll-mt-4">
+<h4 class="font-bold text-zinc-900 serif-jp text-base border-b border-zinc-200 pb-1">「ひとりで遊ぶ」とは</h4>
 <div class="space-y-2 text-xs sm:text-sm">
-<p>主催者は、部屋の設定を変えることができます。主な変更点は４つ。</p>
-<ul class="list-disc pl-5 space-y-1.5">
-<li><strong>参加人数</strong>：部屋に入れる人数の上限です。人数に満たない分はAIが代わりに詠み手となります（AIなしでの開始も可能）。</li>
-<li><strong>お題の花</strong>：兄妹の花から１つ選びます。Wikipedia に記載された別名も使え、一覧やスタンプ進捗はヘッダーの「図鑑」で確認できます。</li>
-<li><strong>自由記述モード</strong>：ひとり１音の制限を撤廃した、複数文字・漢字や記号ありの自由創作モードです。</li>
-<li><strong>潜入捜査モード</strong>（人間２人以上が必要）：全員が匿名（スパイA〜）で句を詠み、完成後にAIスパイを摘発する裏の裏ルールです。
-<ul class="pl-5 mt-1 space-y-1 text-zinc-600" style="list-style-type: circle;">
-<li>開始時に「手番順シャッフル」と「AIの花使用（一括入力含む）」が強制オンになり、入力には<strong>６秒の制限時間</strong>（超過時はAIが自動補填）が設けられます。</li>
-<li>人間が３人以上いる場合、人間の中から１人だけ<strong>二重スパイ</strong>が秘密裏に選ばれます（本人のみに通達され、他者からは分かりません）。二重スパイは時間切れになると実名が露見し、摘発時の投票権もありません。</li>
-<li>完成後は匿名短冊を見ながら、自分以外の参加者からAIスパイの人数分だけ容疑者を選んで投票します（多数決で１位タイがAI人数に満たない場合は２位タイまでを被疑者として選出）。</li>
-<li><strong>勝敗条件</strong>：被疑者のうち人間の割合が50%以上の場合は冤罪多数で人間側全員が任務失敗となります。それ以外でAIスパイを全員捕獲できれば通常側の任務成功、二重スパイは自分が捕まらずAIが逃げおおせれば任務成功となります。</li>
-</ul>
-</li>
-</ul>
-<p>そのほか、参加者の手番順の変更、参加者の追放、現在の手番のスキップといった権限があります。全員が楽しめる部屋づくりを心がけましょう。</p>
+<p>AIスパイと協力して一句をつくるモードです。<br>ひとりで、手軽に、詠み人知らずが楽しめます。</p>
+<p>簡単に、手順を紹介します。</p>
+<p>まず、自分の通り名となる名前を入力したら、一緒に一句をつくるAIスパイの人数を決めましょう。はじめての場合は、１〜３人程度がおすすめ。</p>
+<p>次に、お題となる花を設定します。全７種類の花から、決めきれない場合は「ランダム」と書かれたボタンを押してみてください。自動でお題が選出されます。</p>
+<p>設定を終えたら、「開始する」を押してみましょう。</p>
+<p>上の項目で説明した「<button type="button" data-rule-jump="rule-sec-howto" class="text-pink-800 underline font-bold hover:text-pink-600">あそびかた</button>」に則って、入力欄に文字を入れましょう。横の「送信」ボタンを押すと、音数がひとつ埋まります。</p>
+<p>AIスパイと手番順を回しながら、五・七・五を完成させましょう。</p>
+<p>音数がすべて埋まると、一句が完成。出来上がった一句をしたためた、短冊が表示されます。気に入った作品は、投稿や保存をしてもよいですね。</p>
+<p>また同じ設定で遊びたいときは「もう一度遊ぶ」を、設定を変えて遊びたいときは、「タイトルへ戻る」を押してください。</p>
+<p>以上が基本的な手順となります。楽しんで！</p>
+</div>
+</div>
+<div id="rule-sec-host" class="space-y-2 text-sm text-zinc-700 leading-relaxed scroll-mt-4">
+<h4 class="font-bold text-zinc-900 serif-jp text-base border-b border-zinc-200 pb-1">「部屋を立てる」とは</h4>
+<div class="space-y-2 text-xs sm:text-sm">
+<p>仲間と協力して一句をつくるモードです。<br>みんなで、一緒に、詠み人知らずが楽しめます。ボイスチャットなどを繋いでもよいでしょう。</p>
+<p>簡単に、手順を紹介します。</p>
+<p>まず、自分の通り名となる名前を入力したら、部屋の合言葉を設定します。自動生成された、そのままでも構いません。</p>
+<p>次に、お題となる花を設定します。これは後から変更できるので、とりあえずで選びましょう。<br>全７種類の花から、決めきれない場合は「ランダム」と書かれたボタンを押してみてください。自動でお題が選出されます。</p>
+<p>設定を終えたら、「部屋を立てて待機室に進む」を押します。</p>
+<p>待機室に移ったら、参加者を集いましょう。合言葉をコピーしたら、知り合い、不知り合いを問わず、送り散らしてやりましょう！　宴です！！<br>なお、合言葉は、末尾の数字を含めて送付するようにしてください。</p>
+<p>在籍者一覧では、参加する人間のほかに、AIスパイを追加することができます。頻繁に手番が回ってくると大変だよ、というときなどは、適当な人数を用意するとよいでしょう。<br>また、手番順の入れ替えもできます。迷ったら、シャッフルの項目にチェックを入れてみてください。</p>
+<p>お題設定、参加者に問題がなければ、「開始する」のボタンを押します。<br>開始する前に、チャットなどで参加者に確認を取るとよいでしょう。</p>
+<p>上の項目で説明した「<button type="button" data-rule-jump="rule-sec-howto" class="text-pink-800 underline font-bold hover:text-pink-600">あそびかた</button>」に則って、入力欄に文字を入れましょう。横の「送信」ボタンを押すと、音数がひとつ埋まります。</p>
+<p>AIスパイと手番順を回しながら、五・七・五を完成させましょう。</p>
+<p>音数がすべて埋まると、一句が完成。出来上がった一句をしたためた、短冊が表示されます。気に入った作品は、投稿や保存をしてもよいですね。ただし、投稿の際はトラブル回避のため、参加者の了承を得るようにしましょう。</p>
+<p>また同じ部屋で遊びたいときは「待機室に戻る」を、退室したいときは、「タイトルへ戻る」を押してください。</p>
+<p>以上が基本的な手順となります。主催者には、様々の権限があります。全員が楽しめる部屋づくりを心がけましょう。楽しんで！</p>
+</div>
+</div>
+<div id="rule-sec-guest" class="space-y-2 text-sm text-zinc-700 leading-relaxed scroll-mt-4">
+<h4 class="font-bold text-zinc-900 serif-jp text-base border-b border-zinc-200 pb-1">「合言葉で入室」とは</h4>
+<div class="space-y-2 text-xs sm:text-sm">
+<p>ひとの立てた部屋に入り、仲間と協力して一句をつくるモードです。<br>みんなで、一緒に、詠み人知らずが楽しめます。ボイスチャットなどを繋いでもよいでしょう。</p>
+<p>簡単に、手順を紹介します。</p>
+<p>まず、部屋の合言葉を入力します。部屋の主催者などから送られた合言葉を、「合言葉」欄に貼り付けましょう。このとき、４桁の数字も含めて構いません。</p>
+<p>自分の通り名となる名前を入力したら、「入室する」を押します。</p>
+<p>待機室で、主催者の開始まで待ちましょう。既に始まっている場合は、見学することもできます。</p>
+<p>参加した状態で主催者が開始をしたら、画面が自動的に切り替わります。</p>
+<p>上の項目で説明した「<button type="button" data-rule-jump="rule-sec-howto" class="text-pink-800 underline font-bold hover:text-pink-600">あそびかた</button>」に則って、入力欄に文字を入れましょう。横の「送信」ボタンを押すと、音数がひとつ埋まります。</p>
+<p>AIスパイと手番順を回しながら、五・七・五を完成させましょう。</p>
+<p>音数がすべて埋まると、一句が完成。出来上がった一句をしたためた、短冊が表示されます。気に入った作品は、投稿や保存をしてもよいですね。ただし、投稿の際はトラブル回避のため、参加者の了承を得るようにしましょう。</p>
+<p>また同じ部屋で遊びたいときは「待機室に戻る」を、退室したいときは、「タイトルへ戻る」を押してください。</p>
+<p>以上が基本的な手順となります。楽しんで！</p>
+</div>
+</div>
+<div id="rule-sec-free" class="space-y-2 text-sm text-zinc-700 leading-relaxed scroll-mt-4">
+<h4 class="font-bold text-zinc-900 serif-jp text-base border-b border-zinc-200 pb-1">「自由記述モード」とは</h4>
+<div class="space-y-2 text-xs sm:text-sm">
+<p>このモードは、裏ルールです。<br>詠み人知らずの、ひとり１音の制限を撤廃します。複数文字あり、漢字や記号ありの無法地帯。自由な創作を楽しみたいときは。<br>また、真面目モードの項目を外すことで、AIスパイも好き勝手に語り始めます。放埒に紡ぎ合いましょう。</p>
+</div>
+</div>
+<div id="rule-sec-undercover" class="space-y-2 text-sm text-zinc-700 leading-relaxed scroll-mt-4">
+<h4 class="font-bold text-zinc-900 serif-jp text-base border-b border-zinc-200 pb-1">「潜入捜査モード」とは</h4>
+<div class="space-y-2 text-xs sm:text-sm">
+<p>このモードは、人狼ゲームです。参加者が２人以上必要となります。<br>全員が匿名になって一句をつくるのですが、そのなかにはAIスパイが紛れています。完成した一句を見ながら、誰がAIスパイなのかを当てましょう。</p>
+<p>開始時には、手番順が自動的にシャッフルされ、かつ、名前では人間かAIスパイかの判別がつかなくなります。<br>また、入力には６秒の制限時間が設けられます。この時間を超過すると、AIによって勝手に入力されてしまうため、AIスパイのような言葉選びになってしまうかもしれません。</p>
+<p>参加者が３人以上のとき、ひとりだけ二重スパイが選ばれます。<br>二重スパイには、AIスパイが摘発されないよう工作するという秘密任務があります。無論、自分が摘発されてもいけません。ただし、それ以外の参加者に、二重スパイを摘発するメリットはありません。<br>二重スパイは「ハッキング」ボタンにより、１句につき一度だけ次の手番の人（人間・AI問わず）の入力権を奪い、その人として入力することができます。<br>二重スパイが入力の制限時間を超過すると、実名が晒されてしまいます。AIスパイでないことが確定するため、不利になることでしょう。</p>
+<p>一句が完成したら、投票に移ります。これまでの入力結果を見ながら、AIスパイが誰かを予想し、多数決で被疑者を選出します。<br>ここで、二重スパイには投票権はありません。</p>
+<p>被疑者にAIスパイがすべて含まれていたら、任務成功です。ただし、被疑者の過半数が参加者だった場合は、冤罪事件として失敗となります。<br>二重スパイは、自分が生き残り、かつ、AIスパイがひとりでも容疑を逃れたら、任務成功です。</p>
 </div>
 </div>
 <div class="pt-3 border-t border-zinc-300 text-right">
@@ -1177,6 +1231,22 @@ AIスパイ、そしてあなた自身が摘発されないように、立ち振
 <div class="pt-2 border-t border-zinc-300">
 <button type="button" id="btn-close-undercover-result" class="w-full py-2.5 px-6 rounded-xl btn-usumomo font-bold text-sm shadow-sm">
 閉じる
+</button>
+</div>
+</div>
+</div>
+<div id="modal-post-consent-confirm" class="fixed inset-0 z-50 hidden bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+<div class="bg-[#f3f4f6] rounded-2xl max-w-md w-full tanzaku-shadow border border-zinc-300 p-6 space-y-5">
+<h3 class="text-lg font-bold serif-jp text-zinc-900 text-center">確認</h3>
+<p class="text-sm text-zinc-800 text-center font-bold leading-relaxed">
+一句の投稿に、参加者の了承を得ていますか？
+</p>
+<div class="flex items-center justify-end gap-3 pt-2 border-t border-zinc-300">
+<button type="button" id="btn-cancel-post-consent" class="px-5 py-2 rounded-xl border border-zinc-300 bg-white hover:bg-zinc-200 text-zinc-700 font-bold text-sm">
+いいえ
+</button>
+<button type="button" id="btn-confirm-post-consent" class="px-6 py-2 rounded-xl btn-usumomo font-bold text-sm shadow-sm">
+はい
 </button>
 </div>
 </div>
@@ -1554,15 +1624,33 @@ st.lastActiveIdx = idx;
 });
 return stats;
 }
+function normalizeArrayField(raw) {
+if (Array.isArray(raw)) return raw.filter(v => v !== undefined && v !== null);
+if (raw && typeof raw === 'object') {
+return Object.keys(raw)
+.sort((a, b) => Number(a) - Number(b))
+.map(k => raw[k])
+.filter(v => v !== undefined && v !== null);
+}
+return [];
+}
+function normalizeLinesArray(rawLines) {
+const res = [[], [], []];
+if (!rawLines || typeof rawLines !== 'object') return res;
+for (let i = 0; i < 3; i++) {
+res[i] = normalizeArrayField(rawLines[i]);
+}
+return res;
+}
 function sanitizeRoomSnapshotPlayers(snap, options = {}) {
 if (!snap || typeof snap !== 'object') return { snap, modified: false };
 const now = Date.now();
 const isLiveRoom = !!options.isLiveRoom;
 let modified = false;
-snap.waitingSlots = Array.isArray(snap.waitingSlots) ? snap.waitingSlots : [];
-snap.restingPlayers = Array.isArray(snap.restingPlayers) ? snap.restingPlayers : [];
-snap.activePlayers = Array.isArray(snap.activePlayers) ? snap.activePlayers : [];
-snap.spectators = Array.isArray(snap.spectators) ? snap.spectators : [];
+snap.waitingSlots = normalizeArrayField(snap.waitingSlots);
+snap.restingPlayers = normalizeArrayField(snap.restingPlayers);
+snap.activePlayers = normalizeArrayField(snap.activePlayers);
+snap.spectators = normalizeArrayField(snap.spectators);
 const chatStats = analyzeChatLogPlayerEvents(snap.chatMessages);
 const allInitialHumans = [
 ...snap.waitingSlots.filter(p => p && !p.isBot),
@@ -2055,6 +2143,8 @@ aiNoFlower: !!state.aiNoFlower,
 carnationRedMode: state.carnationRedMode,
 undercoverMode: !!state.undercoverMode,
 doubleSpyPlayerId: state.doubleSpyPlayerId || null,
+hackUsed: !!state.hackUsed,
+hackedTurnIndex: (state.hackedTurnIndex !== undefined && state.hackedTurnIndex !== null) ? state.hackedTurnIndex : null,
 spyGuessState: state.spyGuessState || null,
 chatMessages: state.chatMessages,
 completedPoems: state.completedPoems,
@@ -2228,9 +2318,9 @@ merged.clientId = state.clientId;
 }
 return merged;
 });
-state.waitingSlots = mergeLastSeen(snapshot.waitingSlots || state.waitingSlots);
-state.restingPlayers = mergeLastSeen(snapshot.restingPlayers || []);
-state.spectators = snapshot.spectators || [];
+state.waitingSlots = mergeLastSeen(normalizeArrayField(snapshot.waitingSlots || state.waitingSlots));
+state.restingPlayers = mergeLastSeen(normalizeArrayField(snapshot.restingPlayers));
+state.spectators = normalizeArrayField(snapshot.spectators);
 state.emptySince = snapshot.emptySince || null;
 state.selectedFlowerId = snapshot.selectedFlowerId || state.selectedFlowerId;
 state.shuffleOrder = !!snapshot.shuffleOrder;
@@ -2247,12 +2337,20 @@ updateAiVocabSliderUI();
 state.carnationRedMode = !!snapshot.carnationRedMode;
 state.undercoverMode = !!snapshot.undercoverMode;
 state.doubleSpyPlayerId = snapshot.doubleSpyPlayerId || null;
+state.hackUsed = !!snapshot.hackUsed;
+state.hackedTurnIndex = (snapshot.hackedTurnIndex !== undefined && snapshot.hackedTurnIndex !== null) ? snapshot.hackedTurnIndex : null;
 if (snapshot.spyGuessState !== undefined) {
 const localSubs = (state.spyGuessState && state.spyGuessState.submissions) ? state.spyGuessState.submissions : {};
 const remoteSubs = (snapshot.spyGuessState && snapshot.spyGuessState.submissions) ? snapshot.spyGuessState.submissions : {};
+const normRemoteSubs = {};
+Object.keys(remoteSubs).forEach(k => {
+normRemoteSubs[k] = normalizeArrayField(remoteSubs[k]);
+});
 state.spyGuessState = snapshot.spyGuessState ? {
 ...snapshot.spyGuessState,
-submissions: { ...remoteSubs, ...(state.myPlayerId && localSubs[state.myPlayerId] ? { [state.myPlayerId]: localSubs[state.myPlayerId] } : {}) }
+decidedSuspectIndices: snapshot.spyGuessState.decidedSuspectIndices ? normalizeArrayField(snapshot.spyGuessState.decidedSuspectIndices) : null,
+leftPlayerIds: snapshot.spyGuessState.leftPlayerIds ? normalizeArrayField(snapshot.spyGuessState.leftPlayerIds) : [],
+submissions: { ...normRemoteSubs, ...(state.myPlayerId && localSubs[state.myPlayerId] ? { [state.myPlayerId]: localSubs[state.myPlayerId] } : {}) }
 } : null;
 }
 if (Array.isArray(snapshot.chatMessages)) {
@@ -2276,7 +2374,8 @@ existingPoemKeys.add(k);
 });
 }
 const localCellCount = (state.lines || [[], [], []]).reduce((acc, l) => acc + (l ? l.length : 0), 0);
-const snapCellCount = (snapshot.lines || [[], [], []]).reduce((acc, l) => acc + (l ? l.length : 0), 0);
+const normalizedSnapLines = normalizeLinesArray(snapshot.lines);
+const snapCellCount = normalizedSnapLines.reduce((acc, l) => acc + (l ? l.length : 0), 0);
 const sameRoundGame = (state.roomPhase === 'game' && snapshot.roomPhase === 'game' && (snapshot.roundId || 1) === (state.roundId || 1));
 const isStaleTurnRollback = sameRoundGame && (
 (snapshot.turnIndex !== undefined && snapshot.turnIndex < state.turnIndex) ||
@@ -2284,14 +2383,14 @@ const isStaleTurnRollback = sameRoundGame && (
 );
 const isWithinLocalGrace = sameRoundGame && state.lastLocalGameActionAt && (Date.now() - state.lastLocalGameActionAt < 3500) && (snapshot.updatedAt && snapshot.updatedAt < state.lastLocalGameActionAt);
 if (!isStaleTurnRollback && !isWithinLocalGrace) {
-state.activePlayers = mergeLastSeen(snapshot.activePlayers || []);
+state.activePlayers = mergeLastSeen(normalizeArrayField(snapshot.activePlayers));
 sanitizeCurrentStatePlayers();
 state.turnIndex = snapshot.turnIndex !== undefined ? snapshot.turnIndex : state.turnIndex;
 state.currentLine = snapshot.currentLine !== undefined ? snapshot.currentLine : state.currentLine;
 if (Array.isArray(snapshot.lineTargets) && snapshot.lineTargets.length === 3) {
 state.lineTargets = snapshot.lineTargets.slice();
 }
-state.lines = snapshot.lines || [[], [], []];
+state.lines = normalizeLinesArray(snapshot.lines);
 state.flowerUsed = !!snapshot.flowerUsed;
 state.flowerUsedManually = !!snapshot.flowerUsedManually;
 state.flowerUsedInfo = snapshot.flowerUsedInfo || null;
@@ -3537,7 +3636,11 @@ aiNoFlowerLockedOff: false,
 carnationRedMode: false,
 preCompletionStampsSnapshot: null,
 undercoverMode: false,
+preUndercoverShuffleOrder: false,
+preUndercoverAiCount: null,
 doubleSpyPlayerId: null,
+hackUsed: false,
+hackedTurnIndex: null,
 shownDoubleSpyRoundId: 0,
 spyGuessState: null,
 spyGuessLocalSelection: [],
@@ -4041,10 +4144,15 @@ const isWaitingVisible = !document.getElementById('view-waiting').classList.cont
 const isGameVisible = !document.getElementById('view-game').classList.contains('hidden');
 const isResultVisible = !document.getElementById('view-result').classList.contains('hidden');
 if (isWaitingVisible || isGameVisible || isResultVisible) {
+const displayName = state.currentUserName || '007';
+const initialEl = document.getElementById('header-user-name-initial');
+if (initialEl) {
+initialEl.textContent = Array.from(displayName)[0] || '名';
+}
 if (textEl) {
-textEl.textContent = state.currentUserName || '007';
+textEl.textContent = displayName;
 } else {
-badge.textContent = state.currentUserName || '007';
+badge.textContent = displayName;
 }
 badge.classList.remove('hidden');
 } else {
@@ -4119,6 +4227,9 @@ else wrapLobbyUc.classList.add('hidden');
 }
 if (state.lobbyMode === 'solo') {
 state.isHost = true;
+state.undercoverMode = false;
+state.doubleSpyPlayerId = null;
+state.spyGuessState = null;
 hostPanel.classList.remove('hidden');
 guestPanel.classList.add('hidden');
 if (passphraseBox) passphraseBox.classList.add('hidden');
@@ -4265,7 +4376,12 @@ downloadPoemEntryImage(entry);
 const tweetBtn = card.querySelector('.poem-entry-tweet-btn');
 if (tweetBtn) {
 tweetBtn.addEventListener('click', () => {
+const isWaitingCard = !!card.closest('#waiting-past-poems-list');
+if (isWaitingCard) {
+openPostConsentModal(() => tweetPoemEntry(entry));
+} else {
 tweetPoemEntry(entry);
+}
 });
 }
 return card;
@@ -4342,10 +4458,47 @@ state.waitingSlots.forEach((p, idx) => {
 p.color = PLAYER_COLORS[idx % PLAYER_COLORS.length];
 });
 }
+function syncUndercoverAiCountToHumans() {
+if (!state.undercoverMode || state.lobbyMode === 'solo') return false;
+const humansCount = (state.waitingSlots || []).filter(p => !p.isBot).length;
+const targetAiCount = Math.max(1, humansCount);
+const currentBots = (state.waitingSlots || []).filter(p => p.isBot);
+if (currentBots.length === targetAiCount) return false;
+if (currentBots.length < targetAiCount) {
+const usedNames = new Set([
+...(state.waitingSlots || []).map(p => p.name),
+...(state.restingPlayers || []).map(p => p.name)
+]);
+for (let i = currentBots.length; i < targetAiCount; i++) {
+const nextAiName = AI_SPY_NAMES.find(n => !usedNames.has(n)) || `AIスパイ${(state.waitingSlots || []).length + 1}号`;
+usedNames.add(nextAiName);
+state.waitingSlots.push({
+id: `ai-uc-${Date.now()}-${i}-${Math.random().toString(36).slice(2, 5)}`,
+name: nextAiName,
+isBot: true,
+isHostPlayer: false,
+joinedAt: 0,
+color: PLAYER_COLORS[state.waitingSlots.length % PLAYER_COLORS.length]
+});
+}
+} else {
+let toRemove = currentBots.length - targetAiCount;
+for (let i = state.waitingSlots.length - 1; i >= 0 && toRemove > 0; i--) {
+if (state.waitingSlots[i].isBot) {
+state.waitingSlots.splice(i, 1);
+toRemove--;
+}
+}
+}
+recolorActiveWaitingSlots();
+state.playerCount = Math.max(1, state.waitingSlots.length);
+return true;
+}
 function renderWaitingRoom() {
 if (state.lobbyMode !== 'solo') {
 const cleaned = sanitizeCurrentStatePlayers();
-if (cleaned) {
+const aiAdjusted = state.isHost ? syncUndercoverAiCountToHumans() : false;
+if (cleaned || aiAdjusted) {
 RoomSyncEngine.pushRoomState();
 }
 }
@@ -5304,11 +5457,14 @@ return true; // All subsequent turns until completion belong to AI bots!
 }
 function isCurrentTurnMine() {
 if (!state.activePlayers || state.activePlayers.length === 0) return false;
+if (state.undercoverMode && state.hackedTurnIndex !== null && state.hackedTurnIndex !== undefined && state.turnIndex === state.hackedTurnIndex) {
+return !!(state.doubleSpyPlayerId && state.doubleSpyPlayerId === state.myPlayerId);
+}
 const currentPlayer = state.activePlayers[state.turnIndex % state.activePlayers.length];
 if (!currentPlayer || currentPlayer.isBot) return false;
 if (state.lobbyMode === 'solo') return true;
 if (currentPlayer.id && state.myPlayerId && currentPlayer.id === state.myPlayerId) return true;
-return currentPlayer.name === state.currentUserName;
+return currentPlayer.name === state.currentUserName || (currentPlayer.realName && currentPlayer.realName === state.currentUserName);
 }
 function canCurrentUserSkipTurn() {
 if (!state.activePlayers || state.activePlayers.length === 0) return false;
@@ -5434,17 +5590,33 @@ chosen.unshift(humanPlayer);
 if (excludeAi && !state.undercoverMode) {
 chosen = chosen.filter(p => !p.isBot);
 }
-if (state.undercoverMode && !chosen.some(p => p.isBot)) {
+if (state.undercoverMode) {
+const humansInGame = chosen.filter(p => !p.isBot);
+const targetBots = Math.max(1, humansInGame.length);
+const curBots = chosen.filter(p => p.isBot);
+if (curBots.length < targetBots) {
 const usedNames = new Set(chosen.map(p => p.name));
-const extraBotName = AI_SPY_NAMES.find(n => !usedNames.has(n)) || 'AIスパイ';
+for (let i = curBots.length; i < targetBots; i++) {
+const extraBotName = AI_SPY_NAMES.find(n => !usedNames.has(n)) || `AIスパイ${i + 1}号`;
+usedNames.add(extraBotName);
 chosen.push({
-id: `ai-uc-${Date.now()}`,
+id: `ai-uc-${Date.now()}-${i}`,
 name: extraBotName,
 isBot: true,
 isHostPlayer: false,
 joinedAt: 0,
 color: PLAYER_COLORS[chosen.length % PLAYER_COLORS.length]
 });
+}
+} else if (curBots.length > targetBots) {
+let rem = curBots.length - targetBots;
+for (let i = chosen.length - 1; i >= 0 && rem > 0; i--) {
+if (chosen[i].isBot) {
+chosen.splice(i, 1);
+rem--;
+}
+}
+}
 }
 if (state.shuffleOrder || state.undercoverMode) {
 for (let i = chosen.length - 1; i > 0; i--) {
@@ -5473,6 +5645,8 @@ state.doubleSpyPlayerId = null;
 } else {
 state.doubleSpyPlayerId = null;
 }
+state.hackUsed = false;
+state.hackedTurnIndex = null;
 state.shownDoubleSpyRoundId = 0;
 state.spyGuessState = null;
 state.spyGuessLocalSelection = [];
@@ -5550,6 +5724,16 @@ myUcBadge.textContent = isDs ? `あなたは：${mePlayer.name}（二重スパ�
 myUcBadge.classList.remove('hidden');
 } else {
 myUcBadge.classList.add('hidden');
+}
+}
+const hackBtn = document.getElementById('btn-double-spy-hack');
+if (hackBtn) {
+const isDoubleSpyActive = !!(state.undercoverMode && !state.isSpectating && state.doubleSpyPlayerId && state.doubleSpyPlayerId === state.myPlayerId);
+const canHackNow = isDoubleSpyActive && !state.hackUsed && state.inGame;
+if (canHackNow) {
+hackBtn.classList.remove('hidden');
+} else {
+hackBtn.classList.add('hidden');
 }
 } else {
 myUcBadge.classList.add('hidden');
@@ -5649,7 +5833,9 @@ playerBar.appendChild(badge);
 document.getElementById('turn-counter-label').textContent = `${state.turnIndex + 1}手目`;
 const lineNames = ['初句', '二句', '結句'];
 for (let lineIdx = 0; lineIdx < 3; lineIdx++) {
-const targetLen = state.lineTargets[lineIdx];
+const targetLen = (Array.isArray(state.lineTargets) && state.lineTargets[lineIdx]) ? state.lineTargets[lineIdx] : (lineIdx === 1 ? 7 : 5);
+if (!Array.isArray(state.lines)) state.lines = [[], [], []];
+if (!Array.isArray(state.lines[lineIdx])) state.lines[lineIdx] = [];
 const cellsData = state.lines[lineIdx];
 const container = document.getElementById(`line-container-${lineIdx}`);
 const foldedBar = document.getElementById(`line-folded-${lineIdx}`);
@@ -5688,8 +5874,9 @@ const cellEntry = cellsData[slotIdx];
 const isNextActiveSlot = isCurrentLine && slotIdx === cellsData.length;
 const isOverflowSlot = slotIdx >= targetLen;
 const cellDiv = document.createElement('div');
-if (cellEntry) {
-const isLongCell = Array.from(cellEntry.text).length > 2;
+if (cellEntry && cellEntry.text !== undefined && cellEntry.text !== null) {
+const safeCellText = String(cellEntry.text);
+const isLongCell = Array.from(safeCellText).length > 2;
 cellDiv.className = `mora-cell ${
 isLongCell ? 'min-w-[3.5rem] max-w-[11rem] px-2.5 py-1.5 min-h-[3.75rem]' : 'w-12 h-14 sm:w-14 sm:h-16 p-1'
 } rounded-xl border-2 flex flex-col items-center justify-between shadow-sm ${
@@ -5728,8 +5915,7 @@ const currentLineCells = state.lines[state.currentLine] || [];
 document.getElementById('current-line-indicator').textContent =
 `現在：${lineNames[state.currentLine]}（${currentLineCells.length + 1}音目）`;
 const previewParts = state.lines.map(line => line.map(c => c.text).join('')).filter(Boolean);
-document.getElementById('live-poem-preview').textContent =
-previewParts.length > 0 ? previewParts.join('　') : '（まだ入力されていません）';
+
 const mobPrevEl = document.getElementById('mobile-input-poem-preview');
 if (mobPrevEl) {
 mobPrevEl.textContent = previewParts.length > 0 ? previewParts.join('　') : '（まだ入力されていません）';
@@ -5758,6 +5944,8 @@ notMyTurnNotice.textContent = state.isSpectating
 ? `見学中です（現在：${currentPlayer.name} の手番）`
 : (!state.undercoverMode && currentPlayer.isBot)
 ? `${currentPlayer.name} が入力しています…`
+: (state.undercoverMode && state.hackedTurnIndex === state.turnIndex && !isCurrentTurnMine())
+? `現在ハッキングされています…（この手番は入力できません）`
 : `${currentPlayer.name} さんの手番です。手番が回るまでお待ちください…`;
 notMyTurnNotice.classList.remove('hidden');
 }
@@ -6160,9 +6348,16 @@ showToast(`${lineNames[curLine]}の音数を1音減らし、手番をスキッ�
 if ((state.lines[curLine] || []).length >= state.lineTargets[curLine]) {
 advanceLineAndTurn(true);
 } else {
+if (state.hackedTurnIndex === state.turnIndex) {
+state.hackedTurnIndex = null;
+}
 state.turnIndex += 1;
-renderGameView();
 RoomSyncEngine.pushRoomState('game');
+try {
+renderGameView();
+} catch (err) {
+console.error('renderGameView error:', err);
+}
 scheduleBotIfNeeded();
 }
 }
@@ -6388,6 +6583,7 @@ state.botTimer = null;
 if (!state.isHost && state.lobbyMode !== 'solo') return;
 if (!state.inGame || !state.activePlayers || state.activePlayers.length === 0) return;
 if (state.finishVoteState && state.finishVoteState.active) return;
+if (state.undercoverMode && state.hackedTurnIndex === state.turnIndex) return;
 const currentPlayer = state.activePlayers[state.turnIndex % state.activePlayers.length];
 if (!currentPlayer || !currentPlayer.isBot) return;
 const scheduledTurnIndex = state.turnIndex;
@@ -6408,6 +6604,7 @@ notMyTurn.textContent = `${currentPlayer.name} が句の並びを確認し、推
 }
 state.botTimer = setTimeout(() => {
 if (!state.inGame || state.turnIndex !== scheduledTurnIndex) return;
+if (state.undercoverMode && state.hackedTurnIndex === state.turnIndex) return;
 const activeNow = state.activePlayers[state.turnIndex % state.activePlayers.length];
 if (!activeNow || !activeNow.isBot) return;
 executeBotMoveForPlayer(activeNow);
@@ -6716,6 +6913,10 @@ syncResultStateUrlInAddressBar(null);
 updateDownloadButtonFlowerColor();
 }
 function renderResultScreenFromState() {
+const bdBody = document.getElementById('result-breakdown-body');
+const bdIcon = document.getElementById('icon-toggle-result-breakdown');
+if (bdBody) bdBody.classList.add('hidden');
+if (bdIcon) bdIcon.textContent = '▼ タップで表示';
 updateHeaderUserNameBadge();
 const headerHistBtn = document.getElementById('btn-open-history');
 if (headerHistBtn) headerHistBtn.classList.remove('hidden');
@@ -7357,9 +7558,9 @@ let chosenColGap = 36;
 let chosenVerseGap = 64;
 let chosenVerseColumns = [];
 let chosenTotalW = 0;
-for (let fs = 64; fs >= 12; fs -= 2) {
+for (let fs = 64; fs >= 8; fs -= 2) {
 const charStep = Math.round(fs * 1.25);
-const segGapY = Math.max(6, Math.round(fs * 0.22));
+const segGapY = Math.max(4, Math.round(fs * 0.20));
 const maxAllowedColH = availPoemH - 16;
 const maxCharsPerCol = Math.max(4, Math.floor(maxAllowedColH / charStep));
 const colW = Math.round(fs * 1.55);
@@ -7368,8 +7569,10 @@ const verseGap = Math.max(20, Math.round(fs * 1.35));
 const verseColsList = [];
 let totalColsCount = 0;
 let maxColPixelH = 0;
+let allSingleCol = true;
 activeLines.forEach(lineObj => {
 const cols = buildCleanVerticalColumnsForVerse(lineObj.cells, maxCharsPerCol, charStep, segGapY, maxAllowedColH);
+if (cols.length > 1) allSingleCol = false;
 cols.forEach(colSegs => {
 const charCount = colSegs.reduce((acc, s) => acc + s.charNodes.length, 0);
 const colH = charCount * charStep + Math.max(0, colSegs.length - 1) * segGapY;
@@ -7381,7 +7584,7 @@ totalColsCount += cols.length;
 const numVerseGaps = Math.max(0, verseColsList.length - 1);
 const numIntraColGaps = Math.max(0, totalColsCount - verseColsList.length);
 const totalW = totalColsCount * colW + numIntraColGaps * colGap + numVerseGaps * verseGap;
-if ((totalW <= availPoemW && maxColPixelH <= maxAllowedColH) || fs === 12) {
+if ((allSingleCol && totalW <= availPoemW && maxColPixelH <= maxAllowedColH) || fs === 8) {
 chosenFontSize = fs;
 chosenColGap = colGap;
 chosenVerseGap = verseGap;
@@ -8494,6 +8697,9 @@ document.getElementById('modal-afk-disconnected-notice').classList.add('hidden')
 document.getElementById('tab-role-solo').addEventListener('click', () => {
 state.lobbyMode = 'solo';
 state.isHost = true;
+state.undercoverMode = false;
+state.doubleSpyPlayerId = null;
+state.spyGuessState = null;
 renderLobbyRoleTabs();
 });
 document.getElementById('tab-role-host').addEventListener('click', () => {
@@ -8609,9 +8815,16 @@ RoomSyncEngine.pushRoomState();
 const chkLobbyUcEl = document.getElementById('chk-lobby-undercover-mode');
 if (chkLobbyUcEl) {
 chkLobbyUcEl.addEventListener('change', (e) => {
-state.undercoverMode = !!e.target.checked;
-if (state.undercoverMode) {
+const turningOn = !!e.target.checked;
+if (turningOn) {
+state.preUndercoverShuffleOrder = !!state.shuffleOrder;
+state.undercoverMode = true;
 state.shuffleOrder = true;
+} else {
+state.undercoverMode = false;
+if (state.preUndercoverShuffleOrder === false) {
+state.shuffleOrder = false;
+}
 }
 const wChk = document.getElementById('chk-waiting-undercover-mode');
 if (wChk) wChk.checked = state.undercoverMode;
@@ -8627,28 +8840,51 @@ RoomSyncEngine.pushRoomState();
 const chkWaitingUndercover = document.getElementById('chk-waiting-undercover-mode');
 if (chkWaitingUndercover) {
 chkWaitingUndercover.addEventListener('change', (e) => {
-state.undercoverMode = !!e.target.checked;
-if (state.undercoverMode) {
+const turningOn = !!e.target.checked;
+if (turningOn) {
+state.preUndercoverShuffleOrder = !!state.shuffleOrder;
+state.preUndercoverAiCount = state.waitingSlots.filter(p => p.isBot).length;
+state.undercoverMode = true;
 state.shuffleOrder = true;
-const hasAi = state.waitingSlots.some(p => p.isBot);
-if (!hasAi) {
-const usedNames = new Set([
-...state.waitingSlots.map(p => p.name),
-...(state.restingPlayers || []).map(p => p.name)
-]);
-const nextAiName = AI_SPY_NAMES.find(n => !usedNames.has(n)) || `AIスパイ${state.waitingSlots.length + 1}号`;
+syncUndercoverAiCountToHumans();
+} else {
+state.undercoverMode = false;
+if (state.preUndercoverShuffleOrder === false) {
+state.shuffleOrder = false;
+}
+if (state.preUndercoverAiCount !== null && state.preUndercoverAiCount !== undefined) {
+const targetAi = Math.max(0, Number(state.preUndercoverAiCount) || 0);
+const curBots = state.waitingSlots.filter(p => p.isBot).length;
+if (curBots > targetAi) {
+let toRem = curBots - targetAi;
+for (let i = state.waitingSlots.length - 1; i >= 0 && toRem > 0; i--) {
+if (state.waitingSlots[i].isBot) {
+state.waitingSlots.splice(i, 1);
+toRem--;
+}
+}
+} else if (curBots < targetAi) {
+const usedNames = new Set([...state.waitingSlots.map(p => p.name), ...(state.restingPlayers || []).map(p => p.name)]);
+for (let i = curBots; i < targetAi; i++) {
+const nm = AI_SPY_NAMES.find(n => !usedNames.has(n)) || `AIスパイ${state.waitingSlots.length + 1}号`;
+usedNames.add(nm);
 state.waitingSlots.push({
-id: `ai-uc-${Date.now()}-${Math.random().toString(36).slice(2, 5)}`,
-name: nextAiName,
+id: `ai-restored-${Date.now()}-${i}`,
+name: nm,
 isBot: true,
 isHostPlayer: false,
 joinedAt: 0,
 color: PLAYER_COLORS[state.waitingSlots.length % PLAYER_COLORS.length]
 });
+}
+}
 recolorActiveWaitingSlots();
-state.playerCount = state.waitingSlots.length;
+state.playerCount = Math.max(1, state.waitingSlots.length);
+state.preUndercoverAiCount = null;
 }
 }
+const lUc = document.getElementById('chk-lobby-undercover-mode');
+if (lUc) lUc.checked = state.undercoverMode;
 renderWaitingRoom();
 RoomSyncEngine.pushRoomState();
 });
@@ -8774,7 +9010,7 @@ state.roundId = existingSnap.roundId || 1;
 state.inGame = !!existingSnap.inGame;
 state.roomPhase = existingSnap.roomPhase || 'waiting';
 state.activePlayers = activeSlots;
-state.lines = existingSnap.lines || [[], [], []];
+state.lines = normalizeLinesArray(existingSnap.lines);
 state.turnIndex = existingSnap.turnIndex || 0;
 state.currentLine = existingSnap.currentLine || 0;
 state.flowerUsed = !!existingSnap.flowerUsed;
@@ -8841,19 +9077,9 @@ state.lastCreatedRoomKey = newRoomKey;
 saveRoomToHistory(state.roomKeyword, state.roomId);
 syncWaitingSlotsWithCount();
 if (state.undercoverMode) {
+state.preUndercoverAiCount = state.waitingSlots.filter(p => p.isBot).length;
 state.shuffleOrder = true;
-if (!state.waitingSlots.some(p => p.isBot)) {
-state.waitingSlots.push({
-id: `ai-uc-${Date.now()}`,
-name: AI_SPY_NAMES[0],
-isBot: true,
-isHostPlayer: false,
-joinedAt: 0,
-color: PLAYER_COLORS[state.waitingSlots.length % PLAYER_COLORS.length]
-});
-recolorActiveWaitingSlots();
-state.playerCount = state.waitingSlots.length;
-}
+syncUndercoverAiCountToHumans();
 }
 if (state.chatMessages.length === 0) {
 addChatMessage('システム', `${state.hostName}さんが部屋を立てました。`, true);
@@ -8920,7 +9146,7 @@ state.roundId = remoteSnap.roundId || 1;
 state.inGame = !!remoteSnap.inGame;
 state.roomPhase = remoteSnap.roomPhase || 'waiting';
 state.activePlayers = activeSlots;
-state.lines = remoteSnap.lines || [[], [], []];
+state.lines = normalizeLinesArray(remoteSnap.lines);
 state.turnIndex = remoteSnap.turnIndex || 0;
 state.currentLine = remoteSnap.currentLine || 0;
 state.flowerUsed = !!remoteSnap.flowerUsed;
@@ -9015,6 +9241,10 @@ document.getElementById('modal-unmanned-room-notice').classList.add('hidden');
 });
 document.getElementById('btn-waiting-ai-plus').addEventListener('click', () => {
 if (!state.isHost) return;
+if (state.undercoverMode) {
+showToast('潜入捜査モードではAIスパイは人間と同数に固定されます', 'error');
+return;
+}
 const currentTotal = state.waitingSlots.length;
 if (currentTotal >= 17) {
 showToast('手番順の総人数（AI含む）は最大17人までです', 'error');
@@ -9042,8 +9272,8 @@ RoomSyncEngine.pushRoomState();
 document.getElementById('btn-waiting-ai-minus').addEventListener('click', () => {
 if (!state.isHost) return;
 const currentAiCount = state.waitingSlots.filter(p => p.isBot).length;
-if (state.undercoverMode && currentAiCount <= 1) {
-showToast('潜入捜査モードではAIスパイが最低1人必要です', 'error');
+if (state.undercoverMode) {
+showToast('潜入捜査モードではAIスパイは人間と同数に固定されます', 'error');
 return;
 }
 let lastBotIdx = -1;
@@ -9244,7 +9474,18 @@ updateEncyclopediaPaginationUI();
 }, { passive: true });
 }
 document.getElementById('btn-open-rules').addEventListener('click', () => {
+const rb = document.getElementById('modal-rules-scroll-body');
+if (rb) rb.scrollTop = 0;
 document.getElementById('modal-rules').classList.remove('hidden');
+});
+document.querySelectorAll('[data-rule-jump]').forEach(btn => {
+btn.addEventListener('click', () => {
+const targetId = btn.getAttribute('data-rule-jump');
+const targetEl = document.getElementById(targetId);
+if (targetEl && typeof targetEl.scrollIntoView === 'function') {
+targetEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+});
 });
 document.getElementById('btn-close-rules').addEventListener('click', () => {
 document.getElementById('modal-rules').classList.add('hidden');
@@ -9562,6 +9803,8 @@ recolorActiveWaitingSlots();
 state.doubleSpyPlayerId = null;
 state.spyGuessState = null;
 state.spyGuessLocalSelection = [];
+state.hackUsed = false;
+state.hackedTurnIndex = null;
 state.shownDoubleSpyRoundId = 0;
 state.shownSuspectDecidedRoundId = 0;
 state.shownUndercoverResultRoundId = 0;
@@ -9908,6 +10151,24 @@ document.getElementById('btn-back-lobby').classList.remove('hidden');
 renderResultScreenFromState();
 } catch (e) {}
 }
+const btnDoubleSpyHack = document.getElementById('btn-double-spy-hack');
+if (btnDoubleSpyHack) {
+btnDoubleSpyHack.addEventListener('click', () => {
+if (!state.undercoverMode || !state.inGame || state.isSpectating) return;
+if (!state.doubleSpyPlayerId || state.doubleSpyPlayerId !== state.myPlayerId) return;
+if (state.hackUsed) {
+showToast('ハッキングは1句につき1度しか使用できません', 'error');
+return;
+}
+state.hackUsed = true;
+state.hackedTurnIndex = state.turnIndex + 1;
+const targetP = state.activePlayers[state.hackedTurnIndex % state.activePlayers.length];
+const targetName = targetP ? targetP.name : '次の手番';
+showToast(`次の手番（${targetName}）をハッキングしました！`);
+renderGameView();
+RoomSyncEngine.pushRoomState('game');
+});
+}
 document.getElementById('btn-close-double-spy-notice').addEventListener('click', () => {
 document.getElementById('modal-double-spy-notice').classList.add('hidden');
 });
@@ -9957,7 +10218,46 @@ finalizeUndercoverAndShowResult();
 document.getElementById('btn-close-undercover-result').addEventListener('click', () => {
 document.getElementById('modal-undercover-result').classList.add('hidden');
 });
-document.getElementById('btn-share-x').addEventListener('click', shareToTwitterX);
+let pendingPostConsentAction = null;
+function openPostConsentModal(actionFn) {
+pendingPostConsentAction = actionFn;
+const m = document.getElementById('modal-post-consent-confirm');
+if (m) m.classList.remove('hidden');
+}
+const btnCancelConsent = document.getElementById('btn-cancel-post-consent');
+if (btnCancelConsent) {
+btnCancelConsent.addEventListener('click', () => {
+pendingPostConsentAction = null;
+document.getElementById('modal-post-consent-confirm').classList.add('hidden');
+});
+}
+const btnConfirmConsent = document.getElementById('btn-confirm-post-consent');
+if (btnConfirmConsent) {
+btnConfirmConsent.addEventListener('click', () => {
+const fn = pendingPostConsentAction;
+pendingPostConsentAction = null;
+document.getElementById('modal-post-consent-confirm').classList.add('hidden');
+if (typeof fn === 'function') fn();
+});
+}
+const btnToggleBd = document.getElementById('btn-toggle-result-breakdown');
+if (btnToggleBd) {
+btnToggleBd.addEventListener('click', () => {
+const bdBody = document.getElementById('result-breakdown-body');
+const bdIcon = document.getElementById('icon-toggle-result-breakdown');
+if (bdBody && bdIcon) {
+const isHidden = bdBody.classList.toggle('hidden');
+bdIcon.textContent = isHidden ? '▼ タップで表示' : '▲ 折りたたむ';
+}
+});
+}
+document.getElementById('btn-share-x').addEventListener('click', () => {
+if (state.lobbyMode !== 'solo') {
+openPostConsentModal(() => shareToTwitterX());
+} else {
+shareToTwitterX();
+}
+});
 document.getElementById('btn-copy-image-clipboard').addEventListener('click', async () => {
 const item = getTargetCanvasAndSuffix();
 const ok = await copyCanvasImageToClipboard(item.canvas);
