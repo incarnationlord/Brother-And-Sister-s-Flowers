@@ -15,11 +15,6 @@
 <meta name="twitter:image" content="https://placehold.jp/110/f4b4c4/27272a/1200x630.png?text=%E5%85%84%E5%A6%B9%E3%81%AE%E8%8A%B1">
 <meta name="description" content="兄妹の花で『詠み人知らず』ができる非公式Webサイト。１人から遊べます。">
 <title>［非公式］兄妹の花で詠み人知らず</title>
-<script>
-    window.YOMIBITO_CLOUD_CONFIG = {
-      databaseUrl: "https://brother-and-sister-s-flowers-default-rtdb.firebaseio.com/"
-    };
-</script>
 <script src="https://cdn.tailwindcss.com/3.4.17"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
@@ -163,10 +158,10 @@ outline-offset: 2px !important;
 </div>
 </div>
 <div class="flex items-center gap-2">
-<div id="header-user-name-badge" title="あなたの通り名" class="hidden h-9 min-w-[2.25rem] px-3 rounded-lg btn-usumomo flex items-center justify-center gap-1.5 font-bold serif-jp text-sm sm:text-base shadow-sm">
+<button type="button" id="header-user-name-badge" title="タップして通り名を変更（待機室）" class="hidden h-9 min-w-[2.25rem] px-3 rounded-lg btn-usumomo flex items-center justify-center gap-1.5 font-bold serif-jp text-sm sm:text-base shadow-sm transition active:scale-95">
 <span id="header-user-name-initial" class="w-5 h-5 rounded-full bg-white/80 text-zinc-800 text-[10px] font-bold flex items-center justify-center shrink-0 shadow-inner">0</span>
 <span id="header-user-name-text" class="truncate max-w-[9rem]">007</span>
-</div>
+</button>
 <button id="btn-open-room-history" class="px-3 py-1.5 text-xs sm:text-sm font-medium rounded-lg border border-zinc-300 bg-zinc-100 hover:bg-zinc-200 text-zinc-700 transition flex items-center gap-1.5 shadow-sm" title="入室した直近10部屋の一覧">
 入室記録
 </button>
@@ -361,7 +356,7 @@ ID変更
 </p>
 <div id="waiting-ai-count-controls" class="flex flex-wrap items-center gap-2 bg-zinc-200/80 px-3 py-1.5 rounded-xl border border-zinc-300">
 <span class="text-xs font-bold text-zinc-700">AIスパイ：<strong id="waiting-ai-count-label" class="text-zinc-900">3人</strong></span>
-<span id="waiting-ai-fixed-note" class="hidden text-[11px] font-bold text-pink-700">（潜入捜査モードでは人間と同数に固定）</span>
+<span id="waiting-ai-fixed-note" class="hidden text-[11px] text-zinc-600">（潜入捜査モードが有効です）</span>
 <button type="button" id="btn-waiting-ai-minus" class="w-7 h-7 rounded-lg border border-zinc-300 bg-white hover:bg-zinc-100 text-zinc-800 font-bold text-sm flex items-center justify-center shadow-sm transition" title="AIスパイを1人減らす">－</button>
 <button type="button" id="btn-waiting-ai-plus" class="w-7 h-7 rounded-lg btn-usumomo font-bold text-sm flex items-center justify-center shadow-sm transition" title="AIスパイを1人増やす">＋</button>
 </div>
@@ -1033,104 +1028,113 @@ OK
 </div>
 </div>
 <div id="modal-rules" class="fixed inset-0 z-50 hidden bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
-<div id="modal-rules-scroll-body" class="bg-[#f3f4f6] rounded-2xl max-w-3xl w-full max-h-[85vh] overflow-y-auto tanzaku-shadow border border-zinc-300 p-6 space-y-6">
-<div class="flex items-center justify-between border-b border-zinc-300 pb-3">
-<h3 class="text-xl font-bold serif-jp text-zinc-900">ルール</h3>
-<button type="button" id="btn-close-rules" class="w-8 h-8 rounded-lg bg-zinc-300/90 hover:bg-zinc-400 text-zinc-900 border border-zinc-400 text-lg font-bold flex items-center justify-center leading-none">×</button>
-</div>
-<nav class="p-3.5 rounded-xl bg-white border border-zinc-300 space-y-2">
-<div class="text-xs font-bold text-zinc-500">目次</div>
-<div class="flex flex-wrap gap-1.5 text-xs">
-<button type="button" data-rule-jump="rule-sec-basic" class="px-2.5 py-1 rounded-lg bg-zinc-100 hover:bg-pink-50 border border-zinc-300 text-zinc-800 font-bold transition">基本ルール</button>
-<button type="button" data-rule-jump="rule-sec-howto" class="px-2.5 py-1 rounded-lg bg-zinc-100 hover:bg-pink-50 border border-zinc-300 text-zinc-800 font-bold transition">あそびかた</button>
-<button type="button" data-rule-jump="rule-sec-solo" class="px-2.5 py-1 rounded-lg bg-zinc-100 hover:bg-pink-50 border border-zinc-300 text-zinc-800 font-bold transition">「ひとりで遊ぶ」とは</button>
-<button type="button" data-rule-jump="rule-sec-host" class="px-2.5 py-1 rounded-lg bg-zinc-100 hover:bg-pink-50 border border-zinc-300 text-zinc-800 font-bold transition">「部屋を立てる」とは</button>
-<button type="button" data-rule-jump="rule-sec-guest" class="px-2.5 py-1 rounded-lg bg-zinc-100 hover:bg-pink-50 border border-zinc-300 text-zinc-800 font-bold transition">「合言葉で入室」とは</button>
-<button type="button" data-rule-jump="rule-sec-free" class="px-2.5 py-1 rounded-lg bg-zinc-100 hover:bg-pink-50 border border-zinc-300 text-zinc-800 font-bold transition">「自由記述モード」とは</button>
-<button type="button" data-rule-jump="rule-sec-undercover" class="px-2.5 py-1 rounded-lg bg-zinc-100 hover:bg-pink-50 border border-zinc-300 text-zinc-800 font-bold transition">「潜入捜査モード」とは</button>
+<div class="bg-[#f3f4f6] rounded-2xl max-w-3xl w-full max-h-[85vh] flex flex-col tanzaku-shadow border border-zinc-300 overflow-hidden">
+<div id="modal-rules-scroll-body" class="relative flex-1 overflow-y-auto px-5 sm:px-6 py-5 space-y-6">
+<nav id="modal-rules-toc" class="p-2.5 sm:p-3 rounded-xl bg-white border border-zinc-300 space-y-1.5">
+<div class="text-[11px] font-bold text-zinc-500">目次</div>
+<div class="flex flex-wrap gap-1.5 text-[11px] sm:text-xs">
+<button type="button" data-rule-jump="rule-sec-basic" class="px-2.5 py-1.5 rounded-lg bg-zinc-100 hover:bg-zinc-200 border border-zinc-300 text-zinc-900 font-bold transition">基本ルール</button>
+<button type="button" data-rule-jump="rule-sec-howto" class="px-2.5 py-1.5 rounded-lg bg-zinc-100 hover:bg-zinc-200 border border-zinc-300 text-zinc-900 font-bold transition">あそびかた</button>
+<button type="button" data-rule-jump="rule-sec-solo" class="px-2.5 py-1.5 rounded-lg bg-zinc-100 hover:bg-zinc-200 border border-zinc-300 text-zinc-900 font-bold transition">ひとりで遊ぶ</button>
+<button type="button" data-rule-jump="rule-sec-host" class="px-2.5 py-1.5 rounded-lg bg-zinc-100 hover:bg-zinc-200 border border-zinc-300 text-zinc-900 font-bold transition">部屋を立てる</button>
+<button type="button" data-rule-jump="rule-sec-guest" class="px-2.5 py-1.5 rounded-lg bg-zinc-100 hover:bg-zinc-200 border border-zinc-300 text-zinc-900 font-bold transition">合言葉で入室</button>
+<button type="button" data-rule-jump="rule-sec-free" class="px-2.5 py-1.5 rounded-lg bg-zinc-100 hover:bg-zinc-200 border border-zinc-300 text-zinc-900 font-bold transition">自由記述モード</button>
+<button type="button" data-rule-jump="rule-sec-undercover" class="px-2.5 py-1.5 rounded-lg bg-zinc-100 hover:bg-zinc-200 border border-zinc-300 text-zinc-900 font-bold transition">潜入捜査モード</button>
 </div>
 </nav>
-<div id="rule-sec-basic" class="space-y-2 text-sm text-zinc-700 leading-relaxed scroll-mt-4">
+<div id="rule-sec-basic" class="space-y-2 text-sm text-zinc-700 leading-relaxed scroll-mt-3">
 <h4 class="font-bold text-zinc-900 serif-jp text-base border-b border-zinc-200 pb-1">基本ルール</h4>
 <p class="text-xs sm:text-sm">
-参加者は順番に１音ずつ文字を入力し、全員で五・七・五を完成させます。ただし、句のなかには『兄妹の花』の名前を入れなければなりません。
+参加者は順番に<strong class="text-zinc-900">１音ずつ</strong>文字を入力し、全員で<strong class="text-zinc-900">五・七・五</strong>を完成させます。ただし、句のなかには<strong class="text-[#c83c2b]">『兄妹の花』の名前</strong>を入れなければなりません。
 </p>
 </div>
-<div id="rule-sec-howto" class="space-y-2 text-sm text-zinc-700 leading-relaxed scroll-mt-4">
+<div id="rule-sec-howto" class="space-y-2 text-sm text-zinc-700 leading-relaxed scroll-mt-3">
 <h4 class="font-bold text-zinc-900 serif-jp text-base border-b border-zinc-200 pb-1">あそびかた</h4>
-<div class="space-y-1.5 text-xs sm:text-sm">
-<p>文字の入力は、一度につき、ひらがな１音ずつ。音で数えるため、「っ」や「ー」は１音。「ょ」は「きょ」などで１音になります。</p>
-<p>一句にひとつ、花の名前を入れる必要があります。そのときは、文字入力欄の下にある、花の名前一覧をタップ。選んだ名前を一括で入力できます。</p>
-<p>完成した一句は、自動で画像になります。お気に入りの作品ができましたら、是非見せびらかしてください。</p>
-</div>
-</div>
-<div id="rule-sec-solo" class="space-y-2 text-sm text-zinc-700 leading-relaxed scroll-mt-4">
-<h4 class="font-bold text-zinc-900 serif-jp text-base border-b border-zinc-200 pb-1">「ひとりで遊ぶ」とは</h4>
 <div class="space-y-2 text-xs sm:text-sm">
-<p>AIスパイと協力して一句をつくるモードです。<br>ひとりで、手軽に、詠み人知らずが楽しめます。</p>
+<p>文字の入力は、一度につき、<strong class="text-zinc-900">ひらがな１音</strong>ずつ。音で数えるため、「っ」や「ー」は１音。「ょ」は「きょ」などで１音になります。</p>
+<p>一句にひとつ、<strong class="text-[#c83c2b]">花の名前</strong>を入れる必要があります。そのときは、文字入力欄の下にある、<strong class="text-zinc-900">花の名前一覧をタップ</strong>。選んだ名前を<strong class="text-zinc-900">一括で入力</strong>できます。</p>
+<p>完成した一句は、<strong class="text-zinc-900">自動で画像</strong>になります。お気に入りの作品ができましたら、是非見せびらかしてください。</p>
+</div>
+</div>
+<div id="rule-sec-solo" class="space-y-2 text-sm text-zinc-700 leading-relaxed scroll-mt-3">
+<h4 class="font-bold text-zinc-900 serif-jp text-base border-b border-zinc-200 pb-1">ひとりで遊ぶ</h4>
+<div class="space-y-2 text-xs sm:text-sm">
+<p><strong class="text-zinc-900">AIスパイと協力</strong>して一句をつくるモードです。<br>ひとりで、手軽に、詠み人知らずが楽しめます。</p>
 <p>簡単に、手順を紹介します。</p>
-<p>まず、自分の通り名となる名前を入力したら、一緒に一句をつくるAIスパイの人数を決めましょう。はじめての場合は、１〜３人程度がおすすめ。</p>
-<p>次に、お題となる花を設定します。全７種類の花から、決めきれない場合は「ランダム」と書かれたボタンを押してみてください。自動でお題が選出されます。</p>
-<p>設定を終えたら、「開始する」を押してみましょう。</p>
-<p>上の項目で説明した「<button type="button" data-rule-jump="rule-sec-howto" class="text-pink-800 underline font-bold hover:text-pink-600">あそびかた</button>」に則って、入力欄に文字を入れましょう。横の「送信」ボタンを押すと、音数がひとつ埋まります。</p>
-<p>AIスパイと手番順を回しながら、五・七・五を完成させましょう。</p>
-<p>音数がすべて埋まると、一句が完成。出来上がった一句をしたためた、短冊が表示されます。気に入った作品は、投稿や保存をしてもよいですね。</p>
-<p>また同じ設定で遊びたいときは「もう一度遊ぶ」を、設定を変えて遊びたいときは、「タイトルへ戻る」を押してください。</p>
+<ol class="list-decimal pl-5 space-y-1.5">
+<li>まず、自分の通り名となる名前を入力したら、一緒に一句をつくる<strong class="text-zinc-900">AIスパイの人数</strong>を決めましょう。はじめての場合は、１〜３人程度がおすすめ。</li>
+<li>次に、<strong class="text-zinc-900">お題となる花</strong>を設定します。全７種類の花から、決めきれない場合は「ランダム」と書かれたボタンを押してみてください。自動でお題が選出されます。</li>
+<li>設定を終えたら、「開始する」を押してみましょう。</li>
+<li>上の項目で説明した「<button type="button" data-rule-jump="rule-sec-howto" class="text-[#c83c2b] underline font-bold">あそびかた</button>」に則って、入力欄に文字を入れましょう。横の「送信」ボタンを押すと、音数がひとつ埋まります。</li>
+<li>AIスパイと手番順を回しながら、<strong class="text-zinc-900">五・七・五</strong>を完成させましょう。</li>
+<li>音数がすべて埋まると、一句が完成。出来上がった一句をしたためた、<strong class="text-zinc-900">短冊が表示</strong>されます。気に入った作品は、投稿や保存をしてもよいですね。</li>
+<li>また同じ設定で遊びたいときは「もう一度遊ぶ」を、設定を変えて遊びたいときは、「タイトルへ戻る」を押してください。</li>
+</ol>
 <p>以上が基本的な手順となります。楽しんで！</p>
 </div>
 </div>
-<div id="rule-sec-host" class="space-y-2 text-sm text-zinc-700 leading-relaxed scroll-mt-4">
-<h4 class="font-bold text-zinc-900 serif-jp text-base border-b border-zinc-200 pb-1">「部屋を立てる」とは</h4>
+<div id="rule-sec-host" class="space-y-2 text-sm text-zinc-700 leading-relaxed scroll-mt-3">
+<h4 class="font-bold text-zinc-900 serif-jp text-base border-b border-zinc-200 pb-1">部屋を立てる</h4>
 <div class="space-y-2 text-xs sm:text-sm">
-<p>仲間と協力して一句をつくるモードです。<br>みんなで、一緒に、詠み人知らずが楽しめます。ボイスチャットなどを繋いでもよいでしょう。</p>
+<p><strong class="text-zinc-900">仲間と協力</strong>して一句をつくるモードです。<br>みんなで、一緒に、詠み人知らずが楽しめます。ボイスチャットなどを繋いでもよいでしょう。</p>
 <p>簡単に、手順を紹介します。</p>
-<p>まず、自分の通り名となる名前を入力したら、部屋の合言葉を設定します。自動生成された、そのままでも構いません。</p>
-<p>次に、お題となる花を設定します。これは後から変更できるので、とりあえずで選びましょう。<br>全７種類の花から、決めきれない場合は「ランダム」と書かれたボタンを押してみてください。自動でお題が選出されます。</p>
-<p>設定を終えたら、「部屋を立てて待機室に進む」を押します。</p>
-<p>待機室に移ったら、参加者を集いましょう。合言葉をコピーしたら、知り合い、不知り合いを問わず、送り散らしてやりましょう！　宴です！！<br>なお、合言葉は、末尾の数字を含めて送付するようにしてください。</p>
-<p>在籍者一覧では、参加する人間のほかに、AIスパイを追加することができます。頻繁に手番が回ってくると大変だよ、というときなどは、適当な人数を用意するとよいでしょう。<br>また、手番順の入れ替えもできます。迷ったら、シャッフルの項目にチェックを入れてみてください。</p>
-<p>お題設定、参加者に問題がなければ、「開始する」のボタンを押します。<br>開始する前に、チャットなどで参加者に確認を取るとよいでしょう。</p>
-<p>上の項目で説明した「<button type="button" data-rule-jump="rule-sec-howto" class="text-pink-800 underline font-bold hover:text-pink-600">あそびかた</button>」に則って、入力欄に文字を入れましょう。横の「送信」ボタンを押すと、音数がひとつ埋まります。</p>
-<p>AIスパイと手番順を回しながら、五・七・五を完成させましょう。</p>
-<p>音数がすべて埋まると、一句が完成。出来上がった一句をしたためた、短冊が表示されます。気に入った作品は、投稿や保存をしてもよいですね。ただし、投稿の際はトラブル回避のため、参加者の了承を得るようにしましょう。</p>
-<p>また同じ部屋で遊びたいときは「待機室に戻る」を、退室したいときは、「タイトルへ戻る」を押してください。</p>
-<p>以上が基本的な手順となります。主催者には、様々の権限があります。全員が楽しめる部屋づくりを心がけましょう。楽しんで！</p>
+<ol class="list-decimal pl-5 space-y-1.5">
+<li>まず、自分の通り名となる名前を入力したら、部屋の<strong class="text-zinc-900">合言葉</strong>を設定します。自動生成された、そのままでも構いません。</li>
+<li>次に、<strong class="text-zinc-900">お題となる花</strong>を設定します。これは後から変更できるので、とりあえずで選びましょう。<br>全７種類の花から、決めきれない場合は「ランダム」と書かれたボタンを押してみてください。自動でお題が選出されます。</li>
+<li>設定を終えたら、「部屋を立てて待機室に進む」を押します。</li>
+<li>待機室に移ったら、参加者を集いましょう。合言葉をコピーしたら、知り合い、不知り合いを問わず、送り散らしてやりましょう！　宴です！！<br>なお、合言葉は、<strong class="text-[#c83c2b]">末尾の数字を含めて送付</strong>するようにしてください。</li>
+<li>在籍者一覧では、参加する人間のほかに、<strong class="text-zinc-900">AIスパイを追加</strong>することができます。頻繁に手番が回ってくると大変だよ、というときなどは、適当な人数を用意するとよいでしょう。<br>また、<strong class="text-zinc-900">手番順の入れ替え</strong>もできます。迷ったら、シャッフルの項目にチェックを入れてみてください。</li>
+<li>お題設定、参加者に問題がなければ、「開始する」のボタンを押します。<br>開始する前に、チャットなどで参加者に確認を取るとよいでしょう。</li>
+<li>上の項目で説明した「<button type="button" data-rule-jump="rule-sec-howto" class="text-[#c83c2b] underline font-bold">あそびかた</button>」に則って、入力欄に文字を入れましょう。横の「送信」ボタンを押すと、音数がひとつ埋まります。</li>
+<li>AIスパイと手番順を回しながら、五・七・五を完成させましょう。</li>
+<li>音数がすべて埋まると、一句が完成。出来上がった一句をしたためた、短冊が表示されます。気に入った作品は、投稿や保存をしてもよいですね。ただし、<strong class="text-[#c83c2b]">投稿の際はトラブル回避のため、参加者の了承を得る</strong>ようにしましょう。</li>
+<li>また同じ部屋で遊びたいときは「待機室に戻る」を、退室したいときは、「タイトルへ戻る」を押してください。</li>
+</ol>
+<p>以上が基本的な手順となります。<strong class="text-zinc-900">主催者には、様々の権限</strong>があります。全員が楽しめる部屋づくりを心がけましょう。楽しんで！</p>
 </div>
 </div>
-<div id="rule-sec-guest" class="space-y-2 text-sm text-zinc-700 leading-relaxed scroll-mt-4">
-<h4 class="font-bold text-zinc-900 serif-jp text-base border-b border-zinc-200 pb-1">「合言葉で入室」とは</h4>
+<div id="rule-sec-guest" class="space-y-2 text-sm text-zinc-700 leading-relaxed scroll-mt-3">
+<h4 class="font-bold text-zinc-900 serif-jp text-base border-b border-zinc-200 pb-1">合言葉で入室</h4>
 <div class="space-y-2 text-xs sm:text-sm">
-<p>ひとの立てた部屋に入り、仲間と協力して一句をつくるモードです。<br>みんなで、一緒に、詠み人知らずが楽しめます。ボイスチャットなどを繋いでもよいでしょう。</p>
+<p>ひとの立てた部屋に入り、<strong class="text-zinc-900">仲間と協力</strong>して一句をつくるモードです。<br>みんなで、一緒に、詠み人知らずが楽しめます。ボイスチャットなどを繋いでもよいでしょう。</p>
 <p>簡単に、手順を紹介します。</p>
-<p>まず、部屋の合言葉を入力します。部屋の主催者などから送られた合言葉を、「合言葉」欄に貼り付けましょう。このとき、４桁の数字も含めて構いません。</p>
-<p>自分の通り名となる名前を入力したら、「入室する」を押します。</p>
-<p>待機室で、主催者の開始まで待ちましょう。既に始まっている場合は、見学することもできます。</p>
-<p>参加した状態で主催者が開始をしたら、画面が自動的に切り替わります。</p>
-<p>上の項目で説明した「<button type="button" data-rule-jump="rule-sec-howto" class="text-pink-800 underline font-bold hover:text-pink-600">あそびかた</button>」に則って、入力欄に文字を入れましょう。横の「送信」ボタンを押すと、音数がひとつ埋まります。</p>
-<p>AIスパイと手番順を回しながら、五・七・五を完成させましょう。</p>
-<p>音数がすべて埋まると、一句が完成。出来上がった一句をしたためた、短冊が表示されます。気に入った作品は、投稿や保存をしてもよいですね。ただし、投稿の際はトラブル回避のため、参加者の了承を得るようにしましょう。</p>
-<p>また同じ部屋で遊びたいときは「待機室に戻る」を、退室したいときは、「タイトルへ戻る」を押してください。</p>
+<ol class="list-decimal pl-5 space-y-1.5">
+<li>まず、部屋の<strong class="text-zinc-900">合言葉を入力</strong>します。部屋の主催者などから送られた合言葉を、「合言葉」欄に貼り付けましょう。このとき、<strong class="text-zinc-900">４桁の数字も含めて</strong>構いません。</li>
+<li>自分の通り名となる名前を入力したら、「入室する」を押します。</li>
+<li>待機室で、主催者の開始まで待ちましょう。既に始まっている場合は、<strong class="text-zinc-900">見学</strong>することもできます。</li>
+<li>参加した状態で主催者が開始をしたら、<strong class="text-zinc-900">画面が自動的に切り替わり</strong>ます。</li>
+<li>上の項目で説明した「<button type="button" data-rule-jump="rule-sec-howto" class="text-[#c83c2b] underline font-bold">あそびかた</button>」に則って、入力欄に文字を入れましょう。横の「送信」ボタンを押すと、音数がひとつ埋まります。</li>
+<li>AIスパイと手番順を回しながら、五・七・五を完成させましょう。</li>
+<li>音数がすべて埋まると、一句が完成。出来上がった一句をしたためた、短冊が表示されます。気に入った作品は、投稿や保存をしてもよいですね。ただし、<strong class="text-[#c83c2b]">投稿の際はトラブル回避のため、参加者の了承を得る</strong>ようにしましょう。</li>
+<li>また同じ部屋で遊びたいときは「待機室に戻る」を、退室したいときは、「タイトルへ戻る」を押してください。</li>
+</ol>
 <p>以上が基本的な手順となります。楽しんで！</p>
 </div>
 </div>
-<div id="rule-sec-free" class="space-y-2 text-sm text-zinc-700 leading-relaxed scroll-mt-4">
-<h4 class="font-bold text-zinc-900 serif-jp text-base border-b border-zinc-200 pb-1">「自由記述モード」とは</h4>
+<div id="rule-sec-free" class="space-y-2 text-sm text-zinc-700 leading-relaxed scroll-mt-3">
+<h4 class="font-bold text-zinc-900 serif-jp text-base border-b border-zinc-200 pb-1">自由記述モード</h4>
 <div class="space-y-2 text-xs sm:text-sm">
-<p>このモードは、裏ルールです。<br>詠み人知らずの、ひとり１音の制限を撤廃します。複数文字あり、漢字や記号ありの無法地帯。自由な創作を楽しみたいときは。<br>また、真面目モードの項目を外すことで、AIスパイも好き勝手に語り始めます。放埒に紡ぎ合いましょう。</p>
+<p>このモードは、裏ルールです。<br>詠み人知らずの、<strong class="text-[#c83c2b]">ひとり１音の制限を撤廃</strong>します。複数文字あり、漢字や記号ありの無法地帯。自由な創作を楽しみたいときは。<br>また、<strong class="text-zinc-900">真面目モードの項目を外す</strong>ことで、AIスパイも好き勝手に語り始めます。放埒に紡ぎ合いましょう。</p>
 </div>
 </div>
-<div id="rule-sec-undercover" class="space-y-2 text-sm text-zinc-700 leading-relaxed scroll-mt-4">
-<h4 class="font-bold text-zinc-900 serif-jp text-base border-b border-zinc-200 pb-1">「潜入捜査モード」とは</h4>
-<div class="space-y-2 text-xs sm:text-sm">
-<p>このモードは、人狼ゲームです。参加者が２人以上必要となります。<br>全員が匿名になって一句をつくるのですが、そのなかにはAIスパイが紛れています。完成した一句を見ながら、誰がAIスパイなのかを当てましょう。</p>
-<p>開始時には、手番順が自動的にシャッフルされ、かつ、名前では人間かAIスパイかの判別がつかなくなります。<br>また、入力には８秒の制限時間が設けられます。この時間を超過すると、AIによって勝手に入力されてしまうため、AIスパイのような言葉選びになってしまうかもしれません。</p>
-<p>参加者が３人以上のとき、ひとりだけ二重スパイが選ばれます。<br>二重スパイには、AIスパイが摘発されないよう工作するという秘密任務があります。無論、自分が摘発されてもいけません。ただし、それ以外の参加者に、二重スパイを摘発するメリットはありません。<br>二重スパイは「ハッキング」ボタンにより、１句につき一度だけ次の手番の人（人間・AI問わず）の入力権を奪い、その人として入力することができます。<br>二重スパイが入力の制限時間を超過すると、実名が晒されてしまいます。AIスパイでないことが確定するため、不利になることでしょう。</p>
-<p>一句が完成したら、投票に移ります。これまでの入力結果を見ながら、AIスパイが誰かを予想し、多数決で被疑者を選出します。<br>ここで、二重スパイには投票権はありません。</p>
-<p>被疑者にAIスパイがすべて含まれていたら、任務成功です。ただし、被疑者の過半数が参加者だった場合は、冤罪事件として失敗となります。<br>二重スパイは、自分が生き残り、かつ、AIスパイがひとりでも容疑を逃れたら、任務成功です。</p>
+<div id="rule-sec-undercover" class="space-y-2 text-sm text-zinc-700 leading-relaxed scroll-mt-3">
+<h4 class="font-bold text-zinc-900 serif-jp text-base border-b border-zinc-200 pb-1">潜入捜査モード</h4>
+<div class="space-y-2.5 text-xs sm:text-sm">
+<p>このモードは、人狼ゲームです。<strong class="text-zinc-900">参加者が２人以上</strong>必要となります。<br>全員が匿名になって一句をつくるのですが、そのなかには<strong class="text-[#c83c2b]">AIスパイ</strong>が紛れています。完成した一句を見ながら、誰がAIスパイなのかを当てましょう。</p>
+<p>開始時には、手番順が自動的にシャッフルされ、かつ、名前では人間かAIスパイかの判別がつかなくなります。<br>また、入力には<strong class="text-[#c83c2b]">８秒の制限時間</strong>が設けられます。この時間を超過すると、AIによって勝手に入力されてしまうため、AIスパイのような言葉選びになってしまうかもしれません。</p>
+<p>参加者が３人以上のとき、ひとりだけ<strong class="text-[#c83c2b]">二重スパイ</strong>が選ばれます。</p>
+<p>二重スパイには、<strong class="text-zinc-900">AIスパイが摘発されないよう工作する</strong>、という秘密任務が与えられます。<br>無論、自分が摘発されてもいけませんが、それ以外の参加者には、二重スパイを摘発するメリットはありません。<br>二重スパイが入力の制限時間を超過すると、<strong class="text-[#c83c2b]">実名が晒されてしまいます</strong>。AIスパイでないことが確定するため、任務成功の確率が下がってしまいます。</p>
+<p>二重スパイは「ハッキング」ボタンにより、一度だけ、次の手番の<strong class="text-zinc-900">入力権を奪う</strong>ことができます。ただし、その相手が人間かAIスパイかは、わかりません。</p>
+<p>一句が完成したら、投票に移ります。これまでの入力結果を見ながら、AIスパイが誰かを予想し、<strong class="text-zinc-900">多数決で被疑者を選出</strong>します。<br>ここで、二重スパイには<strong class="text-[#c83c2b]">投票権はありません</strong>。</p>
+<p>被疑者にAIスパイがすべて含まれていたら、<strong class="text-zinc-900">任務成功</strong>です。ただし、被疑者の<strong class="text-[#c83c2b]">過半数が参加者だった場合は、冤罪事件として失敗</strong>となります。<br>二重スパイは、自分が生き残り、かつ、AIスパイがひとりでも容疑を逃れたら、<strong class="text-zinc-900">任務成功</strong>です。</p>
 </div>
 </div>
-<div class="pt-3 border-t border-zinc-300 text-right">
-<button type="button" id="btn-close-rules-bottom" class="px-5 py-2 rounded-xl btn-usumomo font-bold text-sm">
+</div>
+<div class="px-5 sm:px-6 py-3 border-t border-zinc-300 bg-[#f3f4f6] flex items-center justify-end gap-2 shrink-0">
+<button type="button" id="btn-rules-back-toc" class="px-4 py-2 rounded-xl border border-zinc-400 bg-white hover:bg-zinc-200 text-zinc-800 font-bold text-xs sm:text-sm shadow-sm transition">
+▲ 目次に戻る
+</button>
+<button type="button" id="btn-close-rules-bottom" class="px-5 py-2 rounded-xl btn-usumomo font-bold text-sm shadow-sm">
 閉じる
 </button>
 </div>
@@ -1174,6 +1178,9 @@ OK
 <p>下に表示されている「<strong>incarnationlord.gith...︙</strong>」の「<strong>︙</strong>」を押し、「<strong>ブラウザで開く</strong>」を選択してください。</p>
 </div>
 <div class="flex flex-col gap-2 pt-1">
+<a id="link-inapp-open-x" href="#" target="_blank" rel="noopener noreferrer" class="hidden w-full py-2.5 px-4 rounded-xl bg-zinc-900 hover:bg-zinc-800 text-white font-bold text-xs sm:text-sm shadow-sm transition text-center">
+<span class="font-sans font-black">X</span> X（Twitter）の投稿画面を開く
+</a>
 <button type="button" id="btn-close-inapp-save-bottom" class="w-full py-2.5 px-4 rounded-xl btn-usumomo font-bold text-xs sm:text-sm shadow-sm transition">
 閉じる
 </button>
@@ -1254,6 +1261,39 @@ AIスパイ、そしてあなた自身が摘発されないように、立ち振
 <button type="button" id="btn-confirm-post-consent" class="px-6 py-2 rounded-xl btn-usumomo font-bold text-sm shadow-sm">
 はい
 </button>
+</div>
+</div>
+</div>
+<div id="modal-ban-appeal-host" class="fixed inset-0 z-50 hidden bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+<div class="bg-[#f3f4f6] rounded-2xl max-w-md w-full tanzaku-shadow border border-zinc-300 p-6 space-y-5">
+<h3 class="text-lg font-bold serif-jp text-zinc-900 text-center">復帰の申請</h3>
+<p id="ban-appeal-host-message" class="text-sm text-zinc-800 text-center font-bold leading-relaxed"></p>
+<div class="flex items-center justify-end gap-3 pt-2 border-t border-zinc-300">
+<button type="button" id="btn-reject-ban-appeal" class="px-5 py-2 rounded-xl border border-zinc-300 bg-white hover:bg-zinc-200 text-zinc-700 font-bold text-sm">拒否する</button>
+<button type="button" id="btn-approve-ban-appeal" class="px-6 py-2 rounded-xl btn-usumomo font-bold text-sm shadow-sm">受け入れる</button>
+</div>
+</div>
+</div>
+<div id="modal-ban-appeal-wait" class="fixed inset-0 z-50 hidden bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+<div class="bg-[#f3f4f6] rounded-2xl max-w-md w-full tanzaku-shadow border border-zinc-300 p-6 space-y-5">
+<h3 class="text-lg font-bold serif-jp text-zinc-900 text-center">入室承認待ち</h3>
+<p id="ban-appeal-wait-message" class="text-sm text-zinc-800 text-center font-medium leading-relaxed">過去にこの部屋から追放されているため、主催者の承認を待っています…</p>
+<div class="flex items-center justify-center pt-2 border-t border-zinc-300">
+<button type="button" id="btn-cancel-ban-appeal-wait" class="px-5 py-2 rounded-xl border border-zinc-300 bg-white hover:bg-zinc-200 text-zinc-700 font-bold text-sm">キャンセル</button>
+</div>
+</div>
+</div>
+<div id="modal-quick-rename" class="fixed inset-0 z-50 hidden bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+<div class="bg-[#f3f4f6] rounded-2xl max-w-sm w-full tanzaku-shadow border border-zinc-300 p-5 space-y-4">
+<h3 class="text-base font-bold serif-jp text-zinc-900">通り名の変更</h3>
+<div class="space-y-1.5">
+<label for="input-quick-rename" class="text-xs font-bold text-zinc-700 block">新しい通り名（20文字まで）</label>
+<input id="input-quick-rename" type="text" maxlength="20" class="w-full px-3.5 py-2.5 rounded-xl border border-zinc-300 focus:border-[#e59bb0] focus:outline-none text-sm font-bold text-zinc-900 bg-white">
+<p id="quick-rename-error" class="text-xs text-red-600 font-bold hidden"></p>
+</div>
+<div class="flex items-center justify-end gap-2 pt-2 border-t border-zinc-300">
+<button type="button" id="btn-cancel-quick-rename" class="px-4 py-2 rounded-xl border border-zinc-300 bg-white hover:bg-zinc-200 text-zinc-700 font-bold text-xs">キャンセル</button>
+<button type="button" id="btn-confirm-quick-rename" class="px-5 py-2 rounded-xl btn-usumomo font-bold text-xs shadow-sm">変更する</button>
 </div>
 </div>
 </div>
@@ -1692,36 +1732,7 @@ return true;
 if (st && st.enterCount >= 2 && st.leaveCount >= 1 && !hasFreshHeartbeat) {
 return true;
 }
-const fakeVariantNames = new Set();
-Object.keys(chatStats).forEach(k => {
-if (k !== name && k.replace(/^偽+/, '') === baseName && k.startsWith('偽')) fakeVariantNames.add(k);
-});
-allHumanNamesInSlots.forEach(k => {
-if (k !== name && k.replace(/^偽+/, '') === baseName && k.startsWith('偽')) fakeVariantNames.add(k);
-});
-if (name === baseName && fakeVariantNames.size > 0) {
-for (const fName of fakeVariantNames) {
-const fSt = chatStats[fName];
-if (fSt && fSt.lastEvent === 'leave' && !hasFreshHeartbeat && (st ? st.lastActiveIdx : -1) < fSt.lastEnterIdx) {
-return true;
-}
-if (allHumanNamesInSlots.has(fName) && !hasFreshHeartbeat && (st ? st.lastActiveIdx : -1) < (fSt ? fSt.lastEnterIdx : 999999)) {
-return true;
-}
-if (p.id === 'host-0' && (!p.joinedAt || p.joinedAt <= 1) && !lastSeenTs) {
-return true;
-}
-}
-}
-if (name !== baseName) {
-if (baseSt && baseSt.lastEvent === 'leave' && !hasFreshHeartbeat && (st ? st.lastActiveIdx : -1) < baseSt.lastLeaveIdx) {
-return true;
-}
-const baseActiveInSlots = allInitialHumans.some(h => h !== p && String(h.name || '').trim() === baseName && ((h.lastSeen && now - h.lastSeen <= PRESENCE_TIMEOUT_MS) || (isLiveRoom && isPlayerMe(h))));
-if (baseActiveInSlots && !hasFreshHeartbeat) {
-return true;
-}
-}
+
 if (lastSeenTs === 0) {
 if (!p.joinedAt || p.joinedAt <= 1) {
 if ((snap.updatedAt && now - snap.updatedAt > PRESENCE_TIMEOUT_MS) || allInitialHumans.length > 1 || (Array.isArray(snap.chatMessages) && snap.chatMessages.length > 1)) {
@@ -2167,6 +2178,8 @@ flowerUsed: state.flowerUsed,
 flowerUsedManually: !!state.flowerUsedManually,
 flowerUsedInfo: state.flowerUsedInfo,
 finishVoteState: state.finishVoteState,
+bannedUsers: state.bannedUsers || [],
+joinRequests: state.joinRequests || [],
 updatedAt: Date.now(),
 updatedBy: state.clientId
 };
@@ -2341,6 +2354,8 @@ state.waitingSlots.push(restoredMe);
 }
 }
 state.spectators = normalizeArrayField(snapshot.spectators);
+state.bannedUsers = normalizeArrayField(snapshot.bannedUsers);
+state.joinRequests = normalizeArrayField(snapshot.joinRequests);
 state.emptySince = snapshot.emptySince || null;
 state.selectedFlowerId = snapshot.selectedFlowerId || state.selectedFlowerId;
 state.shuffleOrder = !!snapshot.shuffleOrder;
@@ -2403,8 +2418,12 @@ const isStaleTurnRollback = sameRoundGame && (
 );
 const isStrictlyAhead = sameRoundGame && ((snapshot.turnIndex !== undefined && snapshot.turnIndex > state.turnIndex) || (snapshot.turnIndex === state.turnIndex && snapCellCount > localCellCount));
 const isWithinLocalGrace = sameRoundGame && !isStrictlyAhead && state.lastLocalGameActionAt && (Date.now() - state.lastLocalGameActionAt < 3500) && (snapshot.updatedAt && snapshot.updatedAt < state.lastLocalGameActionAt);
-if (!isStaleTurnRollback && !isWithinLocalGrace) {
-state.activePlayers = mergeLastSeen(normalizeArrayField(snapshot.activePlayers));
+const keepResultPlayers = !document.getElementById('view-result').classList.contains('hidden') && snapshot.roomPhase === 'waiting' && normalizeArrayField(snapshot.activePlayers).length === 0;
+if (!isStaleTurnRollback && !isWithinLocalGrace && !keepResultPlayers) {
+const nextActivePlayers = mergeLastSeen(normalizeArrayField(snapshot.activePlayers));
+if (nextActivePlayers.length > 0 || snapshot.roomPhase !== 'result') {
+state.activePlayers = nextActivePlayers;
+}
 sanitizeCurrentStatePlayers();
 state.turnIndex = snapshot.turnIndex !== undefined ? snapshot.turnIndex : state.turnIndex;
 state.currentLine = snapshot.currentLine !== undefined ? snapshot.currentLine : state.currentLine;
@@ -2550,6 +2569,17 @@ document.getElementById('modal-undercover-result').classList.add('hidden');
 document.getElementById('view-waiting').classList.remove('hidden');
 renderWaitingRoom();
 }
+}
+const amIBannedNow = !state.isHost && (state.bannedUsers || []).some(b =>
+b && ((b.deviceUid && b.deviceUid === state.deviceUid) || (b.clientId && b.clientId === state.clientId))
+);
+const amIStillInRoom = (state.waitingSlots || []).some(p => !p.isBot && isPlayerMe(p))
+|| (state.restingPlayers || []).some(p => !p.isBot && isPlayerMe(p));
+if (!isCurrentlyViewingLobby && amIBannedNow && !amIStillInRoom) {
+setTimeout(() => forceKickReturnToLobby(), 10);
+}
+if (state.isHost && !isCurrentlyViewingLobby) {
+maybeShowBanAppealHostModal();
 }
 } finally {
 this.isApplyingRemote = false;
@@ -3624,7 +3654,24 @@ const AI_SPY_NAMES = [
 'AIスパイ（ユイ）', 'AIスパイ（タクミ）', 'AIスパイ（アオイ）'
 ];
 const state = {
+deviceUid: (() => {
+try {
+const key = 'yomibito_device_uid_v1';
+let uid = localStorage.getItem(key);
+if (!uid) {
+uid = 'dev-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 10);
+localStorage.setItem(key, uid);
+}
+return uid;
+} catch (e) {
+return 'dev-' + Math.random().toString(36).slice(2, 10);
+}
+})(),
 clientId: 'client-' + Math.random().toString(36).slice(2, 10),
+bannedUsers: [],
+joinRequests: [],
+pendingJoinRequestId: null,
+activeBanAppealRequestId: null,
 lobbyMode: 'solo', // Default is 'solo' (ひとりで遊ぶ)
 hasReturnedFromResult: false,
 soloAiCount: 3,
@@ -3978,6 +4025,7 @@ isBot: false,
 isHostPlayer: true,
 joinedAt: nowTs,
 lastSeen: nowTs,
+deviceUid: state.deviceUid,
 clientId: state.clientId,
 color: PLAYER_COLORS[0]
 });
@@ -3999,6 +4047,7 @@ isBot: false,
 isHostPlayer: true,
 joinedAt: nowTs,
 lastSeen: nowTs,
+deviceUid: state.deviceUid,
 clientId: state.clientId,
 color: PLAYER_COLORS[0]
 };
@@ -4166,6 +4215,10 @@ if (!badge) return;
 const isWaitingVisible = !document.getElementById('view-waiting').classList.contains('hidden');
 const isGameVisible = !document.getElementById('view-game').classList.contains('hidden');
 const isResultVisible = !document.getElementById('view-result').classList.contains('hidden');
+const isLobbyVisible = !document.getElementById('view-lobby').classList.contains('hidden');
+badge.classList.toggle('cursor-pointer', isWaitingVisible || isLobbyVisible);
+badge.classList.toggle('cursor-default', !isWaitingVisible && !isLobbyVisible);
+badge.title = (isWaitingVisible || isLobbyVisible) ? 'タップして通り名を変更' : 'あなたの通り名';
 if (isWaitingVisible || isGameVisible || isResultVisible) {
 const displayName = state.currentUserName || '007';
 const initialEl = document.getElementById('header-user-name-initial');
@@ -4364,7 +4417,13 @@ ucBadge.classList.add('hidden');
 const kwEl = document.getElementById('waiting-keyword-display');
 if (kwEl) kwEl.textContent = getFullPassphrase(state.roomKeyword, state.roomId);
 }
-function buildPoemCardWithActions(entry, badgeLabel) {
+let pendingPostConsentAction = null;
+function openPostConsentModal(actionFn) {
+pendingPostConsentAction = actionFn;
+const m = document.getElementById('modal-post-consent-confirm');
+if (m) m.classList.remove('hidden');
+}
+function buildPoemCardWithActions(entry, badgeLabel, isWaitingRoom = false) {
 const card = document.createElement('div');
 card.className = 'p-3.5 rounded-xl bg-white border border-zinc-300 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-sm';
 const poetsStr = Array.isArray(entry.poets) ? entry.poets.join('・') : '';
@@ -4399,8 +4458,10 @@ downloadPoemEntryImage(entry);
 const tweetBtn = card.querySelector('.poem-entry-tweet-btn');
 if (tweetBtn) {
 tweetBtn.addEventListener('click', () => {
-const isWaitingCard = !!card.closest('#waiting-past-poems-list');
-if (isWaitingCard) {
+const hasOtherHumanCoauthor = Array.isArray(entry.activePlayers)
+? entry.activePlayers.some(p => p && !p.isBot && !isPlayerMe(p))
+: (Array.isArray(entry.poets) && entry.poets.filter(n => n && n !== state.currentUserName && !AI_SPY_NAMES.includes(n) && !/^AIスパイ/.test(n)).length > 0);
+if (isWaitingRoom || !!card.closest('#waiting-past-poems-list') || hasOtherHumanCoauthor) {
 openPostConsentModal(() => tweetPoemEntry(entry));
 } else {
 tweetPoemEntry(entry);
@@ -4409,10 +4470,16 @@ tweetPoemEntry(entry);
 }
 return card;
 }
+let lastRenderedWaitingPoemsSig = '';
 function renderWaitingPastPoems() {
 const countEl = document.getElementById('waiting-past-poems-count');
 const listEl = document.getElementById('waiting-past-poems-list');
 countEl.textContent = `${state.completedPoems.length}句`;
+const nextSig = (state.completedPoems || []).map(e => `${e.id || e.poemText}:${!!e.carnationRedMode}`).join('|') + `::${state.currentUserName}`;
+if (listEl.getAttribute('data-rendered-sig') === nextSig) {
+return;
+}
+listEl.setAttribute('data-rendered-sig', nextSig);
 if (state.completedPoems.length === 0) {
 listEl.innerHTML = `<p class="text-xs text-zinc-500 text-center py-4">この部屋で完成した句はまだありません。</p>`;
 return;
@@ -4420,7 +4487,7 @@ return;
 listEl.innerHTML = '';
 state.completedPoems.slice().reverse().forEach((entry, revIdx) => {
 const num = state.completedPoems.length - revIdx;
-listEl.appendChild(buildPoemCardWithActions(entry, `第${num}句`));
+listEl.appendChild(buildPoemCardWithActions(entry, `第${num}句`, true));
 });
 }
 function renderHistoryModalList() {
@@ -4984,6 +5051,58 @@ updateHeaderUserNameBadge();
 renderWaitingPastPoems();
 renderWaitingChat();
 }
+function forceKickReturnToLobby() {
+clearUndercoverTurnTimer();
+clearBotTimer();
+state.inGame = false;
+state.isSpectating = false;
+state.roomPhase = 'waiting';
+state.activePlayers = [];
+state.waitingSlots = [];
+state.restingPlayers = [];
+state.spectators = [];
+state.bannedUsers = [];
+state.joinRequests = [];
+state.pendingJoinRequestId = null;
+state.activeBanAppealRequestId = null;
+state.undercoverMode = false;
+state.doubleSpyPlayerId = null;
+state.spyGuessState = null;
+state.hackUsed = false;
+state.hackedTurnIndex = null;
+RoomSyncEngine.currentRoomKey = null;
+if (RoomSyncEngine.cloudPollTimer) {
+clearInterval(RoomSyncEngine.cloudPollTimer);
+RoomSyncEngine.cloudPollTimer = null;
+}
+document.querySelectorAll('[id^="modal-"]').forEach(m => m.classList.add('hidden'));
+document.getElementById('view-waiting').classList.add('hidden');
+document.getElementById('view-game').classList.add('hidden');
+document.getElementById('view-spy-guess').classList.add('hidden');
+document.getElementById('view-result').classList.add('hidden');
+document.getElementById('view-lobby').classList.remove('hidden');
+document.getElementById('btn-back-lobby').classList.add('hidden');
+updateHeaderUserNameBadge();
+renderLobbyRoleTabs();
+showToast('主催者により部屋から追放（破門）されました', 'error');
+}
+function maybeShowBanAppealHostModal() {
+if (!state.isHost) return;
+const modal = document.getElementById('modal-ban-appeal-host');
+const msgEl = document.getElementById('ban-appeal-host-message');
+if (!modal || !msgEl) return;
+if (!modal.classList.contains('hidden')) return;
+const pendingReq = (state.joinRequests || []).find(r => r && r.status === 'pending');
+if (!pendingReq) return;
+state.activeBanAppealRequestId = pendingReq.requestId;
+const origName = pendingReq.bannedOriginalName || pendingReq.requestedName || '参加者';
+if (pendingReq.requestedName && pendingReq.requestedName !== origName) {
+msgEl.textContent = `過去に破門された「${origName}」さんが、「${pendingReq.requestedName}」と名を改めて復帰を乞うています。受け入れますか？`;
+} else {
+msgEl.textContent = `過去に破門された「${origName}」さんが復帰を乞うています。受け入れますか？`;
+}
+modal.classList.remove('hidden');
+}
 function findHumanInRoomById(playerId) {
 if (!playerId) return null;
 const inActive = state.waitingSlots.find(p => !p.isBot && p.id === playerId);
@@ -5009,6 +5128,18 @@ const targetSlot = state.waitingSlots.find(p => !p.isBot && p.id === targetId)
 || (state.restingPlayers || []).find(p => !p.isBot && p.id === targetId);
 if (!targetSlot) return;
 const kickedName = targetSlot.name;
+state.bannedUsers = state.bannedUsers || [];
+const banIdx = state.bannedUsers.findIndex(b =>
+(targetSlot.deviceUid && b.deviceUid === targetSlot.deviceUid) || b.name === kickedName
+);
+const banRecord = {
+deviceUid: targetSlot.deviceUid || '',
+clientId: targetSlot.clientId || '',
+name: kickedName,
+bannedAt: Date.now()
+};
+if (banIdx !== -1) state.bannedUsers[banIdx] = banRecord;
+else state.bannedUsers.push(banRecord);
 state.waitingSlots = state.waitingSlots.filter(p => p.isBot || (p.id !== targetId && p.name !== kickedName));
 state.restingPlayers = (state.restingPlayers || []).filter(p => p.isBot || (p.id !== targetId && p.name !== kickedName));
 state.spectators = (state.spectators || []).filter(s => s.id !== targetId && s.name !== kickedName);
@@ -5765,6 +5896,9 @@ myUcBadge.classList.remove('hidden');
 } else {
 myUcBadge.classList.add('hidden');
 }
+} else {
+myUcBadge.textContent = '';
+myUcBadge.classList.add('hidden');
 }
 const hackBtn = document.getElementById('btn-double-spy-hack');
 if (hackBtn) {
@@ -6972,14 +7106,18 @@ async function renderCurrentResultTanzakuCanvas() {
 await ensureFontsLoaded();
 const flower = getSelectedFlower();
 const canvas = document.getElementById('tanzaku-canvas');
+const lastPoemEntry = (Array.isArray(state.completedPoems) && state.completedPoems.length > 0) ? state.completedPoems[state.completedPoems.length - 1] : null;
+const playersForResultCanvas = (state.activePlayers && state.activePlayers.length > 0)
+? state.activePlayers
+: (lastPoemEntry && Array.isArray(lastPoemEntry.activePlayers) ? lastPoemEntry.activePlayers : []);
 if (flower.id === 'carnation') {
 if (state.carnationRedMode) {
-drawVerticalTanzakuOnCanvas(canvas, flower, flower.cardThemeRed, '#dc2626');
+drawVerticalTanzakuOnCanvas(canvas, flower, flower.cardThemeRed, '#dc2626', null, playersForResultCanvas);
 } else {
-drawVerticalTanzakuOnCanvas(canvas, flower, flower.cardTheme, '#2563eb');
+drawVerticalTanzakuOnCanvas(canvas, flower, flower.cardTheme, '#2563eb', null, playersForResultCanvas);
 }
 } else {
-drawVerticalTanzakuOnCanvas(canvas, flower, flower.cardTheme, flower.color);
+drawVerticalTanzakuOnCanvas(canvas, flower, flower.cardTheme, flower.color, null, playersForResultCanvas);
 }
 const mirrorImg = document.getElementById('tanzaku-img-mirror');
 if (mirrorImg && canvas) {
@@ -7004,18 +7142,62 @@ if (headerBackWaitBtn) headerBackWaitBtn.classList.add('hidden');
 const flower = getSelectedFlower();
 const breakdownEl = document.getElementById('result-breakdown-list');
 breakdownEl.innerHTML = '';
+const latestEntryForBreakdown = (Array.isArray(state.completedPoems) && state.completedPoems.length > 0) ? state.completedPoems[state.completedPoems.length - 1] : null;
+const ucSummary = (latestEntryForBreakdown && latestEntryForBreakdown.undercoverSummary) || (state.undercoverMode ? {
+doubleSpyName: (() => {
+const ds = state.doubleSpyPlayerId ? (state.activePlayers || []).find(p => p.id === state.doubleSpyPlayerId) : null;
+return ds ? (ds.realName || ds.name) : null;
+})(),
+doubleSpyColor: (() => {
+const ds = state.doubleSpyPlayerId ? (state.activePlayers || []).find(p => p.id === state.doubleSpyPlayerId) : null;
+return ds ? (ds.color || '#64748b') : '#64748b';
+})(),
+voteDetails: (() => {
+const subs = (state.spyGuessState && state.spyGuessState.submissions) ? state.spyGuessState.submissions : {};
+return (state.activePlayers || []).filter(p => !p.isBot && Array.isArray(subs[p.id])).map(p => ({
+voterName: p.realName || p.name,
+voterColor: p.color || '#64748b',
+targets: subs[p.id].map(idx => {
+const tp = (state.activePlayers || [])[idx];
+return tp ? { name: (tp.realName || tp.name), color: tp.color || '#64748b' } : null;
+}).filter(Boolean)
+}));
+})()
+} : null);
+if (ucSummary && (ucSummary.doubleSpyName || (ucSummary.voteDetails && ucSummary.voteDetails.length > 0))) {
+const ucBox = document.createElement('div');
+ucBox.className = 'pb-2.5 mb-2 border-b border-zinc-300 space-y-2 text-xs';
+const renderColoredNameBadge = (name, color) => `<span class="inline-flex items-center px-2 py-0.5 rounded-md bg-white font-bold text-zinc-900 border-2" style="border-color: ${escapeHtml(color || '#64748b')};">${escapeHtml(name)}</span>`;
+let ucHtml = '';
+if (ucSummary.doubleSpyName) {
+ucHtml += `<div class="flex flex-wrap items-center gap-2"><span class="px-2 py-0.5 rounded-full bg-pink-100 border border-pink-300 text-pink-900 font-bold">🕵️ 二重スパイ</span>${renderColoredNameBadge(ucSummary.doubleSpyName, ucSummary.doubleSpyColor)}</div>`;
+}
+if (ucSummary.voteDetails && ucSummary.voteDetails.length > 0) {
+const voteRows = ucSummary.voteDetails.map(v => {
+const targetBadges = (v.targets || []).map(t => {
+const tName = typeof t === 'string' ? t : t.name;
+const tCol = typeof t === 'string' ? '#64748b' : t.color;
+return renderColoredNameBadge(tName, tCol);
+}).join(' ');
+return `<div class="flex flex-wrap items-center gap-1.5 text-zinc-700">${renderColoredNameBadge(v.voterName, v.voterColor)}<span>→</span>${targetBadges}</div>`;
+}).join('');
+ucHtml += `<div class="space-y-1.5"><div class="font-bold text-zinc-700">🗳️ 投票の内訳：</div>${voteRows}</div>`;
+}
+ucBox.innerHTML = ucHtml;
+breakdownEl.appendChild(ucBox);
+}
 const lineNames = ['初句（上五）', '二句（中七）', '結句（下五）'];
 state.lines.forEach((line, lIdx) => {
 if (line.length === 0) return;
 const row = document.createElement('div');
 row.className = 'flex flex-wrap items-center gap-1.5 pb-2 border-b border-zinc-300 last:border-b-0';
 const chips = line.map(cell => `
-<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-xs font-bold border ${
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-xs font-bold border whitespace-nowrap ${
 cell.isFlower ? 'bg-pink-50 border-pink-300 text-pink-950' : 'bg-white border-zinc-300 text-zinc-800'
 }">
-<span class="w-2 h-2 rounded-full" style="background-color: ${cell.playerColor}"></span>
-<span class="serif-jp text-sm break-all">${escapeHtml(cell.text)}</span>
-<span class="text-[10px] text-zinc-500 font-normal">(${escapeHtml(cell.playerName)})</span>
+<span class="w-2 h-2 rounded-full shrink-0" style="background-color: ${cell.playerColor}"></span>
+<span class="serif-jp text-sm whitespace-nowrap">${escapeHtml(cell.text)}</span>
+<span class="text-[10px] text-zinc-500 font-normal whitespace-nowrap">(${escapeHtml(cell.playerName)})</span>
 </span>
 `).join('');
 row.innerHTML = `
@@ -7265,8 +7447,15 @@ titleText = '任務失敗';
 bodyText = 'スパイに逃走された。完成した一句を見ながら、あなたは雪辱を胸に誓う。';
 }
 }
+const aiAliasList = players
+.map((p, i) => (p && p.isBot) ? (p.anonymousName || getSpyAliasName(i)) : null)
+.filter(Boolean);
+const aiRevealPrefix = aiAliasList.length > 0 ? `AIスパイは、${aiAliasList.join('・')}だった。\n\n` : '';
 if (titleEl) titleEl.textContent = titleText;
-if (bodyEl) bodyEl.textContent = bodyText;
+if (bodyEl) {
+bodyEl.classList.add('whitespace-pre-line');
+bodyEl.textContent = aiRevealPrefix + bodyText;
+}
 const m = document.getElementById('modal-undercover-result');
 if (m) m.classList.remove('hidden');
 }
@@ -7347,6 +7536,36 @@ if (fullPoemText) {
 const now = new Date();
 const timeStr = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
 const initialSwatchCss = flower.id === 'carnation' ? getCarnationSwatchCss(false) : flower.swatchCss;
+let undercoverSummary = null;
+if (state.undercoverMode) {
+const dsPlayer = state.doubleSpyPlayerId ? (state.activePlayers || []).find(p => p.id === state.doubleSpyPlayerId) : null;
+const subs = (state.spyGuessState && state.spyGuessState.submissions) ? state.spyGuessState.submissions : {};
+const voteDetails = (state.activePlayers || [])
+.filter(p => !p.isBot && Array.isArray(subs[p.id]))
+.map(p => ({
+voterName: p.realName || p.name,
+targets: subs[p.id].map(idx => {
+const tp = (state.activePlayers || [])[idx];
+return tp ? (tp.realName || tp.name) : '';
+}).filter(Boolean)
+}));
+const voteDetailsWithColor = (state.activePlayers || [])
+.filter(p => !p.isBot && Array.isArray(subs[p.id]))
+.map(p => ({
+voterName: p.realName || p.name,
+voterColor: p.color || '#64748b',
+targets: subs[p.id].map(idx => {
+const tp = (state.activePlayers || [])[idx];
+return tp ? { name: (tp.realName || tp.name), color: tp.color || '#64748b' } : null;
+}).filter(Boolean)
+}));
+undercoverSummary = {
+doubleSpyName: dsPlayer ? (dsPlayer.realName || dsPlayer.name) : null,
+doubleSpyColor: dsPlayer ? (dsPlayer.color || '#64748b') : '#64748b',
+doubleSpyId: state.doubleSpyPlayerId || null,
+voteDetails: voteDetailsWithColor
+};
+}
 const poemEntry = {
 id: `poem-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
 flowerId: flower.id,
@@ -7358,7 +7577,8 @@ poets: state.activePlayers.map(p => p.name),
 time: timeStr,
 lines: JSON.parse(JSON.stringify(state.lines)),
 activePlayers: JSON.parse(JSON.stringify(state.activePlayers)),
-carnationRedMode: false
+carnationRedMode: false,
+undercoverSummary
 };
 state.completedPoems.push(poemEntry);
 if (!state.isSpectating) {
@@ -7650,9 +7870,9 @@ let chosenColGap = 36;
 let chosenVerseGap = 64;
 let chosenVerseColumns = [];
 let chosenTotalW = 0;
-for (let fs = 64; fs >= 8; fs -= 2) {
+for (let fs = 64; fs >= 12; fs -= 2) {
 const charStep = Math.round(fs * 1.25);
-const segGapY = Math.max(4, Math.round(fs * 0.20));
+const segGapY = Math.max(6, Math.round(fs * 0.22));
 const maxAllowedColH = availPoemH - 16;
 const maxCharsPerCol = Math.max(4, Math.floor(maxAllowedColH / charStep));
 const colW = Math.round(fs * 1.55);
@@ -7661,10 +7881,8 @@ const verseGap = Math.max(20, Math.round(fs * 1.35));
 const verseColsList = [];
 let totalColsCount = 0;
 let maxColPixelH = 0;
-let allSingleCol = true;
 activeLines.forEach(lineObj => {
 const cols = buildCleanVerticalColumnsForVerse(lineObj.cells, maxCharsPerCol, charStep, segGapY, maxAllowedColH);
-if (cols.length > 1) allSingleCol = false;
 cols.forEach(colSegs => {
 const charCount = colSegs.reduce((acc, s) => acc + s.charNodes.length, 0);
 const colH = charCount * charStep + Math.max(0, colSegs.length - 1) * segGapY;
@@ -7676,7 +7894,7 @@ totalColsCount += cols.length;
 const numVerseGaps = Math.max(0, verseColsList.length - 1);
 const numIntraColGaps = Math.max(0, totalColsCount - verseColsList.length);
 const totalW = totalColsCount * colW + numIntraColGaps * colGap + numVerseGaps * verseGap;
-if ((allSingleCol && totalW <= availPoemW && maxColPixelH <= maxAllowedColH) || fs === 8) {
+if ((totalW <= availPoemW && maxColPixelH <= maxAllowedColH) || fs === 12) {
 chosenFontSize = fs;
 chosenColGap = colGap;
 chosenVerseGap = verseGap;
@@ -8235,6 +8453,15 @@ lastInAppSaveCanvas = canvas || null;
 lastInAppSaveSuffix = suffix || 'tulip';
 lastInAppSavePoemEntry = poemEntry || null;
 if (intentUrl) lastInAppSaveIntentUrl = intentUrl;
+const xLinkEl = document.getElementById('link-inapp-open-x');
+if (xLinkEl) {
+if (intentUrl) {
+xLinkEl.href = intentUrl;
+xLinkEl.classList.remove('hidden');
+} else {
+xLinkEl.classList.add('hidden');
+}
+}
 syncResultStateUrlInAddressBar(poemEntry);
 const modalEl = document.getElementById('modal-inapp-image-save');
 if (modalEl) {
@@ -8372,24 +8599,30 @@ showToast('短冊画像（PNG）を保存しました📥');
 }
 async function tweetPoemEntry(entry) {
 if (!entry) return;
-await ensureFontsLoaded();
-const built = buildOffscreenCanvasForPoemEntry(entry);
+const flowerObj = FLOWERS.find(f => f.id === entry.flowerId) || FLOWERS.find(f => f.name === entry.flowerName) || FLOWERS[0];
 const siteUrl = getShareSiteUrl(false);
-const flowerName = built.flower ? built.flower.name : (entry.flowerName || 'チューリップ');
+const flowerName = flowerObj ? flowerObj.name : (entry.flowerName || 'チューリップ');
 const poemText = String(entry.poemText || '').replace(/[ 　]/g, '');
 const blankTwoLines = '\n\uFE0E \uFE0E\n\uFE0E \uFE0E\n';
 const shareText = `題 ${flowerName}${blankTwoLines}${poemText}${blankTwoLines}#兄妹の花で詠み人知らず\n\n${siteUrl}`;
 const intentUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}`;
 const inApp = isInAppBrowser();
 if (inApp) {
-window.open(intentUrl, '_blank', 'noopener,noreferrer');
+const w = window.open(intentUrl, '_blank', 'noopener,noreferrer');
+if (!w) window.location.href = intentUrl;
 return;
 }
-if (navigator.canShare && navigator.share) {
+const isMobileUa = /iP(hone|od|ad)|Android/i.test(navigator.userAgent || '');
+const canTryFileShare = !!(isMobileUa && navigator.canShare && navigator.share && typeof File !== 'undefined');
+if (canTryFileShare) {
+if (!document.fonts || document.fonts.status !== 'loaded') {
+await ensureFontsLoaded();
+}
+const builtShare = buildOffscreenCanvasForPoemEntry(entry);
 try {
-const blob = await new Promise(resolve => built.canvas.toBlob(resolve, 'image/png'));
+const blob = await new Promise(resolve => builtShare.canvas.toBlob(resolve, 'image/png'));
 if (blob) {
-const files = [new File([blob], `yomibito-${built.flower.id}.png`, { type: 'image/png' })];
+const files = [new File([blob], `yomibito-${builtShare.flower.id}.png`, { type: 'image/png' })];
 if (navigator.canShare({ files })) {
 await navigator.share({ text: shareText, files });
 showToast('画像付きで共有シートを起動しました！');
@@ -8400,15 +8633,24 @@ return;
 if (err && err.name === 'AbortError') return;
 }
 }
+const openedWin = window.open(intentUrl, '_blank', 'noopener,noreferrer');
+if (!document.fonts || document.fonts.status !== 'loaded') {
+await ensureFontsLoaded();
+}
+const built = buildOffscreenCanvasForPoemEntry(entry);
 const copied = await copyCanvasImageToClipboard(built.canvas);
 const suffix = built.flower ? built.flower.id : 'tulip';
 triggerStandardCanvasDownload(built.canvas, suffix);
+if (!openedWin) {
+openInAppImageSaveModal(built.canvas, suffix, entry, intentUrl);
+showToast('ポップアップがブロックされたため、投稿リンク付き案内を開きました');
+return;
+}
 if (copied) {
 showToast('短冊画像をクリップボードにコピー＆PNG保存しました！開いたX投稿欄で貼り付け（Ctrl+V）できます');
 } else {
 showToast('短冊画像をPNG保存しました！開いたX投稿欄に添付してください');
 }
-window.open(intentUrl, '_blank', 'noopener,noreferrer');
 }
 function tweetRecruitment() {
 const siteUrl = getShareSiteUrl(false);
@@ -8756,6 +8998,7 @@ isBot: false,
 isHostPlayer: false,
 joinedAt: Date.now(),
 lastSeen: Date.now(),
+deviceUid: state.deviceUid,
 clientId: state.clientId,
 restingReason: 'manual',
 manualRest: true,
@@ -9144,6 +9387,7 @@ isBot: false,
 isHostPlayer: state.isHost,
 joinedAt: Date.now(),
 lastSeen: Date.now(),
+deviceUid: state.deviceUid,
 clientId: state.clientId,
 color: PLAYER_COLORS[state.waitingSlots.length % PLAYER_COLORS.length]
 };
@@ -9220,6 +9464,72 @@ if (remoteSnap) {
 const roomSlots = remoteSnap.waitingSlots || [];
 const restingSlots = remoteSnap.restingPlayers || [];
 const activeSlots = remoteSnap.inGame ? (remoteSnap.activePlayers || []) : [];
+const matchedBan = normalizeArrayField(remoteSnap.bannedUsers).find(b =>
+b && ((b.deviceUid && b.deviceUid === state.deviceUid) || (b.clientId && b.clientId === state.clientId) || (b.name && b.name === guestName))
+);
+if (matchedBan) {
+const reqId = `req-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`;
+const nextReqs = normalizeArrayField(remoteSnap.joinRequests).filter(r =>
+r && r.deviceUid !== state.deviceUid && r.status === 'pending'
+);
+nextReqs.push({
+requestId: reqId,
+deviceUid: state.deviceUid,
+clientId: state.clientId,
+requestedName: guestName,
+bannedOriginalName: matchedBan.name || guestName,
+requestedAt: Date.now(),
+status: 'pending'
+});
+remoteSnap.joinRequests = nextReqs;
+remoteSnap.updatedAt = Date.now();
+remoteSnap.updatedBy = state.clientId;
+const rkBan = RoomSyncEngine.makeRoomKey(remoteSnap.roomKeyword, remoteSnap.roomId);
+try { localStorage.setItem(ROOM_STORAGE_PREFIX + rkBan, JSON.stringify(remoteSnap)); } catch (e) {}
+try {
+if (RoomSyncEngine.channel) {
+RoomSyncEngine.channel.postMessage({ type: 'ROOM_UPDATE', roomKey: rkBan, snapshot: remoteSnap, senderClientId: state.clientId });
+}
+} catch (e) {}
+const cloudCfgBan = window.YOMIBITO_CLOUD_CONFIG;
+if (cloudCfgBan && cloudCfgBan.databaseUrl && /^https?:\/\//.test(cloudCfgBan.databaseUrl)) {
+try {
+const epBan = new URL('/rooms/' + encodeURIComponent(rkBan) + '.json', cloudCfgBan.databaseUrl).href;
+await window.fetch(epBan, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(remoteSnap) });
+} catch (e) {}
+}
+const waitModal = document.getElementById('modal-ban-appeal-wait');
+if (waitModal) waitModal.classList.remove('hidden');
+state.pendingJoinRequestId = reqId;
+const decision = await new Promise((resolve) => {
+let settled = false;
+const finishDecision = (res) => {
+if (settled) return;
+settled = true;
+clearInterval(pollTimer);
+if (cancelBtn) cancelBtn.removeEventListener('click', onCancel);
+resolve(res);
+};
+const cancelBtn = document.getElementById('btn-cancel-ban-appeal-wait');
+const onCancel = () => finishDecision('cancelled');
+if (cancelBtn) cancelBtn.addEventListener('click', onCancel);
+const pollTimer = setInterval(async () => {
+if (state.pendingJoinRequestId !== reqId) { finishDecision('cancelled'); return; }
+const latest = await RoomSyncEngine.fetchRoomSnapshot(remoteSnap.roomKeyword, remoteSnap.roomId, true);
+const rObj = latest ? normalizeArrayField(latest.joinRequests).find(r => r && r.requestId === reqId) : null;
+if (rObj && (rObj.status === 'approved' || rObj.status === 'rejected')) {
+finishDecision(rObj.status);
+}
+}, 1500);
+});
+state.pendingJoinRequestId = null;
+if (waitModal) waitModal.classList.add('hidden');
+if (decision !== 'approved') {
+errEl.textContent = decision === 'rejected' ? '主催者により入室が拒否されました。' : '入室申請をキャンセルしました。';
+errEl.classList.remove('hidden');
+return;
+}
+}
 const existingHumanNamesRemote = new Set([
 ...roomSlots.filter(p => !p.isBot).map(p => p.name),
 ...restingSlots.filter(p => !p.isBot).map(p => p.name),
@@ -9229,7 +9539,7 @@ while (existingHumanNamesRemote.has(resolvedGuestName)) {
 resolvedGuestName = '偽' + resolvedGuestName;
 }
 if (resolvedGuestName !== guestName) {
-showToast(`同じ通り名の人物が既に存在するため「${resolvedGuestName}」として入室しました（もしかしてスパイ？）`);
+showToast(`同じ通り名が存在するため「${resolvedGuestName}」として入室しました`);
 }
 state.roomKeyword = remoteSnap.roomKeyword;
 state.roomId = remoteSnap.roomId;
@@ -9279,7 +9589,7 @@ while (existingHumanNamesLocal.has(resolvedGuestName)) {
 resolvedGuestName = '偽' + resolvedGuestName;
 }
 if (resolvedGuestName !== guestName) {
-showToast(`同じ通り名の人物が既に存在するため「${resolvedGuestName}」として入室しました（もしかしてスパイ？）`);
+showToast(`同じ通り名が存在するため「${resolvedGuestName}」として入室しました`);
 }
 }
 const finalGuestName = resolvedGuestName;
@@ -9295,7 +9605,7 @@ if (existingHumansCount === 0) {
 state.isHost = true;
 state.lobbyMode = 'host';
 state.hostPlayerId = newGuestId;
-state.hostName = guestName;
+state.hostName = finalGuestName;
 showToast('部屋に他の参加者がいなかったため、あなたが主催者になりました');
 } else {
 state.isHost = false;
@@ -9309,6 +9619,7 @@ isBot: false,
 isHostPlayer: state.isHost,
 joinedAt: Date.now(),
 lastSeen: Date.now(),
+deviceUid: state.deviceUid,
 clientId: state.clientId,
 color: PLAYER_COLORS[state.waitingSlots.length % PLAYER_COLORS.length]
 };
@@ -9343,6 +9654,35 @@ state.pendingKickTargetId = null;
 document.getElementById('modal-kick-confirm').classList.add('hidden');
 });
 document.getElementById('btn-confirm-kick').addEventListener('click', executeKickParticipant);
+document.getElementById('btn-approve-ban-appeal').addEventListener('click', () => {
+const reqId = state.activeBanAppealRequestId;
+state.activeBanAppealRequestId = null;
+document.getElementById('modal-ban-appeal-host').classList.add('hidden');
+if (!reqId) return;
+const req = (state.joinRequests || []).find(r => r && r.requestId === reqId);
+if (req) {
+req.status = 'approved';
+state.bannedUsers = (state.bannedUsers || []).filter(b =>
+b && !( (req.deviceUid && b.deviceUid === req.deviceUid) || (req.bannedOriginalName && b.name === req.bannedOriginalName) )
+);
+showToast(`${req.bannedOriginalName || req.requestedName}さんの復帰を許可しました`);
+RoomSyncEngine.pushRoomState();
+}
+maybeShowBanAppealHostModal();
+});
+document.getElementById('btn-reject-ban-appeal').addEventListener('click', () => {
+const reqId = state.activeBanAppealRequestId;
+state.activeBanAppealRequestId = null;
+document.getElementById('modal-ban-appeal-host').classList.add('hidden');
+if (!reqId) return;
+const req = (state.joinRequests || []).find(r => r && r.requestId === reqId);
+if (req) {
+req.status = 'rejected';
+showToast(`${req.bannedOriginalName || req.requestedName}さんの入室を拒否しました`);
+RoomSyncEngine.pushRoomState();
+}
+maybeShowBanAppealHostModal();
+});
 document.getElementById('btn-cancel-appoint-host').addEventListener('click', () => {
 state.pendingAppointHostTargetId = null;
 document.getElementById('modal-appoint-host-confirm').classList.add('hidden');
@@ -9590,17 +9930,26 @@ const rb = document.getElementById('modal-rules-scroll-body');
 if (rb) rb.scrollTop = 0;
 document.getElementById('modal-rules').classList.remove('hidden');
 });
+const rulesScrollBody = document.getElementById('modal-rules-scroll-body');
+const btnRulesBackToc = document.getElementById('btn-rules-back-toc');
+if (btnRulesBackToc) {
+btnRulesBackToc.addEventListener('click', () => {
+if (rulesScrollBody) {
+rulesScrollBody.scrollTo({ top: 0, behavior: 'smooth' });
+}
+});
+}
 document.querySelectorAll('[data-rule-jump]').forEach(btn => {
 btn.addEventListener('click', () => {
 const targetId = btn.getAttribute('data-rule-jump');
 const targetEl = document.getElementById(targetId);
-if (targetEl && typeof targetEl.scrollIntoView === 'function') {
-targetEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+if (targetEl && rulesScrollBody) {
+const bodyRect = rulesScrollBody.getBoundingClientRect();
+const targetRect = targetEl.getBoundingClientRect();
+const targetTop = Math.max(0, (targetRect.top - bodyRect.top) + rulesScrollBody.scrollTop - 12);
+rulesScrollBody.scrollTo({ top: targetTop, behavior: 'smooth' });
 }
 });
-});
-document.getElementById('btn-close-rules').addEventListener('click', () => {
-document.getElementById('modal-rules').classList.add('hidden');
 });
 document.getElementById('btn-close-rules-bottom').addEventListener('click', () => {
 document.getElementById('modal-rules').classList.add('hidden');
@@ -9955,6 +10304,12 @@ document.getElementById('modal-double-spy-notice').classList.add('hidden');
 state.hasReturnedFromResult = true;
 if (state.isHost && !state.inGame) {
 state.roomPhase = 'waiting';
+const refreshTs = Date.now();
+(state.waitingSlots || []).forEach(p => {
+if (p && !p.isBot) {
+p.lastSeen = refreshTs;
+}
+});
 }
 const phaseToKeep = state.inGame ? 'game' : (state.isHost ? 'waiting' : (state.roomPhase || 'result'));
 openWaitingRoom(false);
@@ -10361,12 +10716,7 @@ finalizeUndercoverAndShowResult();
 document.getElementById('btn-close-undercover-result').addEventListener('click', () => {
 document.getElementById('modal-undercover-result').classList.add('hidden');
 });
-let pendingPostConsentAction = null;
-function openPostConsentModal(actionFn) {
-pendingPostConsentAction = actionFn;
-const m = document.getElementById('modal-post-consent-confirm');
-if (m) m.classList.remove('hidden');
-}
+
 const btnCancelConsent = document.getElementById('btn-cancel-post-consent');
 if (btnCancelConsent) {
 btnCancelConsent.addEventListener('click', () => {
@@ -10391,6 +10741,66 @@ const bdIcon = document.getElementById('icon-toggle-result-breakdown');
 if (bdBody && bdIcon) {
 const isHidden = bdBody.classList.toggle('hidden');
 bdIcon.textContent = isHidden ? '▼ タップで表示' : '▲ 折りたたむ';
+}
+});
+}
+const headerNameBadge = document.getElementById('header-user-name-badge');
+const modalQuickRename = document.getElementById('modal-quick-rename');
+const inputQuickRename = document.getElementById('input-quick-rename');
+const errQuickRename = document.getElementById('quick-rename-error');
+if (headerNameBadge && modalQuickRename && inputQuickRename) {
+headerNameBadge.addEventListener('click', () => {
+const isWaiting = !document.getElementById('view-waiting').classList.contains('hidden');
+const isLobby = !document.getElementById('view-lobby').classList.contains('hidden');
+if (!isWaiting && !isLobby) return;
+inputQuickRename.value = state.currentUserName || '007';
+if (errQuickRename) errQuickRename.classList.add('hidden');
+modalQuickRename.classList.remove('hidden');
+setTimeout(() => { inputQuickRename.focus(); inputQuickRename.select(); }, 30);
+});
+document.getElementById('btn-cancel-quick-rename').addEventListener('click', () => {
+modalQuickRename.classList.add('hidden');
+});
+document.getElementById('btn-confirm-quick-rename').addEventListener('click', () => {
+const nextName = inputQuickRename.value.trim().slice(0, 20);
+if (!nextName) {
+if (errQuickRename) {
+errQuickRename.textContent = '通り名を入力してください。';
+errQuickRename.classList.remove('hidden');
+}
+return;
+}
+const otherHumans = [
+...(state.waitingSlots || []),
+...(state.restingPlayers || []),
+...(state.activePlayers || [])
+].filter(p => p && !p.isBot && !isPlayerMe(p));
+if (otherHumans.some(p => p.name === nextName)) {
+if (errQuickRename) {
+errQuickRename.textContent = '同じ通り名の参加者が既にいるため変更できません。';
+errQuickRename.classList.remove('hidden');
+}
+return;
+}
+const prevName = state.currentUserName || '007';
+state.currentUserName = nextName;
+if (state.isHost) state.hostName = nextName;
+saveLastUsedUserName(nextName);
+const hostInp = document.getElementById('input-host-name');
+if (hostInp) hostInp.value = nextName;
+const guestInp = document.getElementById('guest-name-input');
+if (guestInp) guestInp.value = nextName;
+(state.waitingSlots || []).forEach(p => { if (!p.isBot && isPlayerMe(p)) p.name = nextName; });
+(state.restingPlayers || []).forEach(p => { if (!p.isBot && isPlayerMe(p)) p.name = nextName; });
+updateHeaderUserNameBadge();
+modalQuickRename.classList.add('hidden');
+if (prevName !== nextName) {
+if (!document.getElementById('view-waiting').classList.contains('hidden')) {
+addChatMessage('システム', `${prevName}さんが通り名を「${nextName}」に変更しました。`, true);
+renderWaitingRoom();
+RoomSyncEngine.pushRoomState();
+}
+showToast(`通り名を「${nextName}」に変更しました`);
 }
 });
 }
